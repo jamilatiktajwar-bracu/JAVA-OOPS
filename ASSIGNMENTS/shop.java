@@ -31,6 +31,12 @@ public class shop{
 }
 public void addItem (Shop s, String item ) {
   boolean found = false ;
+   for (int i = 0; i < s.itemCount; i++) {
+            if (s.items[i].equals(item)) {
+                addItem(s.items[i], s.prices[i]);
+                found = true;
+                break;
+            }
   
 }
 
