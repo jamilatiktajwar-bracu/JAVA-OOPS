@@ -53,12 +53,19 @@ public class Library{
     public void addBook( String book )
  {  
     if( bookcount < capacity){
-        books[count++] = book;
+        books[bookcount++] = book;
         System.out.println("A book has been added"
     }
+   else{
+     System.out.println("Exceeds maximum capacity. You can't add more than " + capacity + " books");
 
-}  
+   }  
+}
 
+public void printDetails( ){
+ for(int i=0;i<bookcount;i++){
+    System.out.println(books[i]);
+ }
 
-
+}
 }
