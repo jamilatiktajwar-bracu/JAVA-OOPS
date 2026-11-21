@@ -1,11 +1,15 @@
 
-
-
+/*
+ * Represents a mobile financial service (MFS) account.
+ * The account can hold money and be associated with one card.
+ */
 public class MFS {
+    // Account identifier, current money, and the card linked to this account.
     private String accNo;
     private double balance;
     private Card card;
 
+    // Creates an account with no money and no card linked yet.
     public MFS(String accNo) {
         this.accNo = accNo;
         balance = 0;
@@ -17,6 +21,7 @@ public class MFS {
         System.out.println("Card not saved.");
     }
 
+    // Links a card to this account if no card has already been linked.
     public void addNewCard(Card c) {
         if (card == null) {
             card = c;
@@ -25,6 +30,7 @@ public class MFS {
         }
     }
 
+    // Transfers money from the linked card into this MFS account.
     public void addMoneyFromCard(double amount) {
         if (card == null) {
             System.out.println("Please add a card to your MFS account");
@@ -42,20 +48,24 @@ public class MFS {
         }
     }
 
+    // Returns the current account balance without changing it.
     public double getBalance() {
         return balance;
     }
 
+    // Returns this account's identifier.
     public String getAccNo() {
         return accNo;
     }
 
+    // Deducts money only when the amount is positive and the balance is enough.
     public void deduct(double amount) {
         if (amount > 0 && amount <= balance) {
             balance -= amount;
         }
     }
 
+    // Adds the given amount to this account's balance.
     public void addBalance(double amount) {
         balance += amount;
     }
