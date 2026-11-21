@@ -42,6 +42,9 @@ public class Card {
     }
 
     private String getAccountNo() {
-        return "12121212";
+        if (account == null) {
+            return "No account";
+        }
+        return account.getAccNo();
     }
 }

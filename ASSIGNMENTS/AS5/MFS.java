@@ -28,6 +28,8 @@ public class MFS {
     public void addMoneyFromCard(double amount) {
         if (card == null) {
             System.out.println("Please add a card to your MFS account");
+        } else if (amount <= 0) {
+            System.out.println("Invalid amount.");
         } else if (card.getBalance() < amount) {
             System.out.println("Insufficient balance in " + card.getType() + " Card.");
         } else {
@@ -44,8 +46,14 @@ public class MFS {
         return balance;
     }
 
+    public String getAccNo() {
+        return accNo;
+    }
+
     public void deduct(double amount) {
-        balance -= amount;
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+        }
     }
 
     public void addBalance(double amount) {
