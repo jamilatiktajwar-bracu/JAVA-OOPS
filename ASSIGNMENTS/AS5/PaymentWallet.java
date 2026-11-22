@@ -1,0 +1,74 @@
+public class PaymentWallet {
+    private PaymentMethod[] methods;
+    private int methodCount;
+
+    public PaymentWallet(int capacity) {
+        methods = new PaymentMethod[capacity > 0 ? capacity : 5];
+        methodCount = 0;
+    }
+
+    public boolean addMethod(PaymentMethod method) {
+        if (method == null || methodCount >= methods.length) {
+            return false;
+        }
+        if (methodCount == 0) {
+            method.setDefault(true);
+        }
+        methods[methodCount++] = method;
+        return true;
+    }
+
+    public boolean removeMethod(PaymentMethod method) {
+        if (method == null) {
+            return false;
+        }
+        for (int i = 0; i < methodCount; i++) {
+            if (methods[i] == method) {
+                for (int j = i; j < methodCount - 1; j++) {
+                    methods[j] = methods[j + 1];
+                }
+                methods[--methodCount] = null;
+                if (methodCount > 0) {
+                    methods[0].setDefault(true);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean setDefault(PaymentMethod method) {
+        if (method == null) {
+            return false;
+        }
+        for (int i = 0; i < methodCount; i++) {
+            methods[i].setDefault(methods[i] == method);
+        }
+        return true;
+    }
+
+    public PaymentMethod getDefaultMethod() {
+        for (int i = 0; i < methodCount; i++) {
+            if (methods[i].isDefaultMethod()) {
+                return methods[i];
+            }
+        }
+        return null;
+    }
+
+    public PaymentMethod[] getMethods() {
+        PaymentMethod[] result = new PaymentMethod[methodCount];
+        System.arraycopy(methods, 0, result, 0, methodCount);
+        return result;
+    }
+
+    public int getMethodCount() {
+        return methodCount;
+    }
+
+    public void display() {
+        for (int i = 0; i < methodCount; i++) {
+            methods[i].display();
+        }
+    }
+}
