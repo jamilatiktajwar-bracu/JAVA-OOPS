@@ -1,4 +1,113 @@
 public class CinemaAnalytics {
+    public static double getAveragePersonalRating(NETFLIX_USER user) {
+        if (user == null) {
+            return 0.0;
+        }
+        Movies[] history = user.getWatchHistory();
+        if (history.length == 0) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (Movies movie : history) {
+            total += movie.getRating();
+        }
+        return total / history.length;
+    }
+
+    public static int getLongestWatchedSession(NETFLIX_USER user) {
+        if (user == null) {
+            return 0;
+        }
+        int longest = 0;
+        for (Movies movie : user.getWatchHistory()) {
+            if (movie.getDuration() > longest) {
+                longest = movie.getDuration();
+            }
+        }
+        return longest;
+    }
+
+    public static String getMostWatchedGenre(NETFLIX_USER user) {
+        if (user == null) {
+            return "Not available";
+        }
+        Movies[] history = user.getWatchHistory();
+        if (history.length == 0) {
+            return "Not available";
+        }
+        String favourite = history[0].getGenre();
+        int highest = 0;
+        for (Movies movie : history) {
+            int count = 0;
+            for (Movies other : history) {
+                if (other.getGenre().equalsIgnoreCase(movie.getGenre())) {
+                    count++;
+                }
+            }
+            if (count > highest) {
+                highest = count;
+                favourite = movie.getGenre();
+            }
+        }
+        return favourite;
+    }
+
+    public static double getAverageSessionMinutes(NETFLIX_USER user) {
+        if (user == null) {
+            return 0.0;
+        }
+        Movies[] history = user.getWatchHistory();
+        if (history.length == 0) {
+            return 0.0;
+        }
+        return (double) user.getTotalWatchedMinutes() / history.length;
+    }
+
+    public static int getRewatchCount(NETFLIX_USER user) {
+        if (user == null) {
+            return 0;
+        }
+        Movies[] history = user.getWatchHistory();
+        int count = 0;
+        for (int i = 0; i < history.length; i++) {
+            for (int j = i + 1; j < history.length; j++) {
+                if (history[i] == history[j]) {
+                    count++;
+                    break;
+                }
+            }
+        }
+        return count;
+    }
+
+    public static String getEngagementLevel(NETFLIX_USER user) {
+        int minutes = user == null ? 0 : user.getTotalWatchedMinutes();
+        if (minutes >= 500) {
+            return "Very High";
+        }
+        if (minutes >= 250) {
+            return "High";
+        }
+        if (minutes >= 100) {
+            return "Medium";
+        }
+        return "Low";
+    }
+
+    public static double getFavouriteRatio(NETFLIX_USER user) {
+        if (user == null || user.getWatchHistoryCount() == 0) {
+            return 0.0;
+        }
+        return ((double) getFavouriteCount(user) / user.getWatchHistoryCount()) * 100.0;
+    }
+
+    public static String getAnalyticsSummary(NETFLIX_USER user) {
+        return getEngagementSummary(user)
+                + ", Average rating: " + String.format("%.1f",
+                        getAveragePersonalRating(user))
+                + ", Top genre: " + getMostWatchedGenre(user)
+                + ", Level: " + getEngagementLevel(user);
+    }
     public static double getCompletionRate(NETFLIX_USER user) {
         if (user == null || user.getWatchHistoryCount() == 0) {
             return 0.0;

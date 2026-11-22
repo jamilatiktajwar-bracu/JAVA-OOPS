@@ -42,8 +42,14 @@ public class NETFLIX_DEMO {
         playlist.addMovie(interstellar);
         playlist.addMovie(avatar);
 
-        user.addReview(new MovieReview(
-                "Jamila", 9.5, "A beautiful and thoughtful movie."));
+        MovieReview jamilaReview = new MovieReview(
+                "Jamila", 9.5, "A beautiful and thoughtful movie.");
+        jamilaReview.setVerifiedViewer(true);
+        jamilaReview.addTag("Sci-Fi");
+        jamilaReview.addTag("Emotional");
+        jamilaReview.addHelpfulVote();
+        jamilaReview.addHelpfulVote();
+        user.addReview(jamilaReview);
 
         System.out.println("===== NETFLIX DEMO =====");
         user.displayProfile();
@@ -126,27 +132,101 @@ public class NETFLIX_DEMO {
         RecommendationEngine engine = new RecommendationEngine(user);
         Movies[] recommendations = engine.recommend(3);
         System.out.println("Recommendations: " + recommendations.length);
+        engine.setRatingThreshold(7.0);
+        engine.setDiversityEnabled(true);
+        engine.setFreshOnly(true);
+        engine.setRatingWeight(1.5);
+        engine.setGenreWeight(1.2);
+        engine.setPersonalizationStrength(1.3);
+        if (recommendations.length > 0) {
+            System.out.println("Recommendation reason: "
+                    + engine.explainRecommendation(recommendations[0]));
+        }
+        System.out.println("Recommendation engine: " + engine.getEngineHealth());
         ViewingSession session = new ViewingSession(avatar, user);
         session.setQuality("4K");
         session.setSubtitleEnabled(true);
+        session.setPlaybackSpeed(1.25);
+        session.setBandwidthMbps(30);
+        session.setHdrEnabled(true);
+        session.setDolbyAtmosEnabled(true);
+        session.setVolume(85);
+        session.setIntroRange(0, 90);
+        session.setSkipIntroEnabled(true);
+        session.addBookmark(2700);
+        session.setLowDataMode(false);
+        session.setAudioDescriptionEnabled(true);
+        session.setDeviceName("Smart TV");
+        session.setNetworkType("Fiber");
+        session.sendHeartbeat();
         session.pauseAt(75);
         System.out.println("Viewing session: " + session.getProgressPercent()
                 + "%, " + session.getQuality());
+        System.out.println("Session speed: " + session.getPlaybackSpeed()
+                + "x, bandwidth: " + session.getBandwidthMbps()
+                + "Mbps, HDR: " + session.isHdrEnabled()
+                + ", Atmos: " + session.isDolbyAtmosEnabled());
+        System.out.println("Session device: " + session.getDeviceName()
+                + ", network: " + session.getNetworkType()
+                + ", bookmarks: " + session.getBookmarkCount()
+                + ", heartbeat: " + session.getHeartbeatCount());
         WatchParty party = new WatchParty("Friday Movie Night", interstellar, user);
-        party.invite(new NETFLIX_USER("guest"));
+        NETFLIX_USER guest = new NETFLIX_USER("guest");
+        party.invite(guest);
         party.play();
+        party.sendChat(user, "Welcome everyone!");
+        party.sendChat(guest, "Ready to watch!");
+        party.sendReaction(guest, "Amazing!");
+        party.setPlaybackPosition(90);
+        party.synchronizeAllGuests(95);
         System.out.println("Watch party guests: " + party.getGuestCount());
+        System.out.println("Party chat: " + party.getChatCount()
+                + ", reactions: " + party.getReactionCount()
+                + ", synced position: " + party.getLastSyncPosition());
         OfflineDownloadManager downloads = new OfflineDownloadManager(5);
         downloads.addDownload(interstellar);
         downloads.updateProgress(interstellar, 100);
+        downloads.setStorageCapacityMB(5000);
+        downloads.setDownloadQuality("HD");
+        downloads.setWifiOnly(true);
+        downloads.setPriority(interstellar, 90);
         System.out.println("Offline downloads: " + downloads.getDownloadCount());
+        System.out.println("Download quality: " + downloads.getDownloadQuality()
+                + ", Wi-Fi only: " + downloads.isWifiOnly()
+                + ", priority: " + downloads.getPriority(interstellar)
+                + ", storage remaining: " + downloads.getRemainingStorageMB() + " MB");
         PlaybackQueue queue = new PlaybackQueue(10);
         queue.add(interstellar);
         queue.add(avatar);
         queue.setRepeatAll(true);
+        queue.setPlaybackSpeed(1.5);
+        queue.setCrossfadeSeconds(5);
+        queue.setSubtitlesEnabled(true);
+        queue.setSubtitleLanguage("Bangla");
         System.out.println("Queue: " + queue.getQueueCount()
                 + ", current: " + queue.getCurrent().getTitle());
+        System.out.println("Queue speed: " + queue.getPlaybackSpeed()
+                + "x, crossfade: " + queue.getCrossfadeSeconds()
+                + "s, subtitles: " + queue.areSubtitlesEnabled());
         System.out.println("Analytics: "
                 + CinemaAnalytics.getEngagementSummary(user));
+        System.out.println("Advanced analytics: "
+                + CinemaAnalytics.getAnalyticsSummary(user));
+        System.out.println("Library analytics: "
+                + LibraryAnalytics.getExtendedSummary());
+        System.out.println("Content health: "
+                + ContentHealthReport.getSummary());
+        System.out.println("Accessibility: "
+                + AccessibilityAnalytics.getSummary());
+        AdminAuditLog audit = new AdminAuditLog(20);
+        audit.record("Jamila", "Updated profile settings");
+        audit.record("Admin", "Published weekly catalog");
+        SystemHealthMonitor health = new SystemHealthMonitor();
+        health.addUptimeSeconds(86400);
+        health.setActiveSessions(125);
+        health.recordWarning();
+        System.out.println("Audit entries: " + audit.getLogCount()
+                + ", Latest: " + audit.getLatestAction());
+        System.out.println("System " + health.getSummary());
     }
 }
