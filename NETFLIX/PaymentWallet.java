@@ -8,46 +8,50 @@ public class PaymentWallet {
     }
 
     public boolean addMethod(PaymentMethod method) {
-        if (method == null || methodCount >= methods.length) {
+        if (method == null || methodCount >= methods.length || contains(method)) {
             return false;
         }
-        if (methodCount == 0) {
-            method.setDefault(true);
-        }
         methods[methodCount++] = method;
+        setDefault(methodCount == 1 ? method : getDefaultMethod());
         return true;
     }
 
-    public boolean removeMethod(PaymentMethod method) {
-        if (method == null) {
-            return false;
-        }
+    private boolean contains(PaymentMethod method) {
         for (int i = 0; i < methodCount; i++) {
             if (methods[i] == method) {
-                for (int j = i; j < methodCount - 1; j++) {
-                    methods[j] = methods[j + 1];
-                }
-                methods[--methodCount] = null;
-                if (methodCount > 0) {
-                    methods[0].setDefault(true);
-                }
                 return true;
             }
         }
         return false;
     }
 
-    public boolean setDefault(PaymentMethod method) {
+    public boolean removeMethod(PaymentMethod method) {
         if (method == null) {
             return false;
         }
-        boolean found = false;
+        int index = -1;
         for (int i = 0; i < methodCount; i++) {
             if (methods[i] == method) {
-                found = true;
+                index = i;
+                break;
             }
         }
-        if (!found) {
+        if (index < 0) {
+            return false;
+        }
+        boolean wasDefault = method.isDefaultMethod();
+        for (int i = index; i < methodCount - 1; i++) {
+            methods[i] = methods[i + 1];
+        }
+        methods[--methodCount] = null;
+        if (wasDefault && methodCount > 0) {
+            setDefault(methods[0]);
+        }
+        return true;
+    }
+
+    public boolean setDefault(PaymentMethod method) {
+        if (!contains(method)) {
             return false;
         }
         for (int i = 0; i < methodCount; i++) {

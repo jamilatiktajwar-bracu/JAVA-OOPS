@@ -54,6 +54,7 @@ public class MovieReview {
 
     public boolean edit(String newComment, double newRating) {
         if (newComment == null || newComment.trim().isEmpty()
+                || !Double.isFinite(newRating)
                 || newRating < 0.0 || newRating > 10.0) {
             return false;
         }

@@ -307,7 +307,9 @@ public class Subscription {
     }
 
     public boolean processPayment(double amount) {
-        if (amount <= 0.0 || paymentMethod.equals("Not configured")) {
+        if (!Double.isFinite(amount) || amount <= 0.0
+                || paymentMethod.equals("Not configured")
+                || !active || paused) {
             return false;
         }
         double expected = getEffectiveMonthlyFee();
@@ -346,7 +348,8 @@ public class Subscription {
     }
 
     public boolean createInvoice(double amount, String status) {
-        if (invoiceCount >= invoiceAmount.length || amount < 0.0) {
+        if (!Double.isFinite(amount) || amount < 0.0
+                || invoiceCount >= invoiceAmount.length) {
             return false;
         }
         String safeStatus = status == null ? "Pending" : status.trim();
@@ -462,7 +465,8 @@ public class Subscription {
 
     public double calculateProration(double oldMonthlyFee,
             double newMonthlyFee, int remainingDays, int cycleDays) {
-        if (oldMonthlyFee < 0.0 || newMonthlyFee < 0.0
+        if (!Double.isFinite(oldMonthlyFee) || !Double.isFinite(newMonthlyFee)
+                || oldMonthlyFee < 0.0 || newMonthlyFee < 0.0
                 || remainingDays < 0 || cycleDays <= 0) {
             return 0.0;
         }

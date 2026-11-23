@@ -1,3 +1,5 @@
+import java.util.Locale;
+
 public class PromoCode {
     private String code;
     private double discountPercent;
@@ -7,7 +9,7 @@ public class PromoCode {
     private long expiresAt;
 
     public PromoCode(String code, double discountPercent, int maxUses) {
-        String normalizedCode = code == null ? "" : code.trim().toUpperCase();
+        String normalizedCode = code == null ? "" : code.trim().toUpperCase(Locale.ROOT);
         this.code = normalizedCode.isEmpty() ? "PROMO" : normalizedCode;
         this.discountPercent = Double.isFinite(discountPercent) ? discountPercent : 0.0;
         this.maxUses = maxUses > 0 ? maxUses : 1;
@@ -18,10 +20,7 @@ public class PromoCode {
     }
 
     public boolean redeem(Subscription subscription) {
-        if (!isValid() || subscription == null) {
-            return false;
-        }
-        if (!subscription.applyCoupon(code, discountPercent)) {
+        if (!isValid() || subscription == null || !subscription.applyCoupon(code, discountPercent)) {
             return false;
         }
         currentUses++;
@@ -38,7 +37,7 @@ public class PromoCode {
                 && Double.isFinite(discountPercent)
                 && !code.isEmpty()
                 && currentUses < maxUses
-                && System.currentTimeMillis() < expiresAt;
+                && expiresAt > System.currentTimeMillis();
     }
 
     public void deactivate() {
@@ -58,7 +57,7 @@ public class PromoCode {
     }
 
     public int getRemainingUses() {
-        return maxUses - currentUses;
+        return Math.max(0, maxUses - currentUses);
     }
 
     public long getExpiresAt() {
