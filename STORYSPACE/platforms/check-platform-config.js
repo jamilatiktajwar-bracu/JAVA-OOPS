@@ -8,7 +8,7 @@ for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "native-bri
 if (!html.includes('rel="manifest"')) throw new Error("PWA manifest not linked");
 if (!html.includes('name="storyspace-api-root"')) throw new Error("CSP-compatible API root setting missing");
 if (!html.includes("connect-src") || !html.includes("https:")) throw new Error("CSP does not allow HTTPS API connections");
-if (!read("web/sw.js").includes("CACHE_NAME")) throw new Error("Service worker cache missing");
+if (!read("web/sw.js").includes("SHELL_CACHE")) throw new Error("Service worker cache missing");
 if (!read("web/sw.js").includes("native-bridge.js")) throw new Error("Native bridge missing from offline cache");
 const mobile = JSON.parse(read("platforms/mobile/package.json"));
 for (const plugin of ["@capacitor/app", "@capacitor/haptics", "@capacitor/network", "@capacitor/status-bar", "@capacitor/keyboard", "@capacitor/splash-screen", "@capacitor/android", "@capacitor/ios"]) if (!mobile.dependencies[plugin]) throw new Error("Missing Capacitor dependency " + plugin);
