@@ -75,7 +75,7 @@ public class RecommendationEngine {
         return true;
     }
 
-    private int getScore(Movies movie) {
+    private double getScore(Movies movie) {
         double score = movie.getRating() * 10.0 * ratingWeight;
         score += movie.getLikeScore() * 1.0;
         score += movie.getViewCount() * popularityWeight;
@@ -95,13 +95,13 @@ public class RecommendationEngine {
                 score += 40.0 * personalizationStrength;
             }
         }
-        return (int) score;
+        return score;
     }
 
     private void sortByScore(Movies[] items, int count) {
         for (int i = 0; i < count - 1; i++) {
             for (int j = i + 1; j < count; j++) {
-                if (getScore(items[i]) < getScore(items[j])) {
+                if (Double.compare(getScore(items[i]), getScore(items[j])) < 0) {
                     Movies temporary = items[i];
                     items[i] = items[j];
                     items[j] = temporary;
@@ -133,7 +133,11 @@ public class RecommendationEngine {
                 || excludedGenreCount >= excludedGenres.length) {
             return false;
         }
-        excludedGenres[excludedGenreCount++] = genre.trim();
+        String normalized = genre.trim();
+        for (int i = 0; i < excludedGenreCount; i++) {
+            if (excludedGenres[i].equalsIgnoreCase(normalized)) return false;
+        }
+        excludedGenres[excludedGenreCount++] = normalized;
         return true;
     }
 
@@ -179,7 +183,7 @@ public class RecommendationEngine {
     }
 
     public boolean setRatingThreshold(double threshold) {
-        if (threshold < 0.0 || threshold > 10.0) {
+        if (!Double.isFinite(threshold) || threshold < 0.0 || threshold > 10.0) {
             return false;
         }
         ratingThreshold = threshold;
@@ -218,8 +222,13 @@ public class RecommendationEngine {
 
     private void rememberRecommendations(Movies[] recommendations) {
         for (Movies movie : recommendations) {
+            if (movie == null || wasRecentlyRecommended(movie)) continue;
             if (recentRecommendationCount < recentlyRecommended.length) {
                 recentlyRecommended[recentRecommendationCount++] = movie;
+            } else {
+                System.arraycopy(recentlyRecommended, 1, recentlyRecommended, 0,
+                        recentlyRecommended.length - 1);
+                recentlyRecommended[recentlyRecommended.length - 1] = movie;
             }
         }
     }
@@ -289,7 +298,7 @@ public class RecommendationEngine {
     }
 
     public boolean setPopularityWeight(double weight) {
-        if (weight < 0.0 || weight > 5.0) {
+        if (!Double.isFinite(weight) || weight < 0.0 || weight > 5.0) {
             return false;
         }
         popularityWeight = weight;
@@ -321,7 +330,7 @@ public class RecommendationEngine {
     }
 
     public boolean setPersonalizationStrength(double strength) {
-        if (strength < 0.0 || strength > 2.0) {
+        if (!Double.isFinite(strength) || strength < 0.0 || strength > 2.0) {
             return false;
         }
         personalizationStrength = strength;
@@ -337,7 +346,7 @@ public class RecommendationEngine {
     }
 
     public boolean isColdStartUser() {
-        return user.getWatchHistoryCount() == 0
+        return user != null && user.getWatchHistoryCount() == 0
                 && user.getFavouriteMovies().length == 0;
     }
 
@@ -345,17 +354,32 @@ public class RecommendationEngine {
         if (!coldStartEnabled || limit <= 0) {
             return new Movies[0];
         }
-        Movies[] top = Movies.getTopRatedMovies(limit);
-        if (top.length > 0) {
-            return top;
+        Movies[] all = Movies.getAllMovies();
+        Movies[] candidates = new Movies[all.length];
+        int count = 0;
+        for (Movies movie : all) {
+            if (isCandidate(movie)) candidates[count++] = movie;
         }
-        return Movies.getFeaturedMovies();
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = i + 1; j < count; j++) {
+                double a = candidates[i].getRating() * 10.0 + candidates[i].getLikeScore();
+                double b = candidates[j].getRating() * 10.0 + candidates[j].getLikeScore();
+                if (Double.compare(a, b) < 0) {
+                    Movies temp = candidates[i]; candidates[i] = candidates[j]; candidates[j] = temp;
+                }
+            }
+        }
+        int size = Math.min(limit, count);
+        Movies[] result = new Movies[size];
+        System.arraycopy(candidates, 0, result, 0, size);
+        return result;
     }
 
     public double calculateSimilarity(NETFLIX_USER other) {
         if (other == null) {
             return 0.0;
         }
+        if (user == null) return 0.0;
         Movies[] thisMovies = user.getFavouriteMovies();
         Movies[] otherMovies = other.getFavouriteMovies();
         if (thisMovies.length == 0 || otherMovies.length == 0) {
@@ -374,7 +398,7 @@ public class RecommendationEngine {
     }
 
     public Movies[] getCollaborativeRecommendations(NETFLIX_USER similarUser, int limit) {
-        if (similarUser == null || limit <= 0) {
+        if (user == null || similarUser == null || limit <= 0) {
             return new Movies[0];
         }
         Movies[] favourites = similarUser.getFavouriteMovies();
@@ -392,7 +416,7 @@ public class RecommendationEngine {
     }
 
     public Movies[] getSessionAwareRecommendations(int limit) {
-        if (limit <= 0) {
+        if (user == null || limit <= 0) {
             return new Movies[0];
         }
         Movies[] recent = user.getRecentlyWatched(Math.min(5, limit));
