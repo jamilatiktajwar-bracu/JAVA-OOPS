@@ -63,6 +63,12 @@ adb logcat | grep -iE 'storyspace|chromium|capacitor|AndroidRuntime'
 - [ ] Test portrait and landscape layouts, app background/foreground, and network changes.
 - [ ] Do not treat Simulator success as proof of a signed iPhone IPA or physical-device compatibility.
 
+## Android emulator CI smoke test
+
+- [ ] Review the CI emulator screenshot after launch and D-pad key events.
+- [ ] Confirm the Android process survives startup and the CI log contains no fatal crash signature.
+- [ ] Treat emulator smoke success as a basic launch check only; it does not replace real phone or TV testing.
+
 ## Android TV / living-room browser
 - [ ] Open the web app in a TV browser with the query parameter tv=1.
 - [ ] Navigate using only the remote D-pad and Select/Enter.
