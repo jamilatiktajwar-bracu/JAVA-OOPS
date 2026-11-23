@@ -26,11 +26,15 @@ public class SystemHealthMonitor {
     }
 
     public void recordFailedJob() {
-        if (failedJobs < Integer.MAX_VALUE) {\n            failedJobs++;\n        }
+        if (failedJobs < Integer.MAX_VALUE) {
+            failedJobs++;
+        }
     }
 
     public void recordWarning() {
-        if (warningCount < Integer.MAX_VALUE) {\n            warningCount++;\n        }
+        if (warningCount < Integer.MAX_VALUE) {
+            warningCount++;
+        }
     }
 
     public void setMaintenanceMode(boolean enabled) {
