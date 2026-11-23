@@ -65,3 +65,7 @@ Remove-Item *.class
 - This is an educational simulation; it does not stream media or process real payments.
 - The demo uses placeholder data only. Never use real passwords, card numbers, or personal information in sample code.
 - The project currently uses arrays and fixed capacities in several classes to keep the OOP exercise approachable.
+
+## Architecture review
+
+See [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md) for the architecture findings, completed hardening, and a prioritized modernization roadmap.
