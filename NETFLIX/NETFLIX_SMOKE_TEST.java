@@ -12,6 +12,7 @@ public class NETFLIX_SMOKE_TEST {
         testPaymentWalletDefaultInvariant();
         testPromoCodeRedemptionConsistency();
         testNetflixUserHistoryConsistency();
+        testRecommendationEngineSafety();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -188,6 +189,30 @@ public class NETFLIX_SMOKE_TEST {
         require(user.getWatchHistoryCount() == 1, "re-watch must not duplicate history");
         require(!user.addFamilyProfile(user), "profile must not add itself as a family profile");
         require(user.getTotalWatchedMinutes() == 100, "watch time should count unique history entries");
+    }
+
+    private static void testRecommendationEngineSafety() {
+        NETFLIX_USER user = new NETFLIX_USER("recommend-tester", "Pro");
+        RecommendationEngine engine = new RecommendationEngine(user);
+        require(!engine.setRatingThreshold(Double.NaN), "NaN recommendation threshold should be rejected");
+        require(!engine.setPopularityWeight(Double.POSITIVE_INFINITY), "infinite recommendation weight should be rejected");
+        require(engine.excludeGenre("Drama"), "genre exclusion should succeed");
+        require(!engine.excludeGenre(" drama "), "duplicate excluded genre should be rejected");
+        require(engine.removeExcludedGenre("DRAMA"), "genre exclusion should be case-insensitive");
+        Movies[] coldStart = engine.recommend(3);
+        require(coldStart.length <= 3, "cold-start recommendations should respect limit");
+        engine.clearRecommendationHistory();
+        Movies[] surprise = engine.getSurpriseRecommendations(5);
+        for (int i = 0; i < surprise.length; i++) {
+            for (int j = i + 1; j < surprise.length; j++) {
+                require(surprise[i] != surprise[j], "surprise recommendations should not contain duplicates");
+            }
+        }
+        RecommendationEngine noUser = new RecommendationEngine(null);
+        require(noUser.recommend(3).length == 0, "null-user recommendation should return empty");
+        require(noUser.getSurpriseRecommendations(3).length == 0, "null-user surprise should return empty");
+        require("No movie or user context".equals(noUser.explainRecommendation(new Movies("Explain", "Drama", 90))),
+                "explanation should handle missing user safely");
     }
 
     private static void require(boolean condition, String message) {
