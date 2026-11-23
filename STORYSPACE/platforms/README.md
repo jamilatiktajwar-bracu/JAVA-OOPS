@@ -71,3 +71,6 @@ Requires macOS/Xcode. Real-device distribution requires Apple signing/provisioni
 
 ## TV
 Android TV needs Android Studio/emulator validation. tvOS requires macOS/Xcode and provisioning. PlayStation SDK/certification is restricted by Sony.
+## Device QA checklist
+
+Use [DEVICE-QA.md](DEVICE-QA.md) to execute and record manual Android phone, iOS Simulator, accessibility, player, performance, and Android TV/D-pad checks. A green CI build does not count as physical-device QA.
