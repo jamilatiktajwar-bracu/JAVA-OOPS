@@ -167,7 +167,31 @@ function drawAuthMode(){const mode=state.authMode||"register";document.querySele
 function signOut(){personalized.token="";personalized.account=null;personalized.serverLibrary=[];storage.remove("storyspace.token");storage.remove("storyspace.account");state.list=readList();updateAccountUI();renderHome();showToast("Signed out. Guest preferences stay on this device.");}
 $("preferencesClose").onclick=closePreferences;$("preferencesBackdrop").onclick=e=>{if(e.target===$("preferencesBackdrop"))closePreferences()};$("openPreferences").onclick=()=>{openPreferences();$("profileMenu").classList.remove("open")};$("savePreferences").onclick=savePreferences;$("resetPreferences").onclick=resetPreferences;document.querySelectorAll(".balance-choice").forEach(b=>b.onclick=()=>{personalized.preferences.balance=b.dataset.balance;drawPreferences()});
 $("authClose").onclick=closeAuth;$("authBackdrop").onclick=e=>{if(e.target===$("authBackdrop"))closeAuth()};document.querySelectorAll(".auth-tab").forEach(b=>b.onclick=()=>{state.authMode=b.dataset.mode;drawAuthMode()});$("accountAction").onclick=()=>{ $("profileMenu").classList.remove("open");openAuth(personalized.account?"login":"register")};
-$("authForm").onsubmit=async e=>{e.preventDefault();const mode=state.authMode||"register";const payload={email:$("authEmail").value.trim(),password:$("authPassword").value};if(mode==="register")payload.displayName=$("authName").value.trim();$("authStatus").textContent="Connecting…";try{const response=await api("/auth/"+mode,{method:"POST",body:payload});personalized.token=response.token;personalized.account=response.profile;storage.set("storyspace.token",response.token);storage.set("storyspace.account",JSON.stringify(response.profile));$("authStatus").textContent="Account ready. Syncing your profile…";await syncAccount();closeAuth();showToast("Welcome, "+response.profile.displayName);openPreferences();}catch(err){$("authStatus").textContent=err.message+" · Is the backend running on localhost:8080?"}};
+$("authForm").onsubmit=async e=>{
+  e.preventDefault();
+  const submit=$("authForm").querySelector(".auth-submit");
+  if(submit.disabled)return;
+  submit.disabled=true;
+  const mode=state.authMode||"register";
+  const payload={email:$("authEmail").value.trim(),password:$("authPassword").value};
+  if(mode==="register")payload.displayName=$("authName").value.trim();
+  $("authStatus").textContent="Connecting…";
+  try{
+    const response=await api("/auth/"+mode,{method:"POST",body:payload});
+    if(!response?.token||!response?.profile)throw new Error("The server returned an incomplete sign-in response.");
+    personalized.token=response.token;personalized.account=response.profile;
+    storage.set("storyspace.token",response.token);storage.set("storyspace.account",JSON.stringify(response.profile));
+    $("authStatus").textContent="Account ready. Syncing your profile…";
+    await syncAccount();
+    if(!personalized.token||!personalized.account)throw new Error("The server could not verify this session. Please sign in again.");
+    closeAuth();showToast("Welcome, "+(personalized.account.displayName||"Explorer"));openPreferences();
+  }catch(err){
+    const hint=window.StoryspaceNative?.native?"Configure the HTTPS API endpoint for this app build.":"Check that the Java API is running and the API URL is correct.";
+    $("authStatus").textContent=(err.message||"Sign-in failed")+" · "+hint;
+  }finally{
+    submit.disabled=false;
+  }
+};
 document.querySelectorAll(".mood-pill").forEach(old=>{const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener("click",()=>{const mood=fresh.dataset.mood;state.view="mood";$("hero").hidden=true;$("welcomeLine").hidden=true;$("moodSection").hidden=false;["continueSection","trendingSection","originalsSection","topSection","mylistSection","personalSection"].forEach(id=>{const el=$(id);if(el)el.hidden=true});$("searchResultsSection").hidden=false;$("searchHeading").textContent="Stories for: "+fresh.textContent;const matches=movies.filter(m=>titleTokens(m.genre||m.genres).includes(mood.toLowerCase())||titleTokens(m.moods).includes(mood.toLowerCase()));renderGrid(ranked(matches));})});
 function toggleList(m){const id=m.apiId||m.id;if(personalized.token&&m.apiId){api("/library/"+encodeURIComponent(m.apiId),{method:state.list.has(m.id)?"DELETE":"PUT"}).then(async()=>{if(state.list.has(m.id))state.list.delete(m.id);else state.list.add(m.id);persistList();await syncAccount();showToast(state.list.has(m.id)?"Added to My Universe":"Removed from My Universe")}).catch(e=>showToast(e.message));return;}if(state.list.has(m.id)){state.list.delete(m.id);showToast("Removed from My Universe")}else{state.list.add(m.id);showToast("Saved to My Universe")}persistList();recordInterest(m,"save");renderHome();if(state.view==="mylist")showView("mylist")}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();showToast("Preview concept · "+m.title+" · media player not connected");renderHome()}
