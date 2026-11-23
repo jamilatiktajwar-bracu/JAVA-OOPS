@@ -1005,7 +1005,9 @@ public class Movies {
     }
 
     public boolean addUserRating(double value) {
-        if (value < 0.0 || value > 10.0) {
+        if (!Double.isFinite(value) || value < 0.0 || value > 10.0
+                || userRatingCount >= Integer.MAX_VALUE
+                || !Double.isFinite(userRatingTotal + value)) {
             return false;
         }
         userRatingCount++;
