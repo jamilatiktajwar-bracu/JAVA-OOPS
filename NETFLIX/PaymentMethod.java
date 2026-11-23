@@ -10,8 +10,9 @@ public class PaymentMethod {
         this.type = type == null || type.trim().isEmpty() ? "Card" : type.trim();
         this.maskedNumber = mask(number);
         this.holderName = holderName == null ? "" : holderName.trim();
-        this.expiryMonth = 1;
-        this.expiryYear = 2027;
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        this.expiryMonth = now.get(java.util.Calendar.MONTH) + 1;
+        this.expiryYear = now.get(java.util.Calendar.YEAR) + 3;
         this.defaultMethod = false;
     }
 
@@ -19,7 +20,7 @@ public class PaymentMethod {
         if (number == null) {
             return "****";
         }
-        String value = number.replaceAll("\\s+", "");
+        String value = number.replaceAll("\\D", "");
         if (value.isEmpty()) {
             return "****";
         }
