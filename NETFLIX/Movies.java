@@ -34,8 +34,6 @@ public class Movies {
     private int userRatingCount;
     private double userRatingTotal;
 
-    private static final Movies[] movieList = new Movies[100];
-    private static int movieCount;
     private bookmark[] bookmarks = new bookmark[100];
 
     public Movies(String title, String genre, int duration) {
@@ -209,165 +207,135 @@ public class Movies {
     }
 
     public static boolean addMovie(String title, String genre, int duration) {
-        if (title == null || genre == null || title.trim().isEmpty()
-                || genre.trim().isEmpty() || duration < 0 || duration > 1440) {
-            return false;
-        }
-
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getTitle().equalsIgnoreCase(title.trim())) {
-                return false;
-            }
-        }
-
-        if (movieCount >= movieList.length) {
-            return false;
-        }
-
-        movieList[movieCount++] = new Movies(title, genre, duration);
-        return true;
+        return MovieCatalog.addMovie(title, genre, duration);
     }
 
     public static boolean addMovie(String title, String genre) {
-        return addMovie(title, genre, 0);
+        return MovieCatalog.addMovie(title, genre, 0);
     }
 
     public static boolean addMovie(String title, String genre, int duration, int releaseYear) {
-        if (!addMovie(title, genre, duration)) {
+        Movies movie = MovieCatalog.addMovie(title, genre, duration);
+        if (movie == null) {
             return false;
         }
-        getMovie(movieCount - 1).setReleaseYear(releaseYear);
+        movie.setReleaseYear(releaseYear);
         return true;
     }
 
     public static boolean removeMovie(int index) {
-        if (index < 0 || index >= movieCount) {
-            return false;
-        }
-        for (int i = index; i < movieCount - 1; i++) {
-            movieList[i] = movieList[i + 1];
-        }
-        movieList[--movieCount] = null;
-        return true;
+        return MovieCatalog.removeMovie(index);
     }
 
     public static boolean removeMovie(String title) {
-        if (title == null) {
-            return false;
-        }
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getTitle().equalsIgnoreCase(title.trim())) {
-                return removeMovie(i);
-            }
-        }
-        return false;
+        return MovieCatalog.removeMovie(title);
     }
 
     public static Movies[] searchByTitle(String keyword) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
         if (keyword == null) {
             return new Movies[0];
         }
         String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] filterByGenre(String genre) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
         if (genre == null) {
             return new Movies[0];
         }
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getGenre().equalsIgnoreCase(genre.trim())) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getGenre().equalsIgnoreCase(genre.trim())) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] getAllMovies() {
-        return copyMovies(movieList, movieCount);
+        return copyMovies(MovieCatalog.movies, MovieCatalog.count);
     }
 
     public static Movies[] getWatchedMovies() {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].isWatched()) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].isWatched()) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] getUnwatchedMovies() {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (!movieList[i].isWatched()) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (!MovieCatalog.movies[i].isWatched()) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] filterByReleaseYear(int fromYear, int toYear) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            int year = movieList[i].getReleaseYear();
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            int year = MovieCatalog.movies[i].getReleaseYear();
             if (year >= fromYear && year <= toYear) {
-                matches[count++] = movieList[i];
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] filterByAgeRating(int maximumAge) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getAgeRating() <= maximumAge) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getAgeRating() <= maximumAge) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] filterByLanguage(String language) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
         if (language == null) {
             return new Movies[0];
         }
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getLanguage().equalsIgnoreCase(language.trim())) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getLanguage().equalsIgnoreCase(language.trim())) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] getFeaturedMovies() {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].isFeatured()) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].isFeatured()) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] getTopRatedMovies(int limit) {
-        if (limit <= 0 || movieCount == 0) {
+        if (limit <= 0 || MovieCatalog.count == 0) {
             return new Movies[0];
         }
         Movies[] ranked = sortByRating(true);
@@ -378,18 +346,18 @@ public class Movies {
     }
 
     public static String[] getAvailableGenres() {
-        String[] genres = new String[movieCount];
+        String[] genres = new String[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
+        for (int i = 0; i < MovieCatalog.count; i++) {
             boolean exists = false;
             for (int j = 0; j < count; j++) {
-                if (genres[j].equalsIgnoreCase(movieList[i].getGenre())) {
+                if (genres[j].equalsIgnoreCase(MovieCatalog.movies[i].getGenre())) {
                     exists = true;
                     break;
                 }
             }
             if (!exists) {
-                genres[count++] = movieList[i].getGenre();
+                genres[count++] = MovieCatalog.movies[i].getGenre();
             }
         }
         String[] result = new String[count];
@@ -401,11 +369,11 @@ public class Movies {
         if (keyword == null || keyword.trim().isEmpty()) {
             return new Movies[0];
         }
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
         String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
-        for (int i = 0; i < movieCount; i++) {
-            Movies movie = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            Movies movie = MovieCatalog.movies[i];
             if (movie.getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)
                     || movie.getGenre().toLowerCase(java.util.Locale.ROOT).contains(search)
                     || movie.getDirector().toLowerCase(java.util.Locale.ROOT).contains(search)
@@ -418,18 +386,18 @@ public class Movies {
     }
 
     public static Movies[] getAvailableForStreaming() {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].isStreamingAvailable()) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].isStreamingAvailable()) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] getTrendingMovies(int limit) {
-        if (limit <= 0 || movieCount == 0) {
+        if (limit <= 0 || MovieCatalog.count == 0) {
             return new Movies[0];
         }
         Movies[] result = getAllMovies();
@@ -449,22 +417,22 @@ public class Movies {
     }
 
     public static Movies[] getNewReleases(int fromYear) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getReleaseYear() >= fromYear) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getReleaseYear() >= fromYear) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
     }
 
     public static Movies[] getUpcomingMovies() {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getReleaseStatus().equalsIgnoreCase("Upcoming")) {
-                matches[count++] = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getReleaseStatus().equalsIgnoreCase("Upcoming")) {
+                matches[count++] = MovieCatalog.movies[i];
             }
         }
         return copyMovies(matches, count);
@@ -516,45 +484,45 @@ public class Movies {
     }
 
     public static double getAverageRating() {
-        if (movieCount == 0) {
+        if (MovieCatalog.count == 0) {
             return 0.0;
         }
         double total = 0.0;
-        for (int i = 0; i < movieCount; i++) {
-            total += movieList[i].getRating();
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            total += MovieCatalog.movies[i].getRating();
         }
-        return total / movieCount;
+        return total / MovieCatalog.count;
     }
 
     public static int getTotalDuration() {
         int total = 0;
-        for (int i = 0; i < movieCount; i++) {
-            total += movieList[i].getDuration();
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            total += MovieCatalog.movies[i].getDuration();
         }
         return total;
     }
 
     public static Movies getHighestRatedMovie() {
-        if (movieCount == 0) {
+        if (MovieCatalog.count == 0) {
             return null;
         }
-        Movies highest = movieList[0];
-        for (int i = 1; i < movieCount; i++) {
-            if (movieList[i].getRating() > highest.getRating()) {
-                highest = movieList[i];
+        Movies highest = MovieCatalog.movies[0];
+        for (int i = 1; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getRating() > highest.getRating()) {
+                highest = MovieCatalog.movies[i];
             }
         }
         return highest;
     }
 
     public static Movies getLongestMovie() {
-        if (movieCount == 0) {
+        if (MovieCatalog.count == 0) {
             return null;
         }
-        Movies longest = movieList[0];
-        for (int i = 1; i < movieCount; i++) {
-            if (movieList[i].getDuration() > longest.getDuration()) {
-                longest = movieList[i];
+        Movies longest = MovieCatalog.movies[0];
+        for (int i = 1; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].getDuration() > longest.getDuration()) {
+                longest = MovieCatalog.movies[i];
             }
         }
         return longest;
@@ -562,8 +530,8 @@ public class Movies {
 
     public static int getWatchedCount() {
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].isWatched()) {
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            if (MovieCatalog.movies[i].isWatched()) {
                 count++;
             }
         }
@@ -571,10 +539,7 @@ public class Movies {
     }
 
     public static void clearMovies() {
-        for (int i = 0; i < movieCount; i++) {
-            movieList[i] = null;
-        }
-        movieCount = 0;
+        MovieCatalog.clear();
     }
 
     private static Movies[] copyMovies(Movies[] source, int count) {
@@ -584,14 +549,14 @@ public class Movies {
     }
 
     public static Movies getMovie(int index) {
-        if (index < 0 || index >= movieCount) {
+        if (index < 0 || index >= MovieCatalog.count) {
             throw new IndexOutOfBoundsException("Invalid movie index: " + index);
         }
-        return movieList[index];
+        return MovieCatalog.movies[index];
     }
 
     public static int getMovieCount() {
-        return movieCount;
+        return MovieCatalog.count;
     }
 
     public void play() {
@@ -1011,7 +976,7 @@ public class Movies {
     }
 
     public boolean addUserRating(double value) {
-        if (value < 0.0 || value > 10.0) {
+        if (!Double.isFinite(value) || value < 0.0 || value > 10.0) {
             return false;
         }
         userRatingCount++;
@@ -1030,9 +995,10 @@ public class Movies {
 
     public void recordWatchSeconds(int seconds) {
         if (seconds > 0) {
-            totalWatchSeconds += seconds;
+            totalWatchSeconds = (int) Math.min(Integer.MAX_VALUE,
+                    (long) totalWatchSeconds + seconds);
         }
-        if (seconds >= duration * 60 && duration > 0) {
+        if (duration > 0 && (long) seconds >= (long) duration * 60L) {
             completionCount++;
             markWatched();
         }
@@ -1064,10 +1030,10 @@ public class Movies {
 
     public static Movies[] filterCatalog(String genre, int maximumAge,
                                           String language, int fromYear, int toYear) {
-        Movies[] matches = new Movies[movieCount];
+        Movies[] matches = new Movies[MovieCatalog.count];
         int count = 0;
-        for (int i = 0; i < movieCount; i++) {
-            Movies movie = movieList[i];
+        for (int i = 0; i < MovieCatalog.count; i++) {
+            Movies movie = MovieCatalog.movies[i];
             boolean genreMatches = genre == null || genre.trim().isEmpty()
                     || movie.getGenre().equalsIgnoreCase(genre.trim());
             boolean languageMatches = language == null || language.trim().isEmpty()
