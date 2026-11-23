@@ -35,6 +35,15 @@ if (corsSource.includes('List.of("*")') || corsSource.includes('setAllowedOrigin
 if (!backendConfig.includes("CORS_ALLOWED_ORIGINS")) throw new Error("CORS origin configuration must be environment-driven");
 if (!tokenService.includes('Production must provide a unique TOKEN_SECRET.')) throw new Error("Production token secret guard missing");
 const webClient = read("web/app.js");
+execFileSync(process.execPath, ["--check", path.join(root, "web", "app.js")], { stdio: "pipe" });
+if (!webClient.includes("storyspace-user-data")) throw new Error("User data export/import support missing");
+if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
+if (!webClient.includes("matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType")) throw new Error("Structured search filters missing");
+if (!webClient.includes("row.replaceChildren()") || webClient.includes('row.innerHTML=`<span class="avatar"')) throw new Error("Profile details must be rendered with safe text nodes");
+const serviceWorker = read("web/sw.js");
+execFileSync(process.execPath, ["--check", path.join(root, "web", "sw.js")], { stdio: "pipe" });
+if (!serviceWorker.includes('key.startsWith(CACHE_PREFIX)')) throw new Error("Service worker must not delete unrelated app caches");
+if (!serviceWorker.includes('url.pathname.includes("/api/")')) throw new Error("Authenticated API responses must not enter the offline cache");
 if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) throw new Error("Native Android TV mode must preserve the first D-pad key");
 if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
