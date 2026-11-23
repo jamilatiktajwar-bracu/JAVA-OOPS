@@ -3,6 +3,7 @@ public class NETFLIX_SMOKE_TEST {
         testPlaybackQueue();
         testOfflineDownloads();
         testViewingSession();
+        testMovieReview();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -49,6 +50,21 @@ public class NETFLIX_SMOKE_TEST {
         require(session.pauseAt(20), "session should pause at valid progress");
         require(session.resumeAt(30), "session should resume at valid progress");
         require(session.getWatchedMinutes() == 30, "resume progress should be applied");
+    }
+
+    private static void testMovieReview() {
+        MovieReview review = new MovieReview("Tester", 8.0, "Initial review");
+        require(!review.wasEdited(), "new review should not be marked edited");
+        require(review.edit("Updated review", 9.0), "valid review edit should succeed");
+        require(review.wasEdited(), "edit flag should not depend on millisecond timestamp resolution");
+        require(review.getUpdatedAt() > review.getCreatedAt(), "edit timestamp should advance monotonically");
+        require(!review.edit(" ", 5.0), "blank review edit should fail");
+        require(review.getRating() == 9.0, "invalid edit must preserve existing rating");
+        review.addHelpfulVote();
+        review.addNotHelpfulVote();
+        require(review.getHelpfulnessScore() == 0, "vote score should reflect both vote types");
+        require(review.report(), "report should be accepted");
+        require(review.needsReview(), "reported review should require moderation");
     }
 
     private static void require(boolean condition, String message) {
