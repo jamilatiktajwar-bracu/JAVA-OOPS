@@ -39,9 +39,11 @@ public class Movies {
     private bookmark[] bookmarks = new bookmark[100];
 
     public Movies(String title, String genre, int duration) {
-        this.title = title;
-        this.genre = genre;
-        this.duration = duration;
+        this.title = title == null || title.trim().isEmpty()
+                ? "Untitled" : title.trim();
+        this.genre = genre == null || genre.trim().isEmpty()
+                ? "Unknown" : genre.trim();
+        this.duration = Math.max(0, Math.min(1440, duration));
         this.releaseYear = 0;
         this.rating = 0.0;
         this.watched = false;
@@ -81,7 +83,7 @@ public class Movies {
 
     public Movies(String title, String genre, int duration, int releaseYear) {
         this(title, genre, duration);
-        this.releaseYear = releaseYear;
+        setReleaseYear(releaseYear);
     }
 
     public Movies(bookmark[] bookmarks) {
