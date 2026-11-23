@@ -240,7 +240,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
 
 // Multi-device install and living-room navigation foundation.
 (() => {
-  const tvMode = new URLSearchParams(location.search).get("tv") === "1";
+  const isNativeAndroid = window.StoryspaceNative?.native === true && window.StoryspaceNative?.platform === "android";
+  let tvMode = new URLSearchParams(location.search).get("tv") === "1";
+  window.StoryspaceTV = { enable: () => { tvMode = true; document.documentElement.classList.add("tv-mode"); }, isEnabled: () => tvMode };
   if (tvMode) document.documentElement.classList.add("tv-mode");
   const isFocusable = el => el && el.matches("button,a,input,select,textarea,[tabindex]") && !el.disabled && el.tabIndex >= 0 && !el.closest("[hidden]") && el.getClientRects().length;
   const candidates = () => [...document.querySelectorAll("button,a,input,select,textarea,[tabindex]")].filter(isFocusable);
@@ -261,7 +263,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
     if(best) { best.focus(); best.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); }
   }
   document.addEventListener("keydown", event => {
-    if(!tvMode || !["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) return;
+    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) return;
+    if(!tvMode && isNativeAndroid) window.StoryspaceTV.enable();
+    if(!tvMode) return;
     const tag=document.activeElement?.tagName;
     if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
     event.preventDefault(); moveFocus(event.key);
