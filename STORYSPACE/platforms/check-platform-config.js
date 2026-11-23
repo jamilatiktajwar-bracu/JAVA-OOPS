@@ -40,6 +40,10 @@ if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw 
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
 if (!androidWorkflow.includes('dump resources app/build/outputs/apk/debug/app-debug.apk')) throw new Error("Android TV banner must be verified through the APK resource table");
+const emulatorSmoke = path.join(__dirname, "android-tv", "emulator-smoke.sh");
+if (!fs.existsSync(emulatorSmoke)) throw new Error("Android emulator smoke script missing");
+execFileSync("bash", ["-n", emulatorSmoke], { stdio: "pipe" });
+if (!androidWorkflow.includes("reactivecircus/android-emulator-runner@v2")) throw new Error("Android emulator launch smoke test missing from CI");
 const tvScript = path.join(__dirname, "android-tv", "prepare-android-tv.js");
 if (!fs.existsSync(tvScript)) throw new Error("Android TV manifest setup script missing");
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "storyspace-tv-manifest-"));
