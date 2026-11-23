@@ -51,8 +51,52 @@ function closeDetails(){$("modalBackdrop").hidden=true;document.body.style.overf
 function playMovie(m){closeDetails();showToast(`Preview mode · ${m.title}`)}
 function toggleList(m){if(state.list.has(m.id)){state.list.delete(m.id);showToast(`Removed ${m.title} from My Universe`)}else{state.list.add(m.id);showToast(`Saved ${m.title} to My Universe`)}persistList();renderHome();if(state.view==="mylist")showView("mylist")}
 function legacyShowView(view){state.view=view;document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".mood-pill").forEach(b=>b.classList.remove("active"));$("welcomeLine").hidden=view!=="home";$("moodSection").hidden=view!=="home";const homeSections=["continueSection","trendingSection","originalsSection","topSection","mylistSection"];homeSections.forEach(id=>$(id).hidden=view!=="home");$("searchResultsSection").hidden=true;const label={home:"",series:"Series",movies:"Films",new:"Fresh Stories",mylist:"My Universe",continue:"Pick up your journey",trending:"In the Orbit of Glass",originals:"Storyspace Premieres",top:"Curated for you"};if(view==="home"){homeSections.forEach(id=>$(id).hidden=id==="mylistSection"&&state.list.size===0);$("hero").hidden=false;return}$("hero").hidden=view==="mylist"||view==="continue";$("searchResultsSection").hidden=false;$("searchHeading").textContent=label[view]||"Explore";let filtered=movies;if(view==="series")filtered=movies.filter(m=>m.type==="series");if(view==="movies")filtered=movies.filter(m=>m.type==="movie");if(view==="new")filtered=movies.filter(m=>m.year>=2025);if(view==="mylist")filtered=movies.filter(m=>state.list.has(m.id));if(view==="continue")filtered=movies.filter(m=>m.progress>0);if(view==="trending")filtered=[movies[2],movies[3],movies[8],movies[9],movies[6],movies[12],movies[10],movies[1]];if(view==="originals")filtered=movies.filter(m=>m.original);if(view==="top")filtered=[...movies].sort((a,b)=>b.score-a.score);renderGrid(filtered);window.scrollTo({top:350,behavior:"smooth"})}
-function renderGrid(items){$("searchGrid").innerHTML="";items.forEach(m=>$("searchGrid").append(card(m)));$("emptySearch").hidden=items.length!==0}
-function legacySearch(q){state.search=q.trim();if(!state.search){showView(state.view==="search"?"home":state.view);return}state.view="search";$("hero").hidden=true;$("moodSection").hidden=true;["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);$("welcomeLine").hidden=true;$("searchResultsSection").hidden=false;$("searchHeading").textContent=`Stories matching “${state.search}”`;const results=movies.filter(m=>[m.title,m.genre,m.type,m.description].join(" ").toLowerCase().includes(state.search.toLowerCase()));renderGrid(results)}
+let browseSourceItems=[];
+function renderGrid(items){
+  browseSourceItems=Array.isArray(items)?items.slice():[];
+  const genreControl=$("browseGenre"),sortControl=$("browseSort");
+  const previousGenre=genreControl?.value||"all";
+  if(genreControl){
+    const available=[...new Set(browseSourceItems.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort();
+    const options=[["all","All genres"],...available.map(g=>[g,g.replace(/\b\w/g,c=>c.toUpperCase())])];
+    genreControl.replaceChildren(...options.map(([value,label])=>{const o=document.createElement("option");o.value=value;o.textContent=label;return o}));
+    genreControl.value=options.some(([v])=>v===previousGenre)?previousGenre:"all";
+  }
+  let visible=browseSourceItems.filter(m=>!genreControl||genreControl.value==="all"||titleTokens(m.genre||m.genres).includes(genreControl.value));
+  const sort=sortControl?.value||"recommended";
+  if(sort==="rating")visible.sort((a,b)=>Number(b.score||b.communityScore||0)-Number(a.score||a.communityScore||0));
+  else if(sort==="newest")visible.sort((a,b)=>Number(b.year||b.releaseYear||0)-Number(a.year||a.releaseYear||0));
+  else if(sort==="title")visible.sort((a,b)=>String(a.title||a.name||"").localeCompare(String(b.title||b.name||"")));
+  else visible=ranked(visible);
+  const grid=$("searchGrid");grid.replaceChildren(...visible.map(card));
+  $("emptySearch").hidden=visible.length!==0;
+  const count=$("browseCount");if(count)count.textContent=visible.length+" "+(visible.length===1?"story":"stories");
+}
+function legacySearch(q){
+  state.search=String(q||"").trim();
+  if(!state.search){showView(state.view==="search"?"home":state.view);return}
+  state.view="search";$("hero").hidden=true;$("moodSection").hidden=true;
+  ["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);
+  $("welcomeLine").hidden=true;$("searchResultsSection").hidden=false;
+  const rawTokens=state.search.match(/"[^"]+"|\\S+/g)||[];
+  const filters={genre:[],mood:[],language:[],type:[]},terms=[];
+  rawTokens.forEach(token=>{
+    const match=token.match(/^(genre|mood|language|type):(.+)$/i);
+    if(match&&filters[match[1].toLowerCase()])filters[match[1].toLowerCase()].push(match[2].replace(/^"|"$/g,"").toLowerCase());
+    else terms.push(token.replace(/^"|"$/g,"").toLowerCase());
+  });
+  const results=ranked(movies.filter(m=>{
+    const fields=[m.title,m.name,m.genre,m.genres,m.moods,m.type,m.format,m.description,m.synopsis,m.language,m.year,m.releaseYear].flat().join(" ").toLowerCase();
+    const matchesTerms=terms.every(term=>fields.includes(term));
+    const matchesGenre=filters.genre.every(term=>titleTokens(m.genre||m.genres).some(v=>v.includes(term)));
+    const matchesMood=filters.mood.every(term=>titleTokens(m.moods).some(v=>v.includes(term)));
+    const matchesLanguage=filters.language.every(term=>String(m.language||"").toLowerCase().includes(term));
+    const matchesType=filters.type.every(term=>String(m.type||m.format||"").toLowerCase().includes(term));
+    return matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType;
+  }));
+  $("searchHeading").textContent=results.length+" stories matching “"+state.search+"”";
+  renderGrid(results);
+}
 document.querySelectorAll(".nav-link").forEach(b=>b.addEventListener("click",()=>{if($("searchInput").value){$("searchInput").value="";$("searchBox").classList.remove("has-value")}showView(b.dataset.view)}));
 document.querySelectorAll(".see-all").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
 document.querySelector(".search-toggle").addEventListener("click",()=>{$("searchBox").classList.toggle("open");if($("searchBox").classList.contains("open"))$("searchInput").focus()});
@@ -160,7 +204,21 @@ async function syncAccount(){
     }
   }
 }
-function updateAccountUI(){const acc=personalized.account;const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V";const row=document.querySelector(".profile-row");if(row)row.innerHTML=`<span class="avatar">${acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V"}</span><div><b>${acc?acc.displayName:"Explorer"}</b><small>${acc?acc.email:"Guest · saved on this device"}</small></div>`;const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";}
+function updateAccountUI(){
+  const acc=personalized.account;
+  const label=acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V";
+  const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=label;
+  const row=document.querySelector(".profile-row");
+  if(row){
+    row.replaceChildren();
+    const icon=document.createElement("span");icon.className="avatar";icon.textContent=label;
+    const details=document.createElement("div"),name=document.createElement("b"),sub=document.createElement("small");
+    name.textContent=acc?String(acc.displayName||"Explorer"):"Explorer";
+    sub.textContent=acc?String(acc.email||"Signed-in account"):"Guest · saved on this device";
+    details.append(name,sub);row.append(icon,details);
+  }
+  const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";
+}
 function openAuth(mode="register"){if(personalized.account){signOut();return}state.authMode=mode;$("authBackdrop").hidden=false;document.body.style.overflow="hidden";drawAuthMode();$("authEmail").focus()}
 function closeAuth(){ $("authBackdrop").hidden=true;document.body.style.overflow=""}
 function drawAuthMode(){const mode=state.authMode||"register";document.querySelectorAll(".auth-tab").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));$("authTitle").textContent=mode==="register"?"Create your space":"Welcome back";$("authHint").textContent=(mode==="register"?"Sign up to sync your preferences and saved stories.":"Sign in to continue your personalized universe.")+(nativeApiMisconfigured?" Account sync is not configured in this app build yet; browsing and on-device preferences remain available.":""); $("authName").hidden=mode==="login";$("authName").required=mode==="register";$("authPassword").autocomplete=mode==="register"?"new-password":"current-password";$("authForm").querySelector(".auth-submit").textContent=mode==="register"?"Create account":"Sign in";$("authStatus").textContent=""}
@@ -266,7 +324,106 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   });
 })();
 
-// Multi-device install and living-room navigation foundation.
+
+ 
+// ─────────── Product quality upgrades: activity, portability, and shortcuts ───────────
+(() => {
+  const $el = id => document.getElementById(id);
+  const activityButton=$el("activityButton"),activityPanel=$el("activityPanel"),activityList=$el("activityList");
+  function renderActivity(){
+    if(!activityList)return;
+    activityList.replaceChildren();
+    const recent=[...personalized.history].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,8);
+    if(!recent.length){
+      const empty=document.createElement("p");empty.className="activity-empty";empty.textContent="Your activity will appear here as you explore stories.";activityList.append(empty);return;
+    }
+    recent.forEach(entry=>{
+      const item=movies.find(m=>String(m.id)===String(entry.id)||String(m.apiId||"")===String(entry.id));
+      if(!item)return;
+      const button=document.createElement("button");button.type="button";button.className="activity-item";
+      const title=document.createElement("b"),meta=document.createElement("small");
+      title.textContent=String(item.title||item.name||"Story");
+      const when=entry.at?new Date(entry.at).toLocaleString():"Recently";
+      meta.textContent=(entry.kind==="save"?"Saved":entry.kind==="play"?"Previewed":"Explored")+" · "+when;
+      button.append(title,meta);button.addEventListener("click",()=>{activityPanel.hidden=true;activityButton?.setAttribute("aria-expanded","false");openDetails(item)});
+      activityList.append(button);
+    });
+  }
+  function closeActivity(){if(activityPanel)activityPanel.hidden=true;activityButton?.setAttribute("aria-expanded","false")}
+  activityButton?.addEventListener("click",event=>{
+    event.stopPropagation();
+    if(!activityPanel)return;
+    const opening=activityPanel.hidden;
+    if(opening)renderActivity();
+    activityPanel.hidden=!opening;activityButton.setAttribute("aria-expanded",String(opening));
+  });
+  $el("activityClose")?.addEventListener("click",closeActivity);
+  document.addEventListener("click",event=>{if(!event.target.closest(".notification-wrap"))closeActivity()});
+
+  // Export only user-owned preferences, saved titles, and activity. Never export auth tokens.
+  function exportData(){
+    const payload={format:"storyspace-user-data",version:1,exportedAt:new Date().toISOString(),
+      preferences:normalizePreferences(personalized.preferences),
+      savedTitles:[...state.list].filter(v=>typeof v==="string"||typeof v==="number"),
+      history:normalizeHistory(personalized.history)};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download="storyspace-my-data.json";document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);showToast("Your Storyspace data export is ready");
+  }
+  function importData(file){
+    if(!file)return;
+    if(file.size>1024*1024){showToast("Import file must be 1 MB or smaller");return}
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const data=JSON.parse(String(reader.result||""));
+        if(data?.format!=="storyspace-user-data"||data.version!==1)throw new Error("Unsupported Storyspace export format");
+        personalized.preferences=normalizePreferences(data.preferences);
+        state.list=new Set(Array.isArray(data.savedTitles)?data.savedTitles.filter(v=>typeof v==="string"||typeof v==="number").slice(0,500):[]);
+        personalized.history=normalizeHistory(data.history);
+        savePrefs();persistList();storage.set("storyspace.history",JSON.stringify(personalized.history));
+        drawPreferences();renderHome();setHero(chooseHero());showToast("Preferences, saved stories, and activity imported");
+      }catch(error){showToast(error.message||"That file could not be imported")}
+    };
+    reader.onerror=()=>showToast("Could not read the selected file");
+    reader.readAsText(file);
+  }
+  $el("exportDataAction")?.addEventListener("click",()=>{$el("profileMenu")?.classList.remove("open");exportData()});
+  $el("importDataAction")?.addEventListener("click",()=>{$el("profileMenu")?.classList.remove("open");$el("importDataFile")?.click()});
+  $el("importDataFile")?.addEventListener("change",event=>{importData(event.target.files?.[0]);event.target.value=""});
+
+  const genre=$el("browseGenre"),sort=$el("browseSort");
+  genre?.addEventListener("change",()=>renderGrid(browseSourceItems));
+  sort?.addEventListener("change",()=>renderGrid(browseSourceItems));
+
+  // Keyboard-first desktop navigation; never steal keystrokes from forms or dialogs.
+  const isEditing=target=>target instanceof HTMLElement&&(
+    target.isContentEditable||["INPUT","TEXTAREA","SELECT"].includes(target.tagName));
+  document.addEventListener("keydown",event=>{
+    if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey)return;
+    if(isEditing(event.target))return;
+    const overlayOpen=["modalBackdrop","preferencesBackdrop","authBackdrop","subscriptionBackdrop","adminBackdrop","playerBackdrop"].some(id=>!$el(id)?.hidden);
+    if(overlayOpen)return;
+    if(event.key==="/"&&!event.shiftKey){
+      event.preventDefault();$el("searchBox")?.classList.add("open");$el("searchInput")?.focus();
+    }else if(event.key==="?" ){
+      showToast("Shortcuts: / Search · Esc Close · H Discover · M My Universe");
+    }else if(event.key.toLowerCase()==="h"){
+      showView("home");window.scrollTo({top:0,behavior:"smooth"});
+    }else if(event.key.toLowerCase()==="m"){
+      showView("mylist");
+    }
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"&&activityPanel&&!activityPanel.hidden)closeActivity();
+  });
+  // Make the service-worker update check explicit while preserving a usable offline shell.
+  if("serviceWorker" in navigator&&location.protocol!=="file:"){
+    navigator.serviceWorker.ready.then(registration=>registration.update()).catch(()=>{});
+  }
+})();
+\n// Multi-device install and living-room navigation foundation.
 (() => {
   const isNativeAndroid = window.StoryspaceNative?.native === true && window.StoryspaceNative?.platform === "android";
   let tvMode = new URLSearchParams(location.search).get("tv") === "1";
