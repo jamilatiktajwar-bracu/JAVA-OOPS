@@ -90,3 +90,22 @@ input,textarea,select { font-size:16px !important; }
   .hero-content { top:18%; max-width:52vw; }
   .hero-title { font-size:clamp(36px,7vw,72px); }
 }
+
+/* Disabled states and remote-control focus clarity */
+button:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+  filter: saturate(.65);
+}
+html.tv-mode .movie-card:focus {
+  outline: 4px solid var(--cyan);
+  outline-offset: 5px;
+  transform: scale(1.06);
+  z-index: 6;
+}
+@media (prefers-contrast: more) {
+  :focus-visible {
+    outline-width: 4px;
+    outline-offset: 4px;
+  }
+}
