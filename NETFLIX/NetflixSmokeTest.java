@@ -181,7 +181,7 @@ public class NetflixSmokeTest {
         check(playlist.getNextMovie() == queueB, "removal does not skip next playlist movie");
         check(playlist.moveMovie(1, 0), "playlist reorders movies");
         check(playlist.getMovieAt(0) == queueC, "playlist move changes item order");
-        check(playlist.getTotalDuration() == 285, "playlist total duration is calculated");
+        check(playlist.getTotalDuration() == 195, "playlist total duration excludes removed movie");
 
         PaymentMethod sanitizedCard = new PaymentMethod("Card", "AB12-34 5678 9XYZ", "Test");
         check(sanitizedCard.getMaskedNumber().endsWith("6789"),
