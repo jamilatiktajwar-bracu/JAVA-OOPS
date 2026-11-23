@@ -2,7 +2,7 @@ name: Storyspace checks
 on:
   push:
     branches: [product/storyspace-platform, product/multiplatform-foundation]
-    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
+    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
   pull_request:
     paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
 jobs:
