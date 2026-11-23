@@ -6,6 +6,8 @@ for (const p of ["web/manifest.webmanifest", "platforms/desktop/package.json", "
 const html = read("web/index.html");
 for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "native-bridge.js", "assets/storyspace-icon.svg"]) if (!html.includes(asset)) throw new Error("Missing HTML reference: " + asset);
 if (!html.includes('rel="manifest"')) throw new Error("PWA manifest not linked");
+if (!html.includes('name="storyspace-api-root"')) throw new Error("CSP-compatible API root setting missing");
+if (!html.includes("connect-src") || !html.includes("https:")) throw new Error("CSP does not allow HTTPS API connections");
 if (!read("web/sw.js").includes("CACHE_NAME")) throw new Error("Service worker cache missing");
 if (!read("web/sw.js").includes("native-bridge.js")) throw new Error("Native bridge missing from offline cache");
 const mobile = JSON.parse(read("platforms/mobile/package.json"));
@@ -31,7 +33,7 @@ const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "storyspace-tv-manifes
 try {
   const manifestPath = path.join(fixtureRoot, "app", "src", "main", "AndroidManifest.xml");
   fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
-  fs.writeFileSync(manifestPath, \`<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  fs.writeFileSync(manifestPath, `<manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <application android:label="Storyspace">
     <activity android:name=".MainActivity" android:exported="true">
       <intent-filter>
@@ -40,7 +42,7 @@ try {
       </intent-filter>
     </activity>
   </application>
-</manifest>\`);
+</manifest>`);
   execFileSync(process.execPath, [tvScript, fixtureRoot], { stdio: "pipe" });
   execFileSync(process.execPath, [tvScript, fixtureRoot], { stdio: "pipe" });
   const manifest = fs.readFileSync(manifestPath, "utf8");
