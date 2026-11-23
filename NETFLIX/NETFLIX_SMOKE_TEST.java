@@ -8,6 +8,7 @@ public class NETFLIX_SMOKE_TEST {
         testSubscriptionPlanNormalization();
         testMovieConstructorNormalization();
         testMovieMetadataArrayHandling();
+        testSubscriptionPaymentAndRefundSafety();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -120,6 +121,30 @@ public class NETFLIX_SMOKE_TEST {
         String[] cast = movie.getCast();
         cast[0] = "Mutated";
         require("Actor".equals(movie.getCast()[0]), "cast getter should return a defensive array copy");
+    }
+
+    private static void testSubscriptionPaymentAndRefundSafety() {
+        Subscription subscription = new Subscription("Pro");
+        subscription.setPaymentMethod("Visa");
+        require(subscription.processPayment(700.0), "valid subscription payment should succeed");
+        require(subscription.getInvoiceCount() == 1, "successful payment should create invoice");
+        require(subscription.refundInvoice(0), "paid invoice should be refundable");
+        require(!subscription.refundInvoice(0), "invoice must not be refunded twice");
+        require(subscription.getRefundedAmount() == 700.0, "refund total should track one refund");
+
+        Subscription fullInvoices = new Subscription("Pro");
+        fullInvoices.setPaymentMethod("Visa");
+        for (int i = 0; i < 100; i++) {
+            require(fullInvoices.createInvoice(1.0, "Pending"), "invoice capacity should fill");
+        }
+        require(!fullInvoices.processPayment(700.0), "payment must fail when invoice history is full");
+        require(fullInvoices.getBillingHistoryCount() == 0, "failed payment must not add billing history");
+
+        Subscription cancelled = new Subscription("Pro");
+        cancelled.cancel();
+        cancelled.processFailedPayment();
+        require(cancelled.getFailedPaymentCount() == 0, "cancelled subscription should ignore payment failure");
+        require(cancelled.getOutstandingBalance() == 0.0, "cancelled subscription should not accrue balance");
     }
 
     private static void require(boolean condition, String message) {
