@@ -1,0 +1,27 @@
+name: Java compile check
+
+on:
+  push:
+    branches:
+      - main
+      - polish/netflix-java
+  pull_request:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [8, 17]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java-version }}
+      - name: Compile project
+        working-directory: NETFLIX
+        run: javac *.java
+      - name: Clean compiled files
+        run: find NETFLIX -name '*.class' -delete
