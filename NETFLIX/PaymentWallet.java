@@ -11,8 +11,10 @@ public class PaymentWallet {
         if (method == null || methodCount >= methods.length || contains(method)) {
             return false;
         }
+        PaymentMethod existingDefault = getDefaultMethod();
+        method.setDefault(false);
         methods[methodCount++] = method;
-        setDefault(methodCount == 1 ? method : getDefaultMethod());
+        setDefault(existingDefault == null ? methods[0] : existingDefault);
         return true;
     }
 
@@ -44,8 +46,9 @@ public class PaymentWallet {
             methods[i] = methods[i + 1];
         }
         methods[--methodCount] = null;
-        if (wasDefault && methodCount > 0) {
-            setDefault(methods[0]);
+        if (methodCount > 0) {
+            PaymentMethod currentDefault = getDefaultMethod();
+            setDefault(wasDefault || currentDefault == null ? methods[0] : currentDefault);
         }
         return true;
     }
