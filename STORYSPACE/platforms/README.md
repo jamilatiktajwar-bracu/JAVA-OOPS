@@ -73,6 +73,13 @@ npx cap sync ios
 ```
 Requires macOS/Xcode. Real-device distribution requires Apple signing/provisioning, device QA, and review.
 
+## Signed release artifacts
+
+- Android signed Play Store App Bundle: see [ANDROID-RELEASE.md](ANDROID-RELEASE.md) and the manual `Storyspace Android Signed AAB` workflow. Requires a user-provided keystore and password secrets.
+- iOS signed IPA: see [IOS-RELEASE.md](IOS-RELEASE.md) and the manual `Storyspace iOS Signed IPA` workflow. Requires an Apple Distribution P12, App Store provisioning profile, and Team ID secrets.
+
+Neither workflow publishes an app to an app store. A signed build must still pass device QA and store review.
+
 ## TV
 Android TV needs Android Studio/emulator validation. tvOS requires macOS/Xcode and provisioning. PlayStation SDK/certification is restricted by Sony.
 ## Device QA checklist
