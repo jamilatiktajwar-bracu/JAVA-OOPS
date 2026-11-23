@@ -119,7 +119,7 @@ public class ViewingSession {
         if (totalMinutes == 0) {
             return 0;
         }
-        int progress = (watchedMinutes * 100) / totalMinutes;
+        int progress = (int) (((long) watchedMinutes * 100L) / totalMinutes);
         return Math.min(progress, 100);
     }
 
@@ -152,7 +152,7 @@ public class ViewingSession {
     }
 
     public int getRemainingMinutes() {
-        return totalMinutes - watchedMinutes;
+        return Math.max(0, totalMinutes - watchedMinutes);
     }
 
     public boolean isCompleted() {
@@ -172,7 +172,7 @@ public class ViewingSession {
     }
 
     public boolean setPlaybackSpeed(double speed) {
-        if (speed < 0.25 || speed > 4.0) {
+        if (!Double.isFinite(speed) || speed < 0.25 || speed > 4.0) {
             return false;
         }
         playbackSpeed = speed;
@@ -291,7 +291,7 @@ public class ViewingSession {
     }
 
     public int getRemainingSeconds() {
-        return getRemainingMinutes() * 60;
+        return (int) Math.min(Integer.MAX_VALUE, (long) getRemainingMinutes() * 60L);
     }
 
     public int getEstimatedBufferSeconds() {
@@ -342,7 +342,7 @@ public class ViewingSession {
     }
 
     public boolean setCreditsStart(int startSeconds) {
-        if (startSeconds < 0 || startSeconds > getRemainingSeconds()) {
+        if (startSeconds < 0 || startSeconds > getTotalSeconds()) {
             return false;
         }
         creditsStartSeconds = startSeconds;
@@ -416,7 +416,7 @@ public class ViewingSession {
     }
 
     public int getTotalSeconds() {
-        return totalMinutes * 60;
+        return (int) Math.min(Integer.MAX_VALUE, (long) totalMinutes * 60L);
     }
 
     public void setLowDataMode(boolean enabled) {
