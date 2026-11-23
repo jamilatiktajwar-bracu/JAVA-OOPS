@@ -29,6 +29,8 @@ jobs:
       - name: Run smoke tests
         working-directory: NETFLIX
         run: java NETFLIX_SMOKE_TEST
+      - name: Check frontend JavaScript syntax
+        run: node --check NETFLIX/web/app.js
       - name: Clean compiled files
         if: always()
         run: find NETFLIX -name '*.class' -delete
