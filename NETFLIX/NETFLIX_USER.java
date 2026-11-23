@@ -34,8 +34,8 @@ public class NETFLIX_USER {
     private PaymentWallet paymentWallet;
 
     public NETFLIX_USER(String username, String email, String PLAN, String password) {
-        this.username = username;
-        this.email = email;
+        this.username = username == null ? "" : username.trim();
+        this.email = email == null ? "" : email.trim();
         this.favourite_movies = new Movies[100];
         this.favourite_movies_count = 0;
         this.watchHistory = new Movies[100];
@@ -44,7 +44,7 @@ public class NETFLIX_USER {
         this.watchListCount = 0;
         this.devices = new String[4];
         this.deviceCount = 0;
-        this.profileName = username;
+        this.profileName = this.username.isEmpty() ? "Profile" : this.username;
         this.active = true;
         this.Plan = normalizePlan(PLAN);
         this.subscription = new Subscription(PLAN);
@@ -698,12 +698,37 @@ public class NETFLIX_USER {
     }
 
     public boolean isValidEmail() {
-        if (email == null) {
+        if (email == null || email.isEmpty() || email.length() > 254
+                || email.indexOf(' ') >= 0 || email.indexOf('\t') >= 0
+                || email.indexOf('\n') >= 0 || email.indexOf('\r') >= 0) {
             return false;
         }
         int atIndex = email.indexOf('@');
-        int dotIndex = email.lastIndexOf('.');
-        return atIndex > 0 && dotIndex > atIndex + 1 && dotIndex < email.length() - 1;
+        if (atIndex <= 0 || atIndex != email.lastIndexOf('@')
+                || atIndex >= email.length() - 1) {
+            return false;
+        }
+        String local = email.substring(0, atIndex);
+        String domain = email.substring(atIndex + 1);
+        if (local.length() > 64 || local.startsWith(".") || local.endsWith(".")
+                || local.contains("..") || domain.startsWith(".") || domain.endsWith(".")
+                || !domain.contains(".")) {
+            return false;
+        }
+        String[] labels = domain.split("\\.");
+        for (String label : labels) {
+            if (label.isEmpty() || label.startsWith("-") || label.endsWith("-")) return false;
+            for (int i = 0; i < label.length(); i++) {
+                char c = label.charAt(i);
+                if (!Character.isLetterOrDigit(c) && c != '-') return false;
+            }
+        }
+        for (int i = 0; i < local.length(); i++) {
+            char c = local.charAt(i);
+            if (!Character.isLetterOrDigit(c)
+                    && ".!#$%&'*+/=?^_{|}~-".indexOf(c) < 0) return false;
+        }
+        return true;
     }
 
     public void setPlan(String plan) {
