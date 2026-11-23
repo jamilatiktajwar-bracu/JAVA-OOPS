@@ -148,7 +148,7 @@ public class OfflineDownloadManager {
     }
 
     public void setStorageCapacityMB(long capacityMB) {
-        if (capacityMB >= 0) {
+        if (capacityMB >= usedStorageMB) {
             storageCapacityMB = capacityMB;
         }
     }
@@ -234,9 +234,12 @@ public class OfflineDownloadManager {
         if (index < 0) {
             return false;
         }
+        if (!failed[index]) {
+            failedCount++;
+        }
         failed[index] = true;
-        failureReason[index] = reason == null ? "Unknown error" : reason.trim();
-        failedCount++;
+        failureReason[index] = reason == null || reason.trim().isEmpty()
+                ? "Unknown error" : reason.trim();
         return true;
     }
 
