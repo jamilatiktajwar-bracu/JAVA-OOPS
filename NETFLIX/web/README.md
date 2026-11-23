@@ -1,23 +1,26 @@
-# Netflix UI Concept (Frontend)
+# VYORA — Story Space (Frontend Concept)
 
-A responsive, Netflix-inspired streaming UI prototype built with plain HTML, CSS, and JavaScript. It is part of the Java OOP Netflix simulation repository.
+VYORA is a **provisional working name** for an original story-discovery interface created for this educational project. It is not affiliated with Netflix or any other streaming service.
 
 ## Run locally
-Open `index.html` directly in a browser. No build tools or dependencies are required.
+Open `index.html` in a browser. No build tools or JavaScript packages are required.
 
-## Features
-- Cinematic hero section and responsive dark streaming layout
-- Home, TV Shows, Movies, New & Popular, My List, Continue Watching, Trending, Originals, and Top Picks views
-- Search titles, genres, and descriptions
-- Interactive movie cards, detail modal, demo playback toast
-- Add/remove My List, profile menu, mobile-responsive navigation
-- Keyboard accessible card/modal interactions and reduced reliance on external libraries
+## Original design direction
+- Midnight-indigo atmosphere with aqua/violet accents, custom geometric wordmark, typography, and orbit-inspired decorative motifs.
+- Editorial hero composition, “Story Space” brand language, and discovery-first navigation.
+- Mood discovery chips, curated content collections, personal library, search, details modal, and responsive layouts.
+- Watchlist state saved in this browser's localStorage (demo only).
+- Keyboard-operable cards, modal close controls, and reduced-motion preference support.
 
-## Prototype limitations
-This UI is a front-end prototype using local mock content and browser-memory state. It does not connect to the Java classes or a backend yet. Play opens a demo notification, not real video. The poster imagery uses remote Unsplash images and requires an internet connection.
+## Prototype boundaries
+- This is a front-end prototype. It is not connected to the Java classes, server, accounts, or database.
+- “Enter story” is a demo notification—not a media player.
+- Catalog titles, ratings, descriptions, and other metadata are sample data, not verified works or real availability.
+- Poster/background images are remote Unsplash URLs. Review each asset's license and terms and replace with owned, commissioned, or properly licensed assets before commercial launch.
+- No billing, subscriptions, authentication, DRM, streaming delivery, or production privacy/security controls are implemented.
 
-## Next integration steps
-1. Add a Java REST API (e.g., Spring Boot) exposing catalog, user profile, watchlist, and playback endpoints.
-2. Replace mock data with API calls and persist the watchlist.
-3. Implement authentication, profiles, and real playback/provider integrations.
-4. Keep API credentials and secrets server-side; do not put them in browser code.
+## Brand/IP hygiene for commercial use
+VYORA is a placeholder, not a cleared trademark. Before choosing a launch name, conduct clearance searches in target markets and relevant classes, including Bangladesh DPDT, WIPO databases, company/domain/app-store records, and get advice from an IP professional. Avoid competitor logos, names, signature UI elements, copyrighted media, or confusingly similar branding. Maintain dated source/design records and written asset licenses.
+
+## Next technical milestone
+Connect the interface to a Java service, catalog repository, authentication, user profiles, persisted watchlists, licensed media delivery, and privacy/security controls. Keep credentials and signing secrets server-side.
