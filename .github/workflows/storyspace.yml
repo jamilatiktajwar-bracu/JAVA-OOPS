@@ -19,7 +19,10 @@ jobs:
       - name: Backend tests
         run: mvn -B test
         working-directory: STORYSPACE/backend
-      - name: Frontend syntax
-        run: node --check STORYSPACE/web/app.js
+      - name: Frontend and native bridge syntax
+        run: |
+          node --check STORYSPACE/web/app.js
+          node --check STORYSPACE/web/native-bridge.js
+          node --check STORYSPACE/web/sw.js
       - name: Platform configuration smoke checks
         run: node STORYSPACE/platforms/check-platform-config.js
