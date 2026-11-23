@@ -6,7 +6,6 @@ spring:
     username: ${DATABASE_USER:sa}
     password: ${DATABASE_PASSWORD:}
     driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
-  datasource:
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:10}
       minimum-idle: ${DB_POOL_MIN_IDLE:2}
