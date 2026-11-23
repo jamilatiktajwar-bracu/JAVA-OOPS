@@ -134,6 +134,25 @@ public class NetflixSmokeTest {
         check(completedMovie.isWatched()
                 && profileOwner.getContinueWatchingCount() == 0,
                 "near-complete movie is marked watched without queue residue");
+        OfflineDownloadManager downloads = new OfflineDownloadManager(3);
+        Movies offlineMovie = new Movies("Offline Test", "Drama", 60);
+        offlineMovie.setDownloadAvailable(true);
+        check(downloads.addDownload(offlineMovie), "download manager accepts available title");
+        check(downloads.updateProgress(offlineMovie, 100), "download completion succeeds");
+        check(downloads.getUsedStorageMB() == 120, "standard download storage is tracked");
+        downloads.setDownloadQuality("4K");
+        check(downloads.removeDownload(offlineMovie), "download can be removed");
+        check(downloads.getUsedStorageMB() == 0,
+                "storage removal uses recorded size rather than current quality");
+        Movies failedMovie = new Movies("Retry Test", "Action", 50);
+        failedMovie.setDownloadAvailable(true);
+        check(downloads.addDownload(failedMovie), "failed-download test item added");
+        check(downloads.markFailed(failedMovie, "network"), "download marked failed");
+        check(downloads.markFailed(failedMovie, "network retry"), "repeat failure update accepted");
+        check(downloads.getFailedCount() == 1, "duplicate failure does not inflate counter");
+        check(downloads.removeDownload(failedMovie), "failed item removed");
+        check(downloads.getFailedCount() == 0, "removal clears failed counter");
+
         System.out.println("NETFLIX_SMOKE_TEST_OK");
     }
 
