@@ -24,14 +24,14 @@ jobs:
 
       - name: Validate signing configuration
         env:
-          IOS_CERTIFICATE_P12_BASE64: \${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
-          IOS_CERTIFICATE_PASSWORD: \${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE_BASE64: \${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          APPLE_TEAM_ID: \${{ secrets.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
           for name in IOS_CERTIFICATE_P12_BASE64 IOS_CERTIFICATE_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 APPLE_TEAM_ID; do
-            if [ -z "\${!name}" ]; then
+            if [ -z "${!name}" ]; then
               echo "::error::Missing required GitHub Actions secret: $name"
               exit 1
             fi
@@ -40,10 +40,10 @@ jobs:
       - name: Install Apple signing certificate and profile
         id: signing
         env:
-          IOS_CERTIFICATE_P12_BASE64: \${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
-          IOS_CERTIFICATE_PASSWORD: \${{ secrets.IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE_BASE64: \${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
-          APPLE_TEAM_ID: \${{ secrets.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
           KEYCHAIN_PATH="$RUNNER_TEMP/storyspace-signing.keychain-db"
@@ -98,7 +98,7 @@ jobs:
       - name: Configure API endpoint
         working-directory: STORYSPACE/platforms/mobile
         env:
-          STORYSPACE_API_ROOT: \${{ vars.STORYSPACE_API_ROOT }}
+          STORYSPACE_API_ROOT: ${{ vars.STORYSPACE_API_ROOT }}
         run: node configure-api-root.js
 
       - name: Sync web assets and native plugins
@@ -108,9 +108,9 @@ jobs:
       - name: Archive signed iOS app
         working-directory: STORYSPACE/platforms/mobile
         env:
-          APPLE_TEAM_ID: \${{ secrets.APPLE_TEAM_ID }}
-          IOS_PROFILE_NAME: \${{ steps.signing.outputs.profile_name }}
-          KEYCHAIN_PATH: \${{ steps.signing.outputs.keychain_path }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_PROFILE_NAME: ${{ steps.signing.outputs.profile_name }}
+          KEYCHAIN_PATH: ${{ steps.signing.outputs.keychain_path }}
         run: |
           set -euo pipefail
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App \
@@ -125,8 +125,8 @@ jobs:
       - name: Export signed IPA
         working-directory: STORYSPACE/platforms/mobile
         env:
-          APPLE_TEAM_ID: \${{ secrets.APPLE_TEAM_ID }}
-          IOS_PROFILE_NAME: \${{ steps.signing.outputs.profile_name }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_PROFILE_NAME: ${{ steps.signing.outputs.profile_name }}
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/Storyspace-ExportOptions.plist" <<EOF
@@ -158,7 +158,7 @@ jobs:
       - name: Remove signing material
         if: always()
         env:
-          KEYCHAIN_PATH: \${{ steps.signing.outputs.keychain_path }}
+          KEYCHAIN_PATH: ${{ steps.signing.outputs.keychain_path }}
         run: |
           if [ -n "$KEYCHAIN_PATH" ] && [ -f "$KEYCHAIN_PATH" ]; then
             security delete-keychain "$KEYCHAIN_PATH" || true
