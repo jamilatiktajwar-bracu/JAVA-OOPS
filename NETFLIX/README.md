@@ -1,4 +1,4 @@
-# Netflix OOP Console Demo
+# Netflix OOP Project + Streaming UI Prototype
 
 A Java console-based Netflix-style streaming service simulation. It demonstrates object-oriented design and service workflows with in-memory data only (no database, streaming API, or real payment processing).
 
@@ -6,7 +6,7 @@ A Java console-based Netflix-style streaming service simulation. It demonstrates
 - JDK 8 or newer
 - Terminal or an IDE such as IntelliJ IDEA / VS Code
 
-## Run the demo
+## Launch the streaming UI\n\nOpen [`web/index.html`](web/index.html) directly in a browser for the responsive Netflix-inspired app interface. UI documentation: [`web/README.md`](web/README.md). This is a front-end prototype with mock catalog content; it is not connected to the Java simulation/backend yet.\n\n## Run the console demo
 From this directory:
 
 ```bash
