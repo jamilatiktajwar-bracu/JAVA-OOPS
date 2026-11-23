@@ -62,6 +62,11 @@ public class NetflixPlaylist {
                     movies[j] = movies[j + 1];
                 }
                 movies[--movieCount] = null;
+                if (i < currentPosition) {
+                    currentPosition--;
+                } else if (currentPosition > movieCount) {
+                    currentPosition = movieCount;
+                }
                 touch();
                 return true;
             }
@@ -140,6 +145,13 @@ public class NetflixPlaylist {
             }
         }
         movies[toIndex] = movie;
+        if (currentPosition == fromIndex) {
+            currentPosition = toIndex;
+        } else if (fromIndex < currentPosition && toIndex >= currentPosition) {
+            currentPosition--;
+        } else if (fromIndex > currentPosition && toIndex < currentPosition) {
+            currentPosition++;
+        }
         touch();
         return true;
     }
@@ -254,11 +266,14 @@ public class NetflixPlaylist {
     }
 
     public int getTotalDuration() {
-        int total = 0;
+        long total = 0;
         for (int i = 0; i < movieCount; i++) {
             total += movies[i].getDuration();
+            if (total >= Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
         }
-        return total;
+        return (int) total;
     }
 
     public double getAverageRating() {
@@ -315,7 +330,7 @@ public class NetflixPlaylist {
     }
 
     private void touch() {
-        updatedAt = System.currentTimeMillis();
+        updatedAt = Math.max(System.currentTimeMillis(), updatedAt + 1);
     }
 
     public int getMovieCount() {
