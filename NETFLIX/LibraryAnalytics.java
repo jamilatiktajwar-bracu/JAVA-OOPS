@@ -34,11 +34,14 @@ public class LibraryAnalytics {
     }
 
     public static int getTotalCastSize() {
-        int total = 0;
+        long total = 0;
         for (Movies movie : Movies.getAllMovies()) {
-            total += movie.getCastCount();
+            total += Math.max(0, movie.getCastCount());
+            if (total >= Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
         }
-        return total;
+        return (int) total;
     }
 
     public static String getTopDirector() {
