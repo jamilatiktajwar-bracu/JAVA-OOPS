@@ -13,6 +13,7 @@ public class NETFLIX_SMOKE_TEST {
         testPromoCodeRedemptionConsistency();
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
+        testPlaylistCursorAndDurationSafety();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -213,6 +214,23 @@ public class NETFLIX_SMOKE_TEST {
         require(noUser.getSurpriseRecommendations(3).length == 0, "null-user surprise should return empty");
         require("No movie or user context".equals(noUser.explainRecommendation(new Movies("Explain", "Drama", 90))),
                 "explanation should handle missing user safely");
+    }
+
+    private static void testPlaylistCursorAndDurationSafety() {
+        NetflixPlaylist playlist = new NetflixPlaylist("Cursor", 4);
+        Movies first = new Movies("Playlist first", "Drama", 100);
+        Movies second = new Movies("Playlist second", "Drama", 200);
+        Movies third = new Movies("Playlist third", "Drama", 300);
+        require(playlist.addMovies(new Movies[] {first, second, third}) == 3,
+                "bulk add should accept unique movies");
+        require(playlist.getNextMovie() == first, "cursor should begin at first item");
+        require(playlist.removeMovie(first), "removing an item before cursor should succeed");
+        require(playlist.getNextMovie() == third, "cursor should stay aligned after removing passed item");
+        require(playlist.moveMovie(1, 0), "moving item should succeed");
+        require(playlist.getMovieAt(0) == third, "move should reorder playlist");
+        require(playlist.getTotalDuration() == 500, "playlist duration should sum movie lengths");
+        require(playlist.getRemainingCapacity() == 1, "capacity should track additions");
+        require(!playlist.addMovie(null), "null movie should not be accepted");
     }
 
     private static void require(boolean condition, String message) {
