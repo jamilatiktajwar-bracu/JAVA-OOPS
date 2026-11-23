@@ -28,6 +28,12 @@ execFileSync(process.execPath, ["--check", path.join(root, "web", "sw.js")], { s
 const apiConfigScript = path.join(__dirname, "mobile", "configure-api-root.js");
 if (!fs.existsSync(apiConfigScript)) throw new Error("Native API configuration script missing");
 execFileSync(process.execPath, ["--check", apiConfigScript], { stdio: "pipe" });
+const corsSource = read("backend/src/main/java/io/storyspace/config/CorsConfig.java");
+const backendConfig = read("backend/src/main/resources/application.yml");
+const tokenService = read("backend/src/main/java/io/storyspace/security/TokenService.java");
+if (corsSource.includes('List.of("*")') || corsSource.includes('setAllowedOriginPatterns')) throw new Error("CORS must use explicit origins, not wildcard patterns");
+if (!backendConfig.includes("CORS_ALLOWED_ORIGINS")) throw new Error("CORS origin configuration must be environment-driven");
+if (!tokenService.includes('Production must provide a unique TOKEN_SECRET.')) throw new Error("Production token secret guard missing");
 const webClient = read("web/app.js");
 if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) throw new Error("Native Android TV mode must preserve the first D-pad key");
 if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
