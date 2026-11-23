@@ -1,15 +1,26 @@
-# Storyspace
+# Storyspace product
 
-An independent, adaptive story-discovery platform prototype with a Java REST backend.
+An independent, original streaming/discovery product concept. The working brand is provisional.
 
-- Frontend: `STORYSPACE/web`
-- Backend: `STORYSPACE/backend`
-- Run instructions: [README](STORYSPACE/README.md)
-- Legacy OOP coursework archived at `archive/java-oop`
+## Launch locally
+```bash
+cd STORYSPACE/backend
+mvn spring-boot:run
+```
+Then open `STORYSPACE/web/index.html` in your browser. Backend health: `http://localhost:8080/api/health`.
 
-The product name is provisional and has not been trademark-cleared. Sample catalog items are fictional. Video preview is a CC0 sample, not licensed catalog content.
+## Adaptive UX
+- Onboarding to choose genres, moods, languages and discovery balance.
+- Ranking reacts to selections and recent browsing/saving, with day-based variation.
+- Featured story rotates automatically.
+- Guest preferences/library are stored in local browser storage.
+- Sign-up/login syncs profile preferences and watchlist to the backend.
 
-## Current foundation
-Personalized taste profiles, feed ranking, account authentication, persistent library, demo subscription endpoints, admin catalog and metrics endpoints, and preview/access-control API placeholders.
+## Backend
+Java 17 / Spring Boot / H2. Auth, catalog, search, personalized feed, library/progress/rating, demo memberships, role-restricted admin catalog and metrics, and preview/access-control placeholders. See `backend/README.md`.
 
-This is an educational prototype—not a production streaming service or a guarantee of legal clearance.
+## Admin bootstrap
+Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` before starting. Use a non-default 32+ character `TOKEN_SECRET` for any deployed environment. Restrict allowed CORS origins.
+
+## Legal/release status
+No trademark clearance or patentability/freedom-to-operate determination has been made. Sample titles are fictional, imagery is remote, and the preview clip is a CC0 sample. A licensed catalog, streaming pipeline, payment integration, production security/privacy, and legal documents remain future work. Read [LEGAL-AND-RELEASE.md](LEGAL-AND-RELEASE.md).
