@@ -1,6 +1,7 @@
 public class NETFLIX_SMOKE_TEST {
     public static void main(String[] args) {
         testPlaybackQueue();
+        testPlaybackQueueRecoveryAfterEnd();
         testOfflineDownloads();
         testViewingSession();
         testMovieReview();
@@ -281,6 +282,23 @@ public class NETFLIX_SMOKE_TEST {
         require(!party.muteGuest(guest), "ended party should not allow muting");
         party.restartParty();
         require(party.isPartyActive(), "restart should reactivate party");
+    }
+
+    private static void testPlaybackQueueRecoveryAfterEnd() {
+        PlaybackQueue queue = new PlaybackQueue(3);
+        Movies first = new Movies("Queue end first", "Drama", 60);
+        Movies second = new Movies("Queue end second", "Drama", 60);
+        require(queue.add(first), "queue should accept initial item");
+        require(queue.next() == null, "single-item queue should reach end without repeat");
+        require(queue.getCurrent() == null, "current should be null after reaching end");
+        require(queue.add(second), "queue should accept item after end");
+        require(queue.getCurrent() == second, "adding after end should restore a valid current item");
+        require(queue.getCurrentIndex() == 1, "current index should track appended recovery item");
+        require(queue.next() == null, "queue should end after the appended item");
+        Movies third = new Movies("Queue end third", "Drama", 60);
+        require(queue.addNext(third), "add-next should work after queue end");
+        require(queue.getCurrent() == third, "add-next after end should select inserted item");
+        require(queue.getCurrentIndex() == 0, "add-next should reset ended index safely");
     }
 
     private static void require(boolean condition, String message) {
