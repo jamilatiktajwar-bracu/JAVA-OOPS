@@ -207,11 +207,11 @@ public class Movies {
     }
 
     public static boolean addMovie(String title, String genre, int duration) {
-        return MovieCatalog.addMovie(title, genre, duration);
+        return MovieCatalog.addMovie(title, genre, duration) != null;
     }
 
     public static boolean addMovie(String title, String genre) {
-        return MovieCatalog.addMovie(title, genre, 0);
+        return MovieCatalog.addMovie(title, genre, 0) != null;
     }
 
     public static boolean addMovie(String title, String genre, int duration, int releaseYear) {
