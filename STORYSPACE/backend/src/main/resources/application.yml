@@ -5,14 +5,22 @@ spring:
     url: ${DATABASE_URL:jdbc:h2:file:./data/storyspace;AUTO_SERVER=TRUE}
     username: ${DATABASE_USER:sa}
     password: ${DATABASE_PASSWORD:}
-    driver-class-name: org.h2.Driver
+    driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:30000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:5000}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:update}
     open-in-view: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: ${HIBERNATE_FORMAT_SQL:false}
+        jdbc:
+          time_zone: UTC
   h2:
     console:
       enabled: ${H2_CONSOLE:false}
@@ -21,7 +29,7 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8080,http://127.0.0.1:8080,https://localhost,capacitor://localhost,ionic://localhost}
   security:
     token-secret: ${TOKEN_SECRET:local-development-secret-change-before-deployment-0123456789}
-    token-ttl-hours: 72
+    token-ttl-hours: ${TOKEN_TTL_HOURS:72}
   bootstrap:
     admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
     admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
