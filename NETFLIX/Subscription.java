@@ -309,7 +309,7 @@ public class Subscription {
     public boolean processPayment(double amount) {
         if (!Double.isFinite(amount) || amount <= 0.0
                 || paymentMethod.equals("Not configured")
-                || !active || paused) {
+                || !active || paused || invoiceCount >= invoiceAmount.length) {
             return false;
         }
         double expected = getEffectiveMonthlyFee();
@@ -317,7 +317,10 @@ public class Subscription {
             return false;
         }
         if (addBillingRecord(amount)) {
-            createInvoice(amount, "Paid");
+            if (!createInvoice(amount, "Paid")) {
+                billingStatus = "Invoice Error";
+                return false;
+            }
             outstandingBalance = 0.0;
             failedPaymentCount = 0;
             billingStatus = "Current";
@@ -327,7 +330,12 @@ public class Subscription {
     }
 
     public void processFailedPayment() {
-        failedPaymentCount++;
+        if (!active || paused) {
+            return;
+        }
+        if (failedPaymentCount < Integer.MAX_VALUE) {
+            failedPaymentCount++;
+        }
         outstandingBalance += getEffectiveMonthlyFee();
         billingStatus = failedPaymentCount >= 3 ? "Suspended" : "Past Due";
     }
@@ -370,7 +378,8 @@ public class Subscription {
             return false;
         }
         int index = invoiceCount - 1;
-        if (!invoiceStatus[index].equalsIgnoreCase("Paid")) {
+        if (!invoiceStatus[index].equalsIgnoreCase("Paid")
+                || !Double.isFinite(refundedAmount + invoiceAmount[index])) {
             return false;
         }
         refundedAmount += invoiceAmount[index];
@@ -381,7 +390,8 @@ public class Subscription {
 
     public boolean refundInvoice(int index) {
         if (index < 0 || index >= invoiceCount
-                || !invoiceStatus[index].equalsIgnoreCase("Paid")) {
+                || !invoiceStatus[index].equalsIgnoreCase("Paid")
+                || !Double.isFinite(refundedAmount + invoiceAmount[index])) {
             return false;
         }
         refundedAmount += invoiceAmount[index];
