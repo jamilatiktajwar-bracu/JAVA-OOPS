@@ -136,6 +136,20 @@ public class NetflixSmokeTest {
                 "password setter rejects short passwords");
         check(profileOwner.setPassword("long-enough-password"),
                 "password setter accepts longer password");
+        Movies safeMovie = new Movies("Overflow Safety", "Drama", 1440);
+        check(!safeMovie.setRating(Double.NaN) && !safeMovie.setRating(Double.POSITIVE_INFINITY),
+                "movie rating rejects non-finite values");
+        safeMovie.like();
+        safeMovie.dislike();
+        check(safeMovie.getLikeScore() == 0, "like score handles balanced votes");
+        safeMovie.recordView();
+        safeMovie.recordWatchSeconds(60);
+        check(safeMovie.getTotalWatchSeconds() == 60 && safeMovie.getCompletionCount() == 0,
+                "watch tracking ignores incomplete view");
+        safeMovie.recordWatchSeconds(86400);
+        check(safeMovie.isWatched() && safeMovie.getCompletionCount() == 1,
+                "full duration marks movie watched");
+        check(Movies.getTotalDuration() == 460, "catalog duration remains consistent");
         Movies completedMovie = new Movies("Nearly Finished", "Drama", 100);
         check(profileOwner.updateViewingProgress(completedMovie, 96),
                 "new near-complete movie progress accepted");
