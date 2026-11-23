@@ -154,12 +154,19 @@ final class UserFeatureSmokeTests {
                     "maintenance status should take precedence");
         }
     
-    private static void testPasswordValidation() {
-        NETFLIX_USER user = new NETFLIX_USER("password-tester");
-        SmokeTestSupport.require(!user.setPassword(null), "null password should be rejected");
-        SmokeTestSupport.require(!user.setPassword("   "), "blank password should be rejected");
-        SmokeTestSupport.require(user.setPassword("  valid password  "),
-                "nonblank password should be accepted without trimming its value");
-    }
-
-    private static void testFailedJobThreshold() {\n        SystemHealthMonitor health = new SystemHealthMonitor();\n        for (int i = 0; i < 10; i++) health.recordFailedJob();\n        SmokeTestSupport.require(\"Critical\".equals(health.getStatus()),\n                \"critical threshold should be reached at ten failed jobs\");\n    }\n}\n
+        private static void testPasswordValidation() {
+            NETFLIX_USER user = new NETFLIX_USER("password-tester");
+            SmokeTestSupport.require(!user.setPassword(null), "null password should be rejected");
+            SmokeTestSupport.require(!user.setPassword("   "), "blank password should be rejected");
+            SmokeTestSupport.require(user.setPassword("  valid password  "),
+                    "nonblank password should be accepted without trimming its value");
+        }
+    
+        private static void testFailedJobThreshold() {
+            SystemHealthMonitor health = new SystemHealthMonitor();
+            for (int i = 0; i < 10; i++) health.recordFailedJob();
+            SmokeTestSupport.require(\"Critical\".equals(health.getStatus()),
+                    \"critical threshold should be reached at ten failed jobs\");
+        }
+    
+}
