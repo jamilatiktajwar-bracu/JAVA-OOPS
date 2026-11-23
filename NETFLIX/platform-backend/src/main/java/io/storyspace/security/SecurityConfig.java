@@ -6,7 +6,7 @@ public class SecurityConfig {
  @Bean PasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
  @Bean SecurityFilterChain security(HttpSecurity http,TokenAuthFilter tokenFilter)throws Exception{
   return http.csrf(c->c.disable()).cors(c->{}).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-   .authorizeHttpRequests(a->a.requestMatchers("/api/auth/**","/api/catalog/**","/api/health","/error").permitAll().anyRequest().authenticated())
+   .authorizeHttpRequests(a->a.requestMatchers("/api/auth/**","/api/catalog/**","/api/subscriptions/plans","/api/health","/error").permitAll().anyRequest().authenticated())
    .addFilterBefore(tokenFilter,UsernamePasswordAuthenticationFilter.class).build();
  }
 }
