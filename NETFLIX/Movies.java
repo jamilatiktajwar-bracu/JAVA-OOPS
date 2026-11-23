@@ -39,9 +39,9 @@ public class Movies {
     private bookmark[] bookmarks = new bookmark[100];
 
     public Movies(String title, String genre, int duration) {
-        this.title = title;
-        this.genre = genre;
-        this.duration = duration;
+        this.title = title == null || title.trim().isEmpty() ? "Untitled" : title.trim();
+        this.genre = genre == null || genre.trim().isEmpty() ? "Unknown" : genre.trim();
+        this.duration = duration >= 0 && duration <= 1440 ? duration : 0;
         this.releaseYear = 0;
         this.rating = 0.0;
         this.watched = false;
@@ -81,7 +81,7 @@ public class Movies {
 
     public Movies(String title, String genre, int duration, int releaseYear) {
         this(title, genre, duration);
-        this.releaseYear = releaseYear;
+        setReleaseYear(releaseYear);
     }
 
     public Movies(bookmark[] bookmarks) {
@@ -269,9 +269,9 @@ public class Movies {
         if (keyword == null) {
             return new Movies[0];
         }
-        String search = keyword.trim().toLowerCase();
+        String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
         for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getTitle().toLowerCase().contains(search)) {
+            if (movieList[i].getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)) {
                 matches[count++] = movieList[i];
             }
         }
@@ -403,13 +403,13 @@ public class Movies {
         }
         Movies[] matches = new Movies[movieCount];
         int count = 0;
-        String search = keyword.trim().toLowerCase();
+        String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
         for (int i = 0; i < movieCount; i++) {
             Movies movie = movieList[i];
-            if (movie.getTitle().toLowerCase().contains(search)
-                    || movie.getGenre().toLowerCase().contains(search)
-                    || movie.getDirector().toLowerCase().contains(search)
-                    || movie.getDescription().toLowerCase().contains(search)
+            if (movie.getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)
+                    || movie.getGenre().toLowerCase(java.util.Locale.ROOT).contains(search)
+                    || movie.getDirector().toLowerCase(java.util.Locale.ROOT).contains(search)
+                    || movie.getDescription().toLowerCase(java.util.Locale.ROOT).contains(search)
                     || movie.hasKeyword(search)) {
                 matches[count++] = movie;
             }
@@ -653,7 +653,7 @@ public class Movies {
     }
 
     public boolean setRating(double rating) {
-        if (rating < 0.0 || rating > 10.0) {
+        if (!Double.isFinite(rating) || rating < 0.0 || rating > 10.0) {
             return false;
         }
         this.rating = rating;
@@ -745,7 +745,13 @@ public class Movies {
         if (actor == null || actor.trim().isEmpty() || castCount >= cast.length) {
             return false;
         }
-        cast[castCount++] = actor.trim();
+        String value = actor.trim();
+        for (int i = 0; i < castCount; i++) {
+            if (cast[i].equalsIgnoreCase(value)) {
+                return false;
+            }
+        }
+        cast[castCount++] = value;
         return true;
     }
 
@@ -776,7 +782,9 @@ public class Movies {
     }
 
     public void like() {
-        likes++;
+        if (likes < Integer.MAX_VALUE) {
+            likes++;
+        }
     }
 
     public void unlike() {
@@ -786,7 +794,9 @@ public class Movies {
     }
 
     public void dislike() {
-        dislikes++;
+        if (dislikes < Integer.MAX_VALUE) {
+            dislikes++;
+        }
     }
 
     public void undislike() {
@@ -828,7 +838,9 @@ public class Movies {
     }
 
     public void recordView() {
-        viewCount++;
+        if (viewCount < Integer.MAX_VALUE) {
+            viewCount++;
+        }
     }
 
     public int getViewCount() {
@@ -868,7 +880,13 @@ public class Movies {
                 || subtitleCount >= subtitles.length) {
             return false;
         }
-        subtitles[subtitleCount++] = languageCode.trim();
+        String value = languageCode.trim();
+        for (int i = 0; i < subtitleCount; i++) {
+            if (subtitles[i].equalsIgnoreCase(value)) {
+                return false;
+            }
+        }
+        subtitles[subtitleCount++] = value;
         return true;
     }
 
