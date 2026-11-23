@@ -9,6 +9,7 @@ public class NETFLIX_SMOKE_TEST {
         testMovieConstructorNormalization();
         testMovieMetadataArrayHandling();
         testSubscriptionPaymentAndRefundSafety();
+        testPaymentWalletDefaultInvariant();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -145,6 +146,21 @@ public class NETFLIX_SMOKE_TEST {
         cancelled.processFailedPayment();
         require(cancelled.getFailedPaymentCount() == 0, "cancelled subscription should ignore payment failure");
         require(cancelled.getOutstandingBalance() == 0.0, "cancelled subscription should not accrue balance");
+    }
+
+    private static void testPaymentWalletDefaultInvariant() {
+        PaymentWallet wallet = new PaymentWallet(3);
+        PaymentMethod first = new PaymentMethod("Card", "123456", "First");
+        PaymentMethod second = new PaymentMethod("Card", "654321", "Second");
+        second.setDefault(true);
+        require(wallet.addMethod(first), "first method should be added");
+        require(wallet.getDefaultMethod() == first, "first wallet method should become default");
+        require(wallet.addMethod(second), "second method should be added");
+        require(wallet.getDefaultMethod() == first, "externally pre-marked default must not override wallet default");
+        require(wallet.setDefault(second), "wallet should allow switching default");
+        require(wallet.removeMethod(second), "default method should be removable");
+        require(wallet.getDefaultMethod() == first, "wallet should select remaining method as default");
+        require(wallet.getMethodCount() == 1, "wallet count should remain consistent");
     }
 
     private static void require(boolean condition, String message) {
