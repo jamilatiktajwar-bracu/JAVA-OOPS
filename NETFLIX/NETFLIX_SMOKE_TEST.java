@@ -107,6 +107,7 @@ public class NETFLIX_SMOKE_TEST {
     private static void testLocaleIndependentMovieSearch() {
         require(Movies.addMovie("INDIGO", "Drama", 90), "test movie should be added");
         Movies testMovie = Movies.getMovie(Movies.getMovieCount() - 1);
+        require(testMovie.addKeyword("INDIGO"), "keyword should be added");
         require(!testMovie.setRating(Double.NaN), "NaN movie rating should be rejected");
         require(!testMovie.setRating(Double.POSITIVE_INFINITY), "infinite movie rating should be rejected");
         require(testMovie.setRating(8.5), "finite rating within range should be accepted");
@@ -117,6 +118,8 @@ public class NETFLIX_SMOKE_TEST {
                     "title search should not depend on Turkish casing rules");
             require(Movies.search("indigo").length == 1,
                     "general search should not depend on Turkish casing rules");
+            require(testMovie.hasKeyword("indigo"),
+                    "keyword matching should not depend on Turkish casing rules");
         } finally {
             java.util.Locale.setDefault(original);
             Movies.removeMovie("INDIGO");
