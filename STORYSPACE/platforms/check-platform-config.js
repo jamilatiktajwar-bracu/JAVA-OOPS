@@ -53,4 +53,23 @@ try {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
+
+const releaseGradleScript = path.join(__dirname, "mobile", "prepare-release-gradle.js");
+if (!fs.existsSync(releaseGradleScript)) throw new Error("Android release signing helper missing");
+execFileSync(process.execPath, ["--check", releaseGradleScript], { stdio: "pipe" });
+
+const gradleFixture = fs.mkdtempSync(path.join(os.tmpdir(), "storyspace-gradle-signing-"));
+try {
+  const appGradle = path.join(gradleFixture, "app", "build.gradle");
+  fs.mkdirSync(path.dirname(appGradle), { recursive: true });
+  fs.writeFileSync(appGradle, "android {\n    buildTypes {\n        release {\n            minifyEnabled false\n        }\n    }\n}\n");
+  execFileSync(process.execPath, [releaseGradleScript, appGradle], { stdio: "pipe" });
+  execFileSync(process.execPath, [releaseGradleScript, appGradle], { stdio: "pipe" });
+  const gradle = fs.readFileSync(appGradle, "utf8");
+  if ((gradle.match(/signingConfigs\s*\{/g) || []).length !== 1) throw new Error("Android signing config should be inserted once");
+  if (!/signingConfig\s+signingConfigs\.release/.test(gradle)) throw new Error("Release build type is not configured to use the signing key");
+} finally {
+  fs.rmSync(gradleFixture, { recursive: true, force: true });
+}
+
 console.log("PWA + native mobile + desktop configuration checks passed.");
