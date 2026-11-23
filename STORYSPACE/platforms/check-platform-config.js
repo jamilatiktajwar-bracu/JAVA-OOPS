@@ -41,6 +41,7 @@ const webClient = read("web/app.js");
 execFileSync(process.execPath, ["--check", path.join(root, "web", "app.js")], { stdio: "pipe" });
 if (!webClient.includes("storyspace-user-data")) throw new Error("User data export/import support missing");
 if (!webClient.includes("storyspace.resumePoints") || !webClient.includes('playerVideo.addEventListener("timeupdate"')) throw new Error("Continue-watching progress persistence missing");
+if (!webClient.includes("remoteProgressPercent") || !webClient.includes('api("/library/"+encodeURIComponent(title.apiId)+"/progress"')) throw new Error("Cross-device watch progress sync missing");
 if (!webClient.includes('$("playerRestart").addEventListener("click"')) throw new Error("Player restart control missing");
 if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
 const webHtml = read("web/index.html");
