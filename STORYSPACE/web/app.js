@@ -329,6 +329,8 @@ function formatPlayerTime(seconds){
 }
 const playerVideo=$("previewVideo");
 playerVideo.addEventListener("timeupdate",()=>persistPlayerProgress(false));
+document.addEventListener("visibilitychange",()=>{if(document.hidden)persistPlayerProgress(true)});
+window.addEventListener("pagehide",()=>persistPlayerProgress(true));
 playerVideo.addEventListener("loadedmetadata",()=>{
   $("playerRestart").disabled=false;
   if(!activePlayerTitle)return;
