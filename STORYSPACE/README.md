@@ -15,6 +15,11 @@ Then open `STORYSPACE/web/index.html` in your browser. Backend health: `http://l
 - Featured story rotates automatically.
 - Guest preferences/library are stored in local browser storage.
 - Sign-up/login syncs profile preferences and watchlist to the backend.
+- Search supports phrase queries plus `genre:`, `mood:`, `language:`, and `type:` filters (for example: `genre:Sci-Fi type:series`). Browse results can be filtered by genre and sorted by recommendation, rating, release year, or title.
+- Recent activity is available from the clock/bell control and is stored locally for the guest/device experience.
+- User data can be exported/imported as a versioned JSON file; exports deliberately exclude authentication tokens.
+- Keyboard shortcuts: `/` or `Ctrl/Cmd+K` for search, `H` for Discover, `M` for My Universe, `?` for the shortcut hint, and `Esc` to close overlays.
+- Offline shell caching is versioned and bounded, leaves unrelated origin caches untouched, and never caches API responses.
 
 ## Backend
 Java 17 / Spring Boot / H2. Auth, catalog, search, personalized feed, library/progress/rating, demo memberships, role-restricted admin catalog and metrics, and preview/access-control placeholders. See `backend/README.md`.
