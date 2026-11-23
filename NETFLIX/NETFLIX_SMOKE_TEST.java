@@ -70,6 +70,10 @@ public class NETFLIX_SMOKE_TEST {
 
     private static void testLocaleIndependentMovieSearch() {
         require(Movies.addMovie("INDIGO", "Drama", 90), "test movie should be added");
+        Movies testMovie = Movies.getMovie(Movies.getMovieCount() - 1);
+        require(!testMovie.setRating(Double.NaN), "NaN movie rating should be rejected");
+        require(!testMovie.setRating(Double.POSITIVE_INFINITY), "infinite movie rating should be rejected");
+        require(testMovie.setRating(8.5), "finite rating within range should be accepted");
         java.util.Locale original = java.util.Locale.getDefault();
         try {
             java.util.Locale.setDefault(new java.util.Locale("tr", "TR"));
