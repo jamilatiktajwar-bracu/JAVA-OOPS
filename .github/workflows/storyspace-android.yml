@@ -6,13 +6,6 @@ on:
     paths:
       - 'STORYSPACE/**'
       - '.github/workflows/storyspace-android.yml'
-  push:
-    branches:
-      - product/mobile-native-milestone
-      - feature/storyspace-android-apk-ci
-    paths:
-      - 'STORYSPACE/**'
-      - '.github/workflows/storyspace-android.yml'
 
 permissions:
   contents: read
