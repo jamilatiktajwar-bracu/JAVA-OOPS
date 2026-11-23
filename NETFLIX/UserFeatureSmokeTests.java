@@ -165,8 +165,8 @@ final class UserFeatureSmokeTests {
         private static void testFailedJobThreshold() {
             SystemHealthMonitor health = new SystemHealthMonitor();
             for (int i = 0; i < 10; i++) health.recordFailedJob();
-            SmokeTestSupport.require(\"Critical\".equals(health.getStatus()),
-                    \"critical threshold should be reached at ten failed jobs\");
+            SmokeTestSupport.require("Critical".equals(health.getStatus()),
+                    "critical threshold should be reached at ten failed jobs");
         }
     
 }
