@@ -59,6 +59,47 @@ public class NetflixSmokeTest {
         check(shuffleQueue.next() != null, "shuffle advances with multiple entries");
         check(shuffleQueue.getCurrent() != null, "shuffle current remains valid");
 
+        // Watch-party membership, playback, and moderation edge cases.
+        NETFLIX_USER host = new NETFLIX_USER("party-host");
+        NETFLIX_USER guest = new NETFLIX_USER("party-guest");
+        WatchParty party = new WatchParty("Regression Party", queueA, host);
+        check(!party.invite(host), "watch party cannot invite host as guest");
+        check(party.invite(guest), "watch party accepts guest");
+        check(!party.invite(guest), "watch party rejects duplicate guest");
+        check(party.muteGuest(guest), "host can mute a guest");
+        check(!party.sendChat(guest, "hello"), "muted guest chat is blocked");
+        check(party.removeGuest(guest), "guest can be removed");
+        check(!party.isMuted(guest), "removed guest mute state is cleared");
+        check(!party.setPlaybackPosition(-1), "watch party rejects negative position");
+        check(party.setPlaybackPosition(20), "watch party accepts valid position");
+        party.play();
+        check(!party.syncGuestPosition(-5), "sync rejects invalid guest position");
+        party.endParty();
+        check(!party.invite(guest), "ended party cannot invite guests");
+        party.restartParty();
+        check(!party.isPlaying() && party.getPlaybackPosition() == 0,
+                "restart resets playback state");
+
+        // Promo codes and wallet defensive behavior.
+        Subscription promoSubscription = new Subscription("Pro");
+        PromoCode promo = new PromoCode(" save10 ", 10.0, 1);
+        check(promo.redeem(promoSubscription), "promo redeems valid subscription");
+        check(Math.abs(promoSubscription.getEffectiveMonthlyFee() - 630.0) < 0.001,
+                "promo discount applies correctly");
+        check(!promo.redeem(promoSubscription), "single-use promo cannot be redeemed twice");
+        PromoCode invalidPromo = new PromoCode("INVALID", 120.0, 2);
+        check(!invalidPromo.isValid(), "invalid promo discount is rejected");
+
+        PaymentWallet wallet = new PaymentWallet(2);
+        PaymentMethod paymentA = new PaymentMethod("Card", "12345678", "Test");
+        PaymentMethod paymentB = new PaymentMethod("Card", "87654321", "Test");
+        check(wallet.addMethod(paymentA) && wallet.addMethod(paymentB),
+                "wallet accepts methods within capacity");
+        check(wallet.getDefaultMethod() == paymentA, "first wallet method is default");
+        check(wallet.setDefault(paymentB), "wallet can switch default method");
+        check(wallet.removeMethod(paymentB), "wallet removes method");
+        check(wallet.getDefaultMethod() == paymentA, "wallet reassigns default after removal");
+
         System.out.println("NETFLIX_SMOKE_TEST_OK");
     }
 
