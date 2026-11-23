@@ -20,12 +20,18 @@ python3 -m http.server 5173
 Open http://localhost:5173; use browser install option if available.
 
 ## Desktop wrapper
+Run the desktop shell locally:
 ```bash
 cd STORYSPACE/platforms/desktop
 npm install
 npm start
 ```
-Developer wrapper only; release installers need platform-specific packaging, signing, and notarization.
+
+Cross-platform package generation:
+```bash
+npm run dist
+```
+A GitHub Actions matrix builds Windows NSIS installer, macOS DMG, and Linux AppImage packages. Download the matching artifact from the `Storyspace Desktop Packages` workflow. These CI packages are unsigned development builds; Windows signing, macOS signing/notarization, and store distribution still require release credentials and validation.
 
 ## Mobile app polish
 The mobile shell includes native plugin setup for app lifecycle/back handling, haptic taps, connectivity monitoring, status bar, splash screen, keyboard resize, safe-area padding, and bottom tab navigation on narrow screens. Browser fallback remains active without native plugins.
