@@ -1,6 +1,6 @@
 # Storyspace product
 
-An independent, original streaming/discovery product concept. The working brand is provisional.
+An independent original streaming/discovery product concept. The working brand is provisional.
 
 ## Launch locally
 ```bash
