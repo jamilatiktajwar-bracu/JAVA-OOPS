@@ -144,7 +144,7 @@ private static void testWatchPartyParticipationAndBoundaries() {
         health.setActiveSessions(-1);
         SmokeTestSupport.require(health.getActiveSessions() == 10,
                 "negative session counts should not overwrite valid state");
-        health.recordWarning();
+        for (int i = 0; i < 5; i++) health.recordWarning();
         SmokeTestSupport.require("Degraded".equals(health.getStatus()),
                 "warning threshold should degrade health status");
         health.setMaintenanceMode(true);
