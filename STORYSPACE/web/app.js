@@ -383,7 +383,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
         state.list=new Set(Array.isArray(data.savedTitles)?data.savedTitles.filter(v=>typeof v==="string"||typeof v==="number").slice(0,500):[]);
         personalized.history=normalizeHistory(data.history);
         savePrefs();persistList();storage.set("storyspace.history",JSON.stringify(personalized.history));
-        drawPreferences();renderHome();setHero(chooseHero());showToast("Preferences, saved stories, and activity imported");
+        drawPreferences();renderHome();setHero(chooseHero());showToast(personalized.account?"Imported on this device; account sync may replace remote items.":"Preferences, saved stories, and activity imported");
       }catch(error){showToast(error.message||"That file could not be imported")}
     };
     reader.onerror=()=>showToast("Could not read the selected file");
@@ -401,6 +401,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   const isEditing=target=>target instanceof HTMLElement&&(
     target.isContentEditable||["INPUT","TEXTAREA","SELECT"].includes(target.tagName));
   document.addEventListener("keydown",event=>{
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="k"){event.preventDefault();$el("searchBox")?.classList.add("open");$el("searchInput")?.focus();return}
     if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey)return;
     if(isEditing(event.target))return;
     const overlayOpen=["modalBackdrop","preferencesBackdrop","authBackdrop","subscriptionBackdrop","adminBackdrop","playerBackdrop"].some(id=>!$el(id)?.hidden);
