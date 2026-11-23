@@ -745,7 +745,13 @@ public class Movies {
         if (actor == null || actor.trim().isEmpty() || castCount >= cast.length) {
             return false;
         }
-        cast[castCount++] = actor.trim();
+        String value = actor.trim();
+        for (int i = 0; i < castCount; i++) {
+            if (cast[i].equalsIgnoreCase(value)) {
+                return false;
+            }
+        }
+        cast[castCount++] = value;
         return true;
     }
 
@@ -776,7 +782,9 @@ public class Movies {
     }
 
     public void like() {
-        likes++;
+        if (likes < Integer.MAX_VALUE) {
+            likes++;
+        }
     }
 
     public void unlike() {
@@ -786,7 +794,9 @@ public class Movies {
     }
 
     public void dislike() {
-        dislikes++;
+        if (dislikes < Integer.MAX_VALUE) {
+            dislikes++;
+        }
     }
 
     public void undislike() {
@@ -828,7 +838,9 @@ public class Movies {
     }
 
     public void recordView() {
-        viewCount++;
+        if (viewCount < Integer.MAX_VALUE) {
+            viewCount++;
+        }
     }
 
     public int getViewCount() {
@@ -868,7 +880,13 @@ public class Movies {
                 || subtitleCount >= subtitles.length) {
             return false;
         }
-        subtitles[subtitleCount++] = languageCode.trim();
+        String value = languageCode.trim();
+        for (int i = 0; i < subtitleCount; i++) {
+            if (subtitles[i].equalsIgnoreCase(value)) {
+                return false;
+            }
+        }
+        subtitles[subtitleCount++] = value;
         return true;
     }
 
