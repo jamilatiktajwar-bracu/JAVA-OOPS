@@ -8,10 +8,11 @@ The shared web client provides:
 - Focus is spatially moved between visible controls and story cards, and scrolls the focused item into view.
 - Escape / Android Back handling for open dialogs and the player.
 
-The build applies `prepare-android-tv.js` after Capacitor sync. The configuration smoke test runs the script against a temporary manifest twice to confirm that it is safe to re-run. APK CI verifies the Leanback launcher intent and checks the TV banner in the compiled resource table (not just the XML manifest dump).
+The build applies `prepare-android-tv.js` after Capacitor sync. The configuration smoke test runs the script against a temporary manifest twice to confirm that it is safe to re-run. APK CI verifies the Leanback launcher intent and checks the TV banner in the compiled resource table (not just the XML manifest dump). CI also launches the APK in an Android emulator, checks that the app process survives startup, sends remote-arrow key events, and captures a screenshot.
 
 ## Remaining TV validation
 
+- [ ] Review the CI Android emulator screenshot and logs for launch/D-pad regressions.
 - [ ] Install the APK on an Android TV / Google TV emulator and a physical TV device.
 - [ ] Verify the launcher banner, app listing, remote D-pad focus, Select, and Back behavior.
 - [ ] Check 1080p and 4K typography, focus contrast, and couch-distance readability.
