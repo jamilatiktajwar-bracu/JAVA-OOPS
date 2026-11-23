@@ -37,6 +37,8 @@ if (!tokenService.includes('Production must provide a unique TOKEN_SECRET.')) th
 const webClient = read("web/app.js");
 execFileSync(process.execPath, ["--check", path.join(root, "web", "app.js")], { stdio: "pipe" });
 if (!webClient.includes("storyspace-user-data")) throw new Error("User data export/import support missing");
+if (!webClient.includes("storyspace.resumePoints") || !webClient.includes('playerVideo.addEventListener("timeupdate"')) throw new Error("Continue-watching progress persistence missing");
+if (!webClient.includes('$("playerRestart").addEventListener("click"')) throw new Error("Player restart control missing");
 if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
 if (!webClient.includes("matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType")) throw new Error("Structured search filters missing");
 if (!webClient.includes("row.replaceChildren()") || webClient.includes('row.innerHTML=`<span class="avatar"')) throw new Error("Profile details must be rendered with safe text nodes");
@@ -48,6 +50,8 @@ if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) t
 if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
+if (!androidWorkflow.includes('ANDROID_I_WANT_MY_TCG: "yes"') || !androidWorkflow.includes("disable-linux-hw-accel: false")) throw new Error("Android emulator must enable the supported TCG fallback on Linux runners");
+if (!androidWorkflow.includes("Capture emulator diagnostics")) throw new Error("Android emulator failure diagnostics step missing");
 if (!androidWorkflow.includes('dump resources app/build/outputs/apk/debug/app-debug.apk')) throw new Error("Android TV banner must be verified through the APK resource table");
 const emulatorSmoke = path.join(__dirname, "android-tv", "emulator-smoke.sh");
 if (!fs.existsSync(emulatorSmoke)) throw new Error("Android emulator smoke script missing");
