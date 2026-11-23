@@ -408,6 +408,10 @@ public class NETFLIX_USER {
                 return true;
             }
         }
+        if (progressPercent >= 95) {
+            movie.markWatched();
+            return true;
+        }
         if (continueWatchingCount >= continueWatching.length) {
             return false;
         }
@@ -554,7 +558,8 @@ public class NETFLIX_USER {
     }
 
     public boolean addFamilyProfile(NETFLIX_USER profile) {
-        if (profile == null || familyProfileCount >= familyProfiles.length) {
+        if (profile == null || profile == this
+                || familyProfileCount >= familyProfiles.length) {
             return false;
         }
         for (int i = 0; i < familyProfileCount; i++) {
@@ -577,11 +582,11 @@ public class NETFLIX_USER {
     }
 
     public int getTotalWatchedMinutes() {
-        int total = 0;
+        long total = 0;
         for (int i = 0; i < watchHistoryCount; i++) {
-            total += watchHistory[i].getDuration();
+            total += Math.max(0, watchHistory[i].getDuration());
         }
-        return total;
+        return total > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) total;
     }
 
     public Movies[] getRecentlyWatched(int limit) {
@@ -676,7 +681,8 @@ public class NETFLIX_USER {
     }
 
     public boolean setPassword(String password) {
-        if (password == null) {
+        if (password == null || password.length() < 8
+                || password.trim().isEmpty()) {
             return false;
         }
         this.password = password;
