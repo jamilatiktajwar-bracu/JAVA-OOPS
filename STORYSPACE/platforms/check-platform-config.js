@@ -7,6 +7,7 @@ const html = read("web/index.html");
 for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "native-bridge.js", "assets/storyspace-icon.svg"]) if (!html.includes(asset)) throw new Error("Missing HTML reference: " + asset);
 if (!html.includes('rel="manifest"')) throw new Error("PWA manifest not linked");
 if (!read("web/sw.js").includes("CACHE_NAME")) throw new Error("Service worker cache missing");
+if (!read("web/sw.js").includes("native-bridge.js")) throw new Error("Native bridge missing from offline cache");
 const mobile = JSON.parse(read("platforms/mobile/package.json"));
 for (const plugin of ["@capacitor/app", "@capacitor/haptics", "@capacitor/network", "@capacitor/status-bar", "@capacitor/keyboard", "@capacitor/splash-screen", "@capacitor/android", "@capacitor/ios"]) if (!mobile.dependencies[plugin]) throw new Error("Missing Capacitor dependency " + plugin);
 if (!read("platforms/mobile/capacitor.config.ts").includes("SplashScreen")) throw new Error("Native splash config missing");
