@@ -55,6 +55,14 @@ jobs:
       - name: Build debug APK
         working-directory: STORYSPACE/platforms/mobile/android
         run: ./gradlew assembleDebug --no-daemon
+      - name: Verify phone and TV launcher metadata in APK
+        working-directory: STORYSPACE/platforms/mobile/android
+        run: |
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          "$AAPT" dump xmltree app/build/outputs/apk/debug/app-debug.apk AndroidManifest.xml > "$RUNNER_TEMP/storyspace-manifest.txt"
+          grep -q 'android.software.leanback' "$RUNNER_TEMP/storyspace-manifest.txt"
+          grep -q 'android.intent.category.LEANBACK_LAUNCHER' "$RUNNER_TEMP/storyspace-manifest.txt"
+          grep -q 'storyspace_tv_banner' "$RUNNER_TEMP/storyspace-manifest.txt"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
