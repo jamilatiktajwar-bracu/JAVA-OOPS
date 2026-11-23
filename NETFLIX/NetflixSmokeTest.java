@@ -117,6 +117,35 @@ public class NetflixSmokeTest {
         check(!party.isPlaying() && party.getPlaybackPosition() == 0,
                 "restart resets playback state");
 
+        AdminAuditLog auditLog = new AdminAuditLog(3);
+        check(auditLog.record(" admin ", " profile updated "),
+                "audit log accepts normalized valid entry");
+        check("admin".equals(auditLog.getActors()[0])
+                && "profile updated".equals(auditLog.getActions()[0]),
+                "audit log trims actor and action");
+        check(!auditLog.record("actor\\n", "action")
+                && !auditLog.record("actor", new String(new char[513]).replace("\\0", "x")),
+                "audit log rejects control characters and oversized events");
+        check(auditLog.getLogCount() == 1, "invalid audit entries do not change count");
+        auditLog.clear();
+        check(auditLog.getLogCount() == 0 && "No actions".equals(auditLog.getLatestAction()),
+                "audit log clear resets safely");
+
+        Movies analyticsA = new Movies("Analytics A", "Drama", 100);
+        Movies analyticsB = new Movies("Analytics B", "Comedy", 90);
+        NETFLIX_USER analyticsUser = new NETFLIX_USER("analytics-user");
+        analyticsUser.watchMovie(analyticsA);
+        analyticsUser.watchMovie(analyticsB);
+        Movies[] historyBeforeSort = analyticsUser.getWatchHistory();
+        Movies[] personalTop = CinemaAnalytics.getPersonalTopRated(analyticsUser, 1);
+        check(personalTop.length == 1, "personal top-rated respects requested limit");
+        Movies[] historyAfterSort = analyticsUser.getWatchHistory();
+        check(java.util.Arrays.equals(historyBeforeSort, historyAfterSort),
+                "analytics sorting does not mutate user watch history");
+        check(CinemaAnalytics.getAveragePersonalRating(null) == 0.0
+                && CinemaAnalytics.getCompletionRate(null) == 0.0,
+                "analytics null-user metrics return safe defaults");
+
         // Promo codes and wallet defensive behavior.
         Subscription promoSubscription = new Subscription("Pro");
         PromoCode promo = new PromoCode(" save10 ", 10.0, 1);
