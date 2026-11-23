@@ -139,6 +139,11 @@ public class NetflixSmokeTest {
         Movies safeMovie = new Movies("Overflow Safety", "Drama", 1440);
         check(!safeMovie.setRating(Double.NaN) && !safeMovie.setRating(Double.POSITIVE_INFINITY),
                 "movie rating rejects non-finite values");
+        check(!safeMovie.addUserRating(Double.NaN)
+                && !safeMovie.addUserRating(Double.NEGATIVE_INFINITY),
+                "community ratings reject non-finite values");
+        check(safeMovie.addUserRating(8.5) && safeMovie.getUserRatingCount() == 1,
+                "valid community rating updates count");
         safeMovie.like();
         safeMovie.dislike();
         check(safeMovie.getLikeScore() == 0, "like score handles balanced votes");
