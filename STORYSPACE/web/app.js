@@ -78,7 +78,7 @@ function legacySearch(q){
   state.view="search";$("hero").hidden=true;$("moodSection").hidden=true;
   ["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);
   $("welcomeLine").hidden=true;$("searchResultsSection").hidden=false;
-  const rawTokens=state.search.match(/"[^"]+"|\\S+/g)||[];
+  const rawTokens=state.search.match(/"[^"]+"|\S+/g)||[];
   const filters={genre:[],mood:[],language:[],type:[]},terms=[];
   rawTokens.forEach(token=>{
     const match=token.match(/^(genre|mood|language|type):(.+)$/i);
@@ -423,7 +423,8 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
     navigator.serviceWorker.ready.then(registration=>registration.update()).catch(()=>{});
   }
 })();
-\n// Multi-device install and living-room navigation foundation.
+
+// Multi-device install and living-room navigation foundation.
 (() => {
   const isNativeAndroid = window.StoryspaceNative?.native === true && window.StoryspaceNative?.platform === "android";
   let tvMode = new URLSearchParams(location.search).get("tv") === "1";
