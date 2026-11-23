@@ -291,6 +291,7 @@ public class NETFLIX_SMOKE_TEST {
         require(queue.add(first), "queue should accept initial item");
         require(queue.next() == null, "single-item queue should reach end without repeat");
         require(queue.getCurrent() == null, "current should be null after reaching end");
+        require(queue.getRemainingCount() == 0, "remaining count should be zero at end of queue");
         require(queue.add(second), "queue should accept item after end");
         require(queue.getCurrent() == second, "adding after end should restore a valid current item");
         require(queue.getCurrentIndex() == 1, "current index should track appended recovery item");
