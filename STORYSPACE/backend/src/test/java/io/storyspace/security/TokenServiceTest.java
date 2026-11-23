@@ -1,0 +1,3 @@
+package io.storyspace.security;
+import org.junit.jupiter.api.Test;import static org.junit.jupiter.api.Assertions.*;import java.util.UUID;
+class TokenServiceTest {@Test void signsAndValidatesTokens(){TokenService s=new TokenService("test-secret-that-is-at-least-thirty-two-characters",72);UUID id=UUID.randomUUID();String token=s.issue(id,"USER");assertEquals(id,s.validateAndGetUserId(token));assertNull(s.validateAndGetUserId(token+"x"));assertNull(s.validateAndGetUserId("bad"));}}

@@ -1,0 +1,8 @@
+package io.storyspace.api;
+import io.storyspace.catalog.*;import org.springframework.security.access.prepost.PreAuthorize;import org.springframework.web.bind.annotation.*;import jakarta.validation.Valid;import jakarta.validation.constraints.*;import java.util.UUID;
+@RestController @RequestMapping("/api/admin/catalog") @PreAuthorize("hasRole('ADMIN')") public class AdminController {
+ private final TitleRepository titles;public AdminController(TitleRepository t){titles=t;}
+ public record CreateTitle(@NotBlank String slug,@NotBlank @Size(max=160)String name,@NotBlank @Size(max=2500)String synopsis,@NotBlank String genres,@NotBlank String moods,@NotBlank String language,@Min(1900)@Max(2100)int releaseYear,@NotBlank String ageRating,@NotBlank String format,@DecimalMin("0")@DecimalMax("10")double score,String posterUrl,String backdropUrl,boolean featured,boolean original){}
+ @PostMapping public Title create(@Valid @RequestBody CreateTitle r){if(titles.existsBySlug(r.slug()))throw new IllegalArgumentException("Slug is already in use.");return titles.save(new Title(r.slug(),r.name(),r.synopsis(),r.genres(),r.moods(),r.language(),r.releaseYear(),r.ageRating(),r.format(),r.score(),r.posterUrl(),r.backdropUrl(),r.featured(),r.original()));}
+ @DeleteMapping("/{id}")public void remove(@PathVariable UUID id){Title t=titles.findById(id).orElseThrow(()->new IllegalArgumentException("Title not found"));titles.delete(t);}
+}
