@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8080}
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:file:./data/storyspace;AUTO_SERVER=TRUE}
+    username: ${DATABASE_USER:sa}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: ${H2_CONSOLE:false}
+app:
+  security:
+    token-secret: ${TOKEN_SECRET:local-development-secret-change-before-deployment-0123456789}
+    token-ttl-hours: 72
+  bootstrap:
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
