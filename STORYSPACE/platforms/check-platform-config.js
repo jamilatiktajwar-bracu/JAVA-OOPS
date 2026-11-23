@@ -28,6 +28,10 @@ execFileSync(process.execPath, ["--check", path.join(root, "web", "sw.js")], { s
 const apiConfigScript = path.join(__dirname, "mobile", "configure-api-root.js");
 if (!fs.existsSync(apiConfigScript)) throw new Error("Native API configuration script missing");
 execFileSync(process.execPath, ["--check", apiConfigScript], { stdio: "pipe" });
+const webClient = read("web/app.js");
+if (!webClient.includes("window.StoryspaceTV.enable();\\n      tvMode = true;")) throw new Error("Native Android TV mode must preserve the first D-pad key");
+if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
+if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const tvScript = path.join(__dirname, "android-tv", "prepare-android-tv.js");
 if (!fs.existsSync(tvScript)) throw new Error("Android TV manifest setup script missing");
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "storyspace-tv-manifest-"));
