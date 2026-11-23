@@ -527,11 +527,14 @@ public class Movies {
     }
 
     public static int getTotalDuration() {
-        int total = 0;
+        long total = 0L;
         for (int i = 0; i < movieCount; i++) {
-            total += movieList[i].getDuration();
+            total += Math.max(0, movieList[i].getDuration());
+            if (total >= Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
         }
-        return total;
+        return (int) total;
     }
 
     public static Movies getHighestRatedMovie() {
@@ -653,7 +656,7 @@ public class Movies {
     }
 
     public boolean setRating(double rating) {
-        if (rating < 0.0 || rating > 10.0) {
+        if (!Double.isFinite(rating) || rating < 0.0 || rating > 10.0) {
             return false;
         }
         this.rating = rating;
@@ -776,7 +779,9 @@ public class Movies {
     }
 
     public void like() {
-        likes++;
+        if (likes < Integer.MAX_VALUE) {
+            likes++;
+        }
     }
 
     public void unlike() {
@@ -786,7 +791,9 @@ public class Movies {
     }
 
     public void dislike() {
-        dislikes++;
+        if (dislikes < Integer.MAX_VALUE) {
+            dislikes++;
+        }
     }
 
     public void undislike() {
@@ -804,7 +811,8 @@ public class Movies {
     }
 
     public int getLikeScore() {
-        return likes - dislikes;
+        long score = (long) likes - (long) dislikes;
+        return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, score));
     }
 
     public void setReleaseStatus(String status) {
@@ -828,7 +836,9 @@ public class Movies {
     }
 
     public void recordView() {
-        viewCount++;
+        if (viewCount < Integer.MAX_VALUE) {
+            viewCount++;
+        }
     }
 
     public int getViewCount() {
@@ -839,7 +849,9 @@ public class Movies {
         if (!downloadAvailable) {
             return false;
         }
-        downloadCount++;
+        if (downloadCount < Integer.MAX_VALUE) {
+            downloadCount++;
+        }
         return true;
     }
 
@@ -1011,11 +1023,15 @@ public class Movies {
     }
 
     public void recordWatchSeconds(int seconds) {
-        if (seconds > 0) {
-            totalWatchSeconds += seconds;
+        if (seconds <= 0) {
+            return;
         }
-        if (seconds >= duration * 60 && duration > 0) {
-            completionCount++;
+        long total = (long) totalWatchSeconds + seconds;
+        totalWatchSeconds = (int) Math.min(Integer.MAX_VALUE, total);
+        if (duration > 0 && (long) seconds >= (long) duration * 60L) {
+            if (completionCount < Integer.MAX_VALUE) {
+                completionCount++;
+            }
             markWatched();
         }
     }
