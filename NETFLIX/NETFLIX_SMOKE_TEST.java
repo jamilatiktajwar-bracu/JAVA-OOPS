@@ -4,6 +4,7 @@ public class NETFLIX_SMOKE_TEST {
         testOfflineDownloads();
         testViewingSession();
         testMovieReview();
+        testLocaleIndependentMovieSearch();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -65,6 +66,21 @@ public class NETFLIX_SMOKE_TEST {
         require(review.getHelpfulnessScore() == 0, "vote score should reflect both vote types");
         require(review.report(), "report should be accepted");
         require(review.needsReview(), "reported review should require moderation");
+    }
+
+    private static void testLocaleIndependentMovieSearch() {
+        require(Movies.addMovie("INDIGO", "Drama", 90), "test movie should be added");
+        java.util.Locale original = java.util.Locale.getDefault();
+        try {
+            java.util.Locale.setDefault(new java.util.Locale("tr", "TR"));
+            require(Movies.searchByTitle("indigo").length == 1,
+                    "title search should not depend on Turkish casing rules");
+            require(Movies.search("indigo").length == 1,
+                    "general search should not depend on Turkish casing rules");
+        } finally {
+            java.util.Locale.setDefault(original);
+            Movies.removeMovie("INDIGO");
+        }
     }
 
     private static void require(boolean condition, String message) {
