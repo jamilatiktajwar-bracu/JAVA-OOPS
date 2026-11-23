@@ -43,6 +43,9 @@ public class PlaybackQueue {
             }
         }
         queue[queueCount++] = movie;
+        if (currentIndex < 0) {
+            currentIndex = queueCount - 1;
+        }
         touch();
         return true;
     }
@@ -57,6 +60,9 @@ public class PlaybackQueue {
         }
         queue[insertIndex] = movie;
         queueCount++;
+        if (currentIndex < 0) {
+            currentIndex = insertIndex;
+        }
         touch();
         return true;
     }
@@ -359,6 +365,6 @@ public class PlaybackQueue {
     }
 
     private void touch() {
-        lastUpdatedAt = System.currentTimeMillis();
+        lastUpdatedAt = Math.max(System.currentTimeMillis(), lastUpdatedAt + 1L);
     }
 }
