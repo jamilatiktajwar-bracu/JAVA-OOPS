@@ -167,6 +167,7 @@ public class NetflixPlaylist {
     }
 
     public void sortByTitle(boolean ascending) {
+        Movies nextMovie = getNextMovieReference();
         for (int i = 0; i < movieCount - 1; i++) {
             for (int j = i + 1; j < movieCount; j++) {
                 int comparison = movies[i].getTitle()
@@ -179,11 +180,12 @@ public class NetflixPlaylist {
                 }
             }
         }
-        currentPosition = 0;
+        restoreNextMovie(nextMovie);
         touch();
     }
 
     public void sortByRating(boolean descending) {
+        Movies nextMovie = getNextMovieReference();
         for (int i = 0; i < movieCount - 1; i++) {
             for (int j = i + 1; j < movieCount; j++) {
                 if ((descending && movies[i].getRating() < movies[j].getRating())
@@ -194,11 +196,12 @@ public class NetflixPlaylist {
                 }
             }
         }
-        currentPosition = 0;
+        restoreNextMovie(nextMovie);
         touch();
     }
 
     public void sortByReleaseYear(boolean descending) {
+        Movies nextMovie = getNextMovieReference();
         for (int i = 0; i < movieCount - 1; i++) {
             for (int j = i + 1; j < movieCount; j++) {
                 if ((descending && movies[i].getReleaseYear() < movies[j].getReleaseYear())
@@ -209,19 +212,34 @@ public class NetflixPlaylist {
                 }
             }
         }
-        currentPosition = 0;
+        restoreNextMovie(nextMovie);
         touch();
     }
 
     public void shuffle() {
+        Movies nextMovie = getNextMovieReference();
         for (int i = movieCount - 1; i > 0; i--) {
             int j = (int) (Math.random() * (i + 1));
             Movies temporary = movies[i];
             movies[i] = movies[j];
             movies[j] = temporary;
         }
-        currentPosition = 0;
+        restoreNextMovie(nextMovie);
         touch();
+    }
+
+    private Movies getNextMovieReference() {
+        return currentPosition >= 0 && currentPosition < movieCount
+                ? movies[currentPosition] : null;
+    }
+
+    private void restoreNextMovie(Movies nextMovie) {
+        if (nextMovie == null) {
+            currentPosition = movieCount;
+            return;
+        }
+        int index = indexOf(nextMovie);
+        currentPosition = index >= 0 ? index : 0;
     }
 
     public Movies[] filterByGenre(String genre) {
