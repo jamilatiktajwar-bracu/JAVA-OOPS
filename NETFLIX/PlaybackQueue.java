@@ -100,7 +100,7 @@ public class PlaybackQueue {
             return null;
         }
         Movies current = getCurrent();
-        if (current != null && !(repeatOne && current != null)) {
+        if (current != null && !repeatOne) {
             addToHistory(current);
         }
         if (repeatOne && current != null) {
