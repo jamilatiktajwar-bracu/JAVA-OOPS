@@ -6,6 +6,7 @@ public class NETFLIX_SMOKE_TEST {
         testMovieReview();
         testLocaleIndependentMovieSearch();
         testSubscriptionPlanNormalization();
+        testMovieConstructorNormalization();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -96,6 +97,17 @@ public class NETFLIX_SMOKE_TEST {
         require(!invalid.isDownloadsEnabled(), "download capability should follow normalized fee");
         require(!invalid.isSpatialAudioEnabled(), "spatial audio should follow normalized resolution");
         require(SubscriptionPlan.maxPlan().isSpatialAudioEnabled(), "Max plan should enable spatial audio");
+    }
+
+    private static void testMovieConstructorNormalization() {
+        Movies invalid = new Movies("  ", null, -10, 1800);
+        require("Untitled".equals(invalid.getTitle()), "blank constructor title should normalize");
+        require("Unknown".equals(invalid.getGenre()), "null constructor genre should normalize");
+        require(invalid.getDuration() == 0, "invalid constructor duration should normalize to zero");
+        require(invalid.getReleaseYear() == 0, "invalid constructor release year should remain unset");
+        Movies valid = new Movies("  Film  ", "  Drama  ", 120, 2020);
+        require("Film".equals(valid.getTitle()) && "Drama".equals(valid.getGenre()), "constructor should trim valid text");
+        require(valid.getDuration() == 120 && valid.getReleaseYear() == 2020, "valid constructor values should be retained");
     }
 
     private static void require(boolean condition, String message) {
