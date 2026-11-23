@@ -25,6 +25,11 @@ jobs:
       - name: Generate iOS project
         working-directory: STORYSPACE/platforms/mobile
         run: npx cap add ios
+      - name: Configure API endpoint
+        working-directory: STORYSPACE/platforms/mobile
+        env:
+          STORYSPACE_API_ROOT: ${{ vars.STORYSPACE_API_ROOT }}
+        run: node configure-api-root.js
       - name: Sync web assets and native plugins
         working-directory: STORYSPACE/platforms/mobile
         run: npx cap sync ios
