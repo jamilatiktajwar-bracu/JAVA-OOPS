@@ -68,9 +68,14 @@ public class PlaybackQueue {
                     queue[j] = queue[j + 1];
                 }
                 queue[--queueCount] = null;
-                if (i < currentIndex) {
+                if (queueCount == 0) {
+                    currentIndex = 0;
+                } else if (i < currentIndex) {
                     currentIndex--;
+                } else if (i == currentIndex) {
+                    currentIndex = Math.min(i, queueCount - 1);
                 }
+                touch();
                 return true;
             }
         }
@@ -138,6 +143,8 @@ public class PlaybackQueue {
         }
         queueCount = 0;
         currentIndex = 0;
+        clearHistory();
+        touch();
     }
 
     public Movies[] getQueue() {
@@ -235,7 +242,7 @@ public class PlaybackQueue {
     }
 
     public boolean setPlaybackSpeed(double speed) {
-        if (speed < 0.25 || speed > 4.0) {
+        if (!Double.isFinite(speed) || speed < 0.25 || speed > 4.0) {
             return false;
         }
         playbackSpeed = speed;
@@ -340,11 +347,11 @@ public class PlaybackQueue {
     }
 
     public int getTotalDuration() {
-        int total = 0;
+        long total = 0;
         for (int i = 0; i < queueCount; i++) {
             total += queue[i].getDuration();
         }
-        return total;
+        return total > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) total;
     }
 
     public long getLastUpdatedAt() {
