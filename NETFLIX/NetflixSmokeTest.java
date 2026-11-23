@@ -28,6 +28,19 @@ public class NetflixSmokeTest {
                 "null-user surprise recommendations safe");
         check("No movie or user context".equals(noUser.explainRecommendation(null)),
                 "null recommendation explanation safe");
+        check(!engine.setRatingThreshold(Double.NaN) && !engine.setPopularityWeight(Double.POSITIVE_INFINITY),
+                "recommendation tuning rejects non-finite values");
+        check(engine.excludeGenre("Drama") && !engine.excludeGenre(" drama "),
+                "excluded genres are unique case-insensitively");
+        check(noUser.isColdStartUser() == false && noUser.getColdStartRecommendations(3).length == 0,
+                "null-user cold-start checks remain safe");
+        check(engine.getColdStartRecommendations(4).length <= 4,
+                "cold-start recommendations honor limit and candidate filtering");
+        check(noUser.calculateSimilarity(user) == 0.0,
+                "null-user similarity returns safe zero");
+        check(engine.getCollaborativeRecommendations(user, 3).length == 0,
+                "collaborative recommendations require valid requester");
+
 
 
         // Playback queue regression checks: cursor stability and cleanup.
