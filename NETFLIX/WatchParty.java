@@ -149,7 +149,7 @@ public class WatchParty {
     }
 
     public boolean setMaxGuests(int maxGuests) {
-        if (maxGuests < 1 || maxGuests > guests.length) {
+        if (maxGuests < 1 || maxGuests > guests.length || maxGuests < guestCount) {
             return false;
         }
         this.maxGuests = maxGuests;
@@ -188,6 +188,7 @@ public class WatchParty {
         if (!chatEnabled || !partyActive || author == null
                 || !isParticipant(author)
                 || message == null || message.trim().isEmpty()
+                || message.trim().length() > 500
                 || chatCount >= chatMessages.length
                 || isMuted(author)) {
             return false;
@@ -224,6 +225,7 @@ public class WatchParty {
         if (!reactionsEnabled || !partyActive || author == null
                 || !isParticipant(author)
                 || reaction == null || reaction.trim().isEmpty()
+                || reaction.trim().length() > 32
                 || reactionCount >= reactions.length
                 || isMuted(author)) {
             return false;
