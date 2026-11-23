@@ -52,14 +52,20 @@ npm run android:build
 ```
 APK output: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-## iOS
+## iOS simulator build
+A GitHub Actions workflow generates and builds an unsigned iOS Simulator app:
+- Workflow: `.github/workflows/storyspace-ios.yml`
+- After success, download the `storyspace-ios-simulator` artifact.
+- This is a simulator app archive, not a signed iPhone/iPad IPA.
+
+Local generation:
 ```bash
 cd STORYSPACE/platforms/mobile
 npm install
 npx cap add ios
 npx cap sync ios
 ```
-Requires macOS/Xcode, Apple signing, device testing, and review for release.
+Requires macOS/Xcode. Real-device distribution requires Apple signing/provisioning, device QA, and review.
 
 ## TV
 Android TV needs Android Studio/emulator validation. tvOS requires macOS/Xcode and provisioning. PlayStation SDK/certification is restricted by Sony.
