@@ -1,26 +1,25 @@
-# STORYSPACE — Story Space (Frontend Concept)
+# Storyspace — adaptive discovery UI
 
-STORYSPACE is a **provisional working name** for an original story-discovery interface created for this educational project. It is not affiliated with Netflix or any other streaming service.
+The frontend is an original, provisional story-discovery concept. It is not affiliated with a streaming competitor.
 
-## Run locally
-Open `index.html` in a browser. No build tools or JavaScript packages are required.
+## Run
+Open `index.html` for offline/demo mode. For API-backed accounts, start the Java service in `../platform-backend` on `http://localhost:8080`.
 
-## Original design direction
-- Midnight-indigo atmosphere with aqua/violet accents, custom geometric wordmark, typography, and orbit-inspired decorative motifs.
-- Editorial hero composition, “Story Space” brand language, and discovery-first navigation.
-- Mood discovery chips, curated content collections, personal library, search, details modal, and responsive layouts.
-- Watchlist state saved in this browser's localStorage (demo only).
-- Keyboard-operable cards, modal close controls, and reduced-motion preference support.
+## Adaptive features
+- Taste onboarding (genres, moods, languages, discovery balance)
+- Feed re-ranking from preferences and recent interactions, with daily variation
+- Story choices change the recommendations; a rotating featured story cycles through ranked candidates
+- Personal saved list and browser-side preference/history persistence
+- Optional backend sign-in: profile, preferences, catalog, recommendations, library sync
+- Membership selector (demo-only), admin creator console (role-gated), preview player
+- Responsive, keyboard-friendly controls and reduced-motion support
 
-## Prototype boundaries
-- This is a front-end prototype. It is not connected to the Java classes, server, accounts, or database.
-- “Enter story” is a demo notification—not a media player.
-- Catalog titles, ratings, descriptions, and other metadata are sample data, not verified works or real availability.
-- Poster/background images are remote Unsplash URLs. Review each asset's license and terms and replace with owned, commissioned, or properly licensed assets before commercial launch.
-- No billing, subscriptions, authentication, DRM, streaming delivery, or production privacy/security controls are implemented.
+## API mode
+If the backend is running, the app can register/sign in, sync account preferences and library, fetch its catalog, and use the per-account recommendation endpoint. The backend uses a local H2 file by default. Configure the API's admin bootstrap credentials via environment variables.
 
-## Brand/IP hygiene for commercial use
-STORYSPACE is a placeholder, not a cleared trademark. Before choosing a launch name, conduct clearance searches in target markets and relevant classes, including Bangladesh DPDT, WIPO databases, company/domain/app-store records, and get advice from an IP professional. Avoid competitor logos, names, signature UI elements, copyrighted media, or confusingly similar branding. Maintain dated source/design records and written asset licenses.
-
-## Next technical milestone
-Connect the interface to a Java service, catalog repository, authentication, user profiles, persisted watchlists, licensed media delivery, and privacy/security controls. Keep credentials and signing secrets server-side.
+## Limitations / legal preparation
+- Demo data only; titles and metadata are fictional sample entries.
+- Preview playback uses a CC0 sample clip, not a title's actual footage.
+- No licensed catalog, full video delivery, DRM, production payment processing, or commercial readiness.
+- Remote imagery requires an asset-license review and replacement/clearance for commercial use.
+- Storyspace is a working name, not trademark-cleared. Brand and design clearance is not represented as completed.
