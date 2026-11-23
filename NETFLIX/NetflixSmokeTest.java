@@ -76,6 +76,15 @@ public class NetflixSmokeTest {
         shuffleQueue.setShuffleEnabled(true);
         check(shuffleQueue.next() != null, "shuffle advances with multiple entries");
         check(shuffleQueue.getCurrent() != null, "shuffle current remains valid");
+        check(!shuffleQueue.setPlaybackSpeed(Double.NaN)
+                && !shuffleQueue.setPlaybackSpeed(Double.POSITIVE_INFINITY),
+                "playback speed rejects non-finite values");
+        PlaybackQueue repeatQueue = new PlaybackQueue(2);
+        repeatQueue.add(queueA);
+        repeatQueue.setRepeatOne(true);
+        check(repeatQueue.next() == queueA && repeatQueue.getHistoryCount() == 0,
+                "repeat-one playback does not pollute previous history");
+        check(repeatQueue.setPlaybackSpeed(1.25), "valid playback speed accepted");
 
         // Watch-party membership, playback, and moderation edge cases.
         NETFLIX_USER host = new NETFLIX_USER("party-host");
