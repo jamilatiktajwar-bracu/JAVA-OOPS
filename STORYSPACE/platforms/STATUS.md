@@ -19,7 +19,7 @@ This repository contains a shared web client and platform shells. The current cr
 - **iOS:** `storyspace-ios-simulator` → unsigned simulator app archive.
 - **Desktop:** `storyspace-windows`, `storyspace-macos`, and `storyspace-linux` → development packages.
 
-Artifacts are only available for successful runs and expire after 14 days. They are not signed production releases.
+Artifacts are only available for successful runs and expire after 14 days. Debug and Simulator artifacts are not signed production releases. Optional manual signed-build workflows are available for Android AAB and iOS IPA once the required signing secrets are configured.
 
 ## API endpoint configuration
 Set the repository variable `STORYSPACE_API_ROOT` to the absolute HTTPS base URL of the deployed Storyspace API (for example, `https://api.example.com/api`). Android, iOS Simulator, and desktop build workflows inject this value into the web client before packaging. Never place API credentials or signing secrets in this variable. When it is unset, native sign-in shows a configuration message instead of attempting to call the packaged app's local WebView origin. Local web development still defaults to `http://localhost:8080/api`.
@@ -29,5 +29,5 @@ Set the repository variable `STORYSPACE_API_ROOT` to the absolute HTTPS base URL
 2. Complete secure session refresh/revocation, device limits, and account security before public release.
 3. Integrate licensed media delivery, HLS/DASH, CDN, DRM, subtitles, and audio tracks.
 4. Integrate a compliant billing provider and subscription lifecycle.
-5. Configure platform signing, store accounts, review, notarization, and physical-device QA.
+5. Configure and validate the Android keystore / Apple distribution certificate and provisioning profile, store accounts, review, notarization, and physical-device QA.
 6. Complete Android TV, tvOS, and console-specific UX and approvals.
