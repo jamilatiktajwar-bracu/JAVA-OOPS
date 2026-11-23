@@ -55,8 +55,8 @@ public class WatchParty {
     }
 
     public boolean invite(NETFLIX_USER guest) {
-        if (guest == null || locked || guestCount >= maxGuests
-                || guestCount >= guests.length) {
+        if (guest == null || guest == host || !partyActive || locked
+                || guestCount >= maxGuests || guestCount >= guests.length) {
             return false;
         }
         for (int i = 0; i < guestCount; i++) {
@@ -78,6 +78,7 @@ public class WatchParty {
                     guests[j] = guests[j + 1];
                 }
                 guests[--guestCount] = null;
+                unmuteGuest(guest);
                 return true;
             }
         }
@@ -85,7 +86,7 @@ public class WatchParty {
     }
 
     public boolean setPlaybackPosition(int position) {
-        if (movie == null || position < 0 || position > movie.getDuration()) {
+        if (!partyActive || movie == null || position < 0 || position > movie.getDuration()) {
             return false;
         }
         playbackPosition = position;
@@ -94,6 +95,9 @@ public class WatchParty {
     }
 
     public void play() {
+        if (!partyActive || movie == null) {
+            return;
+        }
         playing = true;
         if (startedAt == 0) {
             startedAt = System.currentTimeMillis();
@@ -101,7 +105,9 @@ public class WatchParty {
     }
 
     public void pause() {
-        playing = false;
+        if (partyActive) {
+            playing = false;
+        }
     }
 
     public void setChatEnabled(boolean enabled) {
@@ -239,8 +245,8 @@ public class WatchParty {
     }
 
     public boolean muteGuest(NETFLIX_USER guest) {
-        if (guest == null || mutedGuestCount >= mutedGuests.length
-                || isMuted(guest)) {
+        if (guest == null || guest == host || !isParticipant(guest)
+                || mutedGuestCount >= mutedGuests.length || isMuted(guest)) {
             return false;
         }
         mutedGuests[mutedGuestCount++] = guest;
@@ -276,10 +282,11 @@ public class WatchParty {
     }
 
     public boolean syncGuestPosition(int guestPosition) {
-        if (!playing) {
+        if (!playing || movie == null || guestPosition < 0
+                || guestPosition > movie.getDuration()) {
             return false;
         }
-        int difference = Math.abs(guestPosition - playbackPosition);
+        long difference = Math.abs((long) guestPosition - playbackPosition);
         if (difference <= syncToleranceSeconds) {
             return true;
         }
@@ -289,7 +296,7 @@ public class WatchParty {
     }
 
     public boolean synchronizeAllGuests(int hostPosition) {
-        if (movie == null || hostPosition < 0
+        if (!partyActive || movie == null || hostPosition < 0
                 || hostPosition > movie.getDuration()) {
             return false;
         }
@@ -319,6 +326,8 @@ public class WatchParty {
 
     public void restartParty() {
         partyActive = true;
+        playing = false;
+        startedAt = 0;
         playbackPosition = 0;
         lastSyncPosition = 0;
     }
