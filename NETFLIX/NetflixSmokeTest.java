@@ -8,7 +8,12 @@ public class NetflixSmokeTest {
 
         NETFLIX_USER user = new NETFLIX_USER("smoke-user");
         RecommendationEngine engine = new RecommendationEngine(user);
-        check(engine.recommend(3).length <= 3, "recommend respects limit");
+        check(engine.isColdStartUser(), "new profile is recognized as cold start");
+        Movies[] expectedColdStart = engine.getColdStartRecommendations(3);
+        Movies[] primaryColdStart = engine.recommend(3);
+        check(java.util.Arrays.equals(expectedColdStart, primaryColdStart),
+                "primary recommendation path uses cold-start ranking");
+        check(primaryColdStart.length <= 3, "recommend respects limit");
         check(engine.getSurpriseRecommendations(10).length <= 4,
                 "surprise recommendation respects catalog size");
 
