@@ -14,6 +14,7 @@ const mobile = JSON.parse(read("platforms/mobile/package.json"));
 for (const plugin of ["@capacitor/app", "@capacitor/haptics", "@capacitor/network", "@capacitor/status-bar", "@capacitor/keyboard", "@capacitor/splash-screen", "@capacitor/android", "@capacitor/ios"]) if (!mobile.dependencies[plugin]) throw new Error("Missing Capacitor dependency " + plugin);
 if (!read("platforms/mobile/capacitor.config.ts").includes("SplashScreen")) throw new Error("Native splash config missing");
 if (!mobile.devDependencies.typescript) throw new Error("TypeScript dependency is required to load capacitor.config.ts");
+for (const script of ["api:configure", "android:tv:prepare", "android:release:prepare"]) if (!mobile.scripts[script]) throw new Error("Missing mobile helper script " + script);
 const desktop = JSON.parse(read("platforms/desktop/package.json"));
 if (!desktop.devDependencies["electron-builder"] || !desktop.scripts.dist) throw new Error("Desktop package scripts are missing");
 if (!desktop.build.extraResources?.some(resource => resource.from === "../../web")) throw new Error("Desktop build must bundle the shared web client");
