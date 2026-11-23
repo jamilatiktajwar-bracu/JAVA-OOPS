@@ -24,3 +24,10 @@ Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` before starting. Use 
 
 ## Legal/release status
 No trademark clearance or patentability/freedom-to-operate determination has been made. Sample titles are fictional, imagery is remote, and the preview clip is a CC0 sample. A licensed catalog, streaming pipeline, payment integration, production security/privacy, and legal documents remain future work. Read [LEGAL-AND-RELEASE.md](LEGAL-AND-RELEASE.md).
+
+
+## Multi-platform starter (November 2026)
+- Installable PWA manifest and cached offline shell are in `web/`.
+- Living-room focus navigation is available by launching the web app with `?tv=1` (example `http://localhost:5173/?tv=1`).
+- Desktop Electron, Capacitor mobile, tvOS SwiftUI, and Android TV integration scaffolds live in `platforms/`.
+- Platform build, signing, device testing, licensed streaming, and store approvals remain platform-specific. See [platform guide](platforms/README.md).
