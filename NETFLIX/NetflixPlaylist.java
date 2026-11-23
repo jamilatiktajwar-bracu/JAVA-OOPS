@@ -62,6 +62,11 @@ public class NetflixPlaylist {
                     movies[j] = movies[j + 1];
                 }
                 movies[--movieCount] = null;
+                if (i < currentPosition) {
+                    currentPosition--;
+                } else if (i == currentPosition && currentPosition >= movieCount) {
+                    currentPosition = 0;
+                }
                 touch();
                 return true;
             }
@@ -140,6 +145,13 @@ public class NetflixPlaylist {
             }
         }
         movies[toIndex] = movie;
+        if (currentPosition == fromIndex) {
+            currentPosition = toIndex;
+        } else if (fromIndex < currentPosition && toIndex >= currentPosition) {
+            currentPosition--;
+        } else if (fromIndex > currentPosition && toIndex <= currentPosition) {
+            currentPosition++;
+        }
         touch();
         return true;
     }
@@ -167,6 +179,7 @@ public class NetflixPlaylist {
                 }
             }
         }
+        currentPosition = 0;
         touch();
     }
 
@@ -181,6 +194,7 @@ public class NetflixPlaylist {
                 }
             }
         }
+        currentPosition = 0;
         touch();
     }
 
@@ -195,6 +209,7 @@ public class NetflixPlaylist {
                 }
             }
         }
+        currentPosition = 0;
         touch();
     }
 
@@ -205,6 +220,7 @@ public class NetflixPlaylist {
             movies[i] = movies[j];
             movies[j] = temporary;
         }
+        currentPosition = 0;
         touch();
     }
 
@@ -254,11 +270,14 @@ public class NetflixPlaylist {
     }
 
     public int getTotalDuration() {
-        int total = 0;
+        long total = 0L;
         for (int i = 0; i < movieCount; i++) {
-            total += movies[i].getDuration();
+            total += Math.max(0, movies[i].getDuration());
+            if (total >= Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
         }
-        return total;
+        return (int) total;
     }
 
     public double getAverageRating() {
