@@ -6,7 +6,7 @@ See [STATUS.md](STATUS.md) for the current platform matrix and remaining release
 - **Web / PWA:** installable web client, offline shell cache, responsive layouts.
 - **Windows/macOS/Linux:** Electron wrapper scaffold using the shared web client.
 - **iOS / Android:** Capacitor shells; native project generation and signing are SDK-dependent.
-- **Android TV / Google TV:** native TV integration milestone; web fallback includes D-pad navigation.
+- **Android TV / Google TV:** the Android APK receives optional Leanback launcher metadata/banner and D-pad navigation. Emulator and physical-TV QA remain pending.
 - **Apple TV (tvOS):** SwiftUI starter shell; API/catalog/playback integration and provisioning remain native tasks.
 - **PlayStation:** browser-compatible experience is the practical starting point. Native builds require Sony partner approval, SDK access, certification, and cannot be built/tested from this repository alone.
 
@@ -36,7 +36,11 @@ npm run dist
 A GitHub Actions matrix builds Windows NSIS installer, macOS DMG, and Linux AppImage packages. Download the matching artifact from the `Storyspace Desktop Packages` workflow. These CI packages are unsigned development builds; Windows signing, macOS signing/notarization, and store distribution still require release credentials and validation.
 
 ## Mobile app polish
-The mobile shell includes native plugin setup for app lifecycle/back handling, haptic taps, connectivity monitoring, status bar, splash screen, keyboard resize, safe-area padding, and bottom tab navigation on narrow screens. Browser fallback remains active without native plugins.
+The mobile shell includes native plugin setup for app lifecycle/back handling, haptic taps, connectivity monitoring, status bar, splash screen, keyboard resize, safe-area padding, and bottom tab navigation on narrow screens. The Android TV launcher metadata is applied during the Android CI build; D-pad navigation activates TV mode on native Android devices.
+
+## API endpoint for packaged builds
+
+Set the GitHub repository variable `STORYSPACE_API_ROOT` to the absolute HTTPS API base URL before creating a connected mobile or desktop build. The workflows write this value into the CSP-compatible `storyspace-api-root` meta tag before packaging. If it is unset, native sign-in remains explicitly unavailable rather than sending requests to the WebView's local origin. Do not put credentials in this variable.
 
 ## Android debug APK
 A GitHub Actions workflow automatically generates a temporary Android project, syncs Capacitor/web assets, and builds a debug APK:
