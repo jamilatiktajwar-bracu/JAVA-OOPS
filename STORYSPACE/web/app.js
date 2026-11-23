@@ -198,6 +198,7 @@ async function openPlayer(m){
   $("playerTitle").textContent=m.title||m.name||"Preview";
   $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
   const video=$("previewVideo");video.pause();
+  video.onerror=()=>{if(request===playerLoadId&&!$("playerBackdrop").hidden)$("playerNotice").textContent="The preview could not be loaded. Check your connection and try again."};
   video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
   try{
     if(personalized.token&&m.apiId){
@@ -215,14 +216,14 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){playerLoadId++;const v=$("previewVideo");v.pause();v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow=""}
+function closePlayer(){playerLoadId++;const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow=""}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
 $("playerClose").onclick=closePlayer;$("playerBackdrop").onclick=e=>{if(e.target===$("playerBackdrop"))closePlayer()};
 $("adminTitleForm").onsubmit=async e=>{e.preventDefault();const f=e.currentTarget;const d=new FormData(f);const body={slug:d.get("slug"),name:d.get("name"),synopsis:d.get("synopsis"),genres:d.get("genres"),moods:d.get("moods"),language:d.get("language"),releaseYear:Number(d.get("releaseYear")),ageRating:d.get("ageRating"),format:d.get("format"),score:Number(d.get("score")),posterUrl:d.get("posterUrl"),backdropUrl:d.get("backdropUrl"),featured:d.get("featured")==="on",original:d.get("original")==="on"};$("adminStatus").textContent="Publishing…";try{const created=await api("/admin/catalog",{method:"POST",body});const m=apiTitle(created);movies.unshift(m);renderHome();$("adminStatus").textContent="Added "+m.title;f.reset();showToast("Catalog title added")}catch(err){$("adminStatus").textContent=err.message}};
 function updateAccountUI(){const acc=personalized.account;const label=acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V";const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=label;const row=document.querySelector(".profile-row");if(row){row.replaceChildren();const icon=document.createElement("span");icon.className="avatar";icon.textContent=label;const details=document.createElement("div");const name=document.createElement("b");name.textContent=acc?acc.displayName:"Explorer";const sub=document.createElement("small");sub.textContent=acc?acc.email:"Guest · saved on this device";details.append(name,sub);row.append(icon,details)}const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";const admin=$("adminAction");if(admin)admin.hidden=acc?.role!=="ADMIN";const membership=$("subscriptionAction");if(membership)membership.textContent=acc?"Membership & plans":"Sign in for membership";}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdrop").hidden)closePlayer();if(!$("subscriptionBackdrop").hidden)closeMembership();if(!$("adminBackdrop").hidden)closeAdmin()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdrop").hidden)closePlayer();if(!$("subscriptionBackdrop").hidden)closeMembership();if(!$("adminBackdrop").hidden)closeAdmin();if(!$("authBackdrop").hidden)closeAuth();if(!$("preferencesBackdrop").hidden)closePreferences()}});
 
 
 // Modal keyboard accessibility: keep keyboard focus inside the topmost open dialog.
