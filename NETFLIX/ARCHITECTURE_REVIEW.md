@@ -5,7 +5,7 @@ This review covers the Java console demo under `NETFLIX/`: domain models, catalo
 
 ## Current architecture
 - **Entry point:** `NETFLIX_DEMO` drives the demo and user-facing console flow.
-- **Catalog/domain:** `Movies` is both a movie model and a static in-memory catalog service. This is the largest coupling point.
+- **Catalog/domain:** `Movies` remains the movie model and compatibility facade; `MovieCatalog` owns catalog storage, lifecycle, search, filters, ranking, and sorting.
 - **User state:** `NETFLIX_USER` stores profile, preferences, favorites, watch history, and other personal state.
 - **Feature services:** recommendation, download, playback queue/session, watch party, subscription/payment, reviews, and analytics are represented by separate classes.
 - **Persistence:** all data is in memory; restarting the process resets state.
@@ -23,7 +23,7 @@ The party could be marked ended and still accept playback seeks or be started ag
 
 ### Medium — Model/service responsibilities are mixed
 `Movies` combines instance metadata with static catalog storage and catalog operations. This makes catalog state global and complicates isolated tests.
-**Recommended next step:** introduce a `MovieCatalog` service and migrate callers gradually; keep the `Movies` model compatible until the UI and tests are updated.
+**Completed in this branch:** extracted `MovieCatalog`; the old `Movies` static API delegates for compatibility. Remaining coupling: movie metadata still lives in `Movies` and catalog state is static.
 
 ### Medium — Fixed-capacity arrays constrain scale and duplicate bookkeeping
 Several classes store arrays plus manual counters. This is appropriate for the assignment's fundamentals, but requires careful bounds checks and compaction.
@@ -31,7 +31,7 @@ Several classes store arrays plus manual counters. This is appropriate for the a
 
 ### Medium — Console flow and domain logic are coupled
 The demo's menu is a presentation/interaction layer that calls domain methods directly. This is simple for a single-file console demonstration, but input parsing and workflows are harder to unit-test independently.
-**Recommended next step:** split menu/input helpers from workflow orchestration and domain operations; validate input once at the boundary.
+**Completed in this branch:** the scripted showcase is split into focused feature methods. There is no interactive menu in the current entry point; a separate menu remains an optional UI project.
 
 ### Medium — Naming is legacy/inconsistent
 Examples include uppercase `NETFLIX_USER`, lowercase `bookmark`, and camel-case `Movies`. Renaming improves Java convention, but may break assignment-facing code or references.
@@ -39,12 +39,12 @@ Examples include uppercase `NETFLIX_USER`, lowercase `bookmark`, and camel-case 
 
 ### Medium — Regression tests are smoke tests
 The custom smoke test exercises key edge cases and is valuable, but it is not a full unit-test suite and does not yet test every class, branch, or input boundary.
-**Recommended next step:** gradually split test methods by feature and add deterministic tests for overflow, capacity, invalid state transitions, and interactions.
+**Completed in this branch:** smoke tests are grouped into catalog, playback, billing, and user-feature classes, run by the original entry-point test runner. Additional edge-case coverage is still needed class-by-class.
 
 ## Priority roadmap
 1. **P0 repository hygiene and state correctness** — completed here: tracked bytecode removed; watch-party ended/restart state hardened; regression tests added.
 2. **P1 testability** — isolate console input, make random recommendation selection injectable/seedable, and expand tests around capacity and state transitions.
-3. **P1 domain separation** — extract catalog ownership from `Movies`; avoid global mutable catalog state.
+3. **P1 domain separation** — catalog queries are now in `MovieCatalog`; next isolate per-movie metadata and replace global state only if the assignment permits
 4. **P2 collections** — migrate fixed arrays to collections behind APIs; keep capacity limits explicit where the demo needs them.
 5. **P2 naming/API consistency** — document public API and add compatible names before any disruptive rename.
 6. **P3 persistence and UI evolution** — only if desired for the assignment: storage abstraction and richer UI. Real streaming/payment integrations are out of scope.
@@ -60,3 +60,10 @@ The repository's CI workflow compiles and runs the smoke suite on Java 8 and Jav
 - Made keyword matching locale-independent with `Locale.ROOT`.
 - Added regression checks for catalog operations, duplicate titles, invalid indices, NaN rating, overflow, and Turkish-locale keyword matching.
 - The current entry point (`NETFLIX_DEMO`) is a scripted feature showcase, not an interactive menu. A menu redesign is therefore a separate UI feature and will not be introduced silently as a behavior-breaking replacement.
+
+## Latest refactoring and audit fixes
+
+- Migrated catalog query, filter, ranking, and sorting methods into `MovieCatalog`; retained `Movies` compatibility facades.
+- Split `NETFLIX_DEMO` into feature-focused showcase methods and smoke tests into catalog, playback, billing, and user-feature suites.
+- Hardened payment expiry validation and saturated system-health uptime, failure, and warning counters against overflow.
+- Added regression coverage for catalog queries, expiry validation/masking, and health status/overflow behavior.
