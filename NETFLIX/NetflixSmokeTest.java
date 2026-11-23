@@ -123,8 +123,8 @@ public class NetflixSmokeTest {
         check("admin".equals(auditLog.getActors()[0])
                 && "profile updated".equals(auditLog.getActions()[0]),
                 "audit log trims actor and action");
-        check(!auditLog.record("actor\\n", "action")
-                && !auditLog.record("actor", new String(new char[513]).replace("\\0", "x")),
+        check(!auditLog.record("actor\n", "action")
+                && !auditLog.record("actor", new String(new char[513]).replace('\0', 'x')),
                 "audit log rejects control characters and oversized events");
         check(auditLog.getLogCount() == 1, "invalid audit entries do not change count");
         auditLog.clear();
