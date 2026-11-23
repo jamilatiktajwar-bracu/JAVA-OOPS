@@ -5,7 +5,7 @@ public class OfflineDownloadManager {
     private int downloadCount;
     private int downloadLimit;
     private long storageCapacityMB;
-    private long usedStorageMB;
+    private long usedStorageMB;\n    private long[] downloadSizeMB;
     private boolean wifiOnly;
     private boolean paused;
     private String downloadQuality;
@@ -23,7 +23,7 @@ public class OfflineDownloadManager {
         this.completed = new boolean[this.downloadLimit];
         this.downloadCount = 0;
         this.storageCapacityMB = 5000;
-        this.usedStorageMB = 0;
+        this.usedStorageMB = 0;\n        this.downloadSizeMB = new long[this.downloadLimit];
         this.wifiOnly = true;
         this.paused = false;
         this.downloadQuality = "Standard";
@@ -48,7 +48,7 @@ public class OfflineDownloadManager {
         priority[downloadCount] = 50;
         failed[downloadCount] = false;
         failureReason[downloadCount] = "";
-        downloadStartedAt[downloadCount] = System.currentTimeMillis();
+        downloadStartedAt[downloadCount] = System.currentTimeMillis();\n        downloadSizeMB[downloadCount] = estimateMovieSizeMB(movie);
         downloadCompletedAt[downloadCount] = 0;
         downloadCount++;
         return true;
@@ -96,7 +96,7 @@ public class OfflineDownloadManager {
             failed[i] = failed[i + 1];
             failureReason[i] = failureReason[i + 1];
             downloadStartedAt[i] = downloadStartedAt[i + 1];
-            downloadCompletedAt[i] = downloadCompletedAt[i + 1];
+            downloadCompletedAt[i] = downloadCompletedAt[i + 1];\n            downloadSizeMB[i] = downloadSizeMB[i + 1];
         }
         downloads[--downloadCount] = null;
         progress[downloadCount] = 0;
