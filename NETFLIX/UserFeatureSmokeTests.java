@@ -5,6 +5,7 @@ final class UserFeatureSmokeTests {
         testRecommendationEngineSafety();
         testPlaylistCursorAndDurationSafety();
         testWatchPartyParticipationAndBoundaries();
+        testSystemHealthOverflowSafety();
     }
 
 private static void testMovieReview() {
@@ -132,5 +133,22 @@ private static void testWatchPartyParticipationAndBoundaries() {
         SmokeTestSupport.require(!party.isMuted(guest), "restart should clear stale mute state");
         party.play();
         SmokeTestSupport.require(party.isPlaying(), "active party should play after explicit restart");
+    }
+    private static void testSystemHealthOverflowSafety() {
+        SystemHealthMonitor health = new SystemHealthMonitor();
+        health.addUptimeSeconds(Integer.MAX_VALUE);
+        health.addUptimeSeconds(100);
+        SmokeTestSupport.require(health.getUptimeSeconds() == Integer.MAX_VALUE,
+                "uptime accumulation should saturate rather than overflow");
+        health.setActiveSessions(10);
+        health.setActiveSessions(-1);
+        SmokeTestSupport.require(health.getActiveSessions() == 10,
+                "negative session counts should not overwrite valid state");
+        health.recordWarning();
+        SmokeTestSupport.require("Degraded".equals(health.getStatus()),
+                "warning threshold should degrade health status");
+        health.setMaintenanceMode(true);
+        SmokeTestSupport.require("Maintenance".equals(health.getStatus()),
+                "maintenance status should take precedence");
     }
 }
