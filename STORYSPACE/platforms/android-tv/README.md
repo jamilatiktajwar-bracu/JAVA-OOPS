@@ -4,10 +4,11 @@ The Android build now adds the optional Leanback feature declaration, a TV launc
 
 The shared web client provides:
 - D-pad spatial focus between visible buttons, links, navigation items, and story cards.
-- Automatic TV presentation mode when a native Android device receives its first D-pad arrow key; browser testing can force it with `?tv=1`.
+- Automatic TV presentation mode when a native Android device receives its first D-pad arrow key; the triggering key is handled immediately (regression-tested). Browser testing can force it with `?tv=1`.
+- Focus is spatially moved between visible controls and story cards, and scrolls the focused item into view.
 - Escape / Android Back handling for open dialogs and the player.
 
-The build applies `prepare-android-tv.js` after Capacitor sync. The configuration smoke test runs the script against a temporary manifest twice to confirm that it is safe to re-run.
+The build applies `prepare-android-tv.js` after Capacitor sync. The configuration smoke test runs the script against a temporary manifest twice to confirm that it is safe to re-run. APK CI verifies the Leanback launcher intent and checks the TV banner in the compiled resource table (not just the XML manifest dump).
 
 ## Remaining TV validation
 
