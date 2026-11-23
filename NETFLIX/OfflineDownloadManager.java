@@ -15,6 +15,7 @@ public class OfflineDownloadManager {
     private int failedCount;
     private long[] downloadStartedAt;
     private long[] downloadCompletedAt;
+    private long[] downloadedSizeMB;
 
     public OfflineDownloadManager(int downloadLimit) {
         this.downloadLimit = downloadLimit > 0 ? downloadLimit : 10;
@@ -33,6 +34,7 @@ public class OfflineDownloadManager {
         this.failedCount = 0;
         this.downloadStartedAt = new long[this.downloadLimit];
         this.downloadCompletedAt = new long[this.downloadLimit];
+        this.downloadedSizeMB = new long[this.downloadLimit];
     }
 
     public boolean addDownload(Movies movie) {
@@ -75,6 +77,7 @@ public class OfflineDownloadManager {
             movie.download();
             downloadCompletedAt[index] = System.currentTimeMillis();
             usedStorageMB += size;
+            downloadedSizeMB[index] = size;
         }
         return true;
     }
@@ -86,7 +89,7 @@ public class OfflineDownloadManager {
         }
         if (completed[index]) {
             usedStorageMB = Math.max(0,
-                    usedStorageMB - estimateMovieSizeMB(downloads[index]));
+                    usedStorageMB - downloadedSizeMB[index]);
         }
         for (int i = index; i < downloadCount - 1; i++) {
             downloads[i] = downloads[i + 1];
@@ -97,10 +100,17 @@ public class OfflineDownloadManager {
             failureReason[i] = failureReason[i + 1];
             downloadStartedAt[i] = downloadStartedAt[i + 1];
             downloadCompletedAt[i] = downloadCompletedAt[i + 1];
+            downloadedSizeMB[i] = downloadedSizeMB[i + 1];
         }
         downloads[--downloadCount] = null;
         progress[downloadCount] = 0;
         completed[downloadCount] = false;
+        downloadedSizeMB[downloadCount] = 0;
+        if (failed[downloadCount]) {
+            failedCount = Math.max(0, failedCount - 1);
+        }
+        failed[downloadCount] = false;
+        failureReason[downloadCount] = null;
         return true;
     }
 
@@ -234,9 +244,12 @@ public class OfflineDownloadManager {
         if (index < 0) {
             return false;
         }
-        failed[index] = true;
-        failureReason[index] = reason == null ? "Unknown error" : reason.trim();
-        failedCount++;
+        if (!failed[index]) {
+            failed[index] = true;
+            failedCount++;
+        }
+        failureReason[index] = reason == null || reason.trim().isEmpty()
+                ? "Unknown error" : reason.trim();
         return true;
     }
 
