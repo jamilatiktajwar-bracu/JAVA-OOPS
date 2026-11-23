@@ -23,7 +23,9 @@ public class PromoCode {
         if (!isValid() || subscription == null || !subscription.applyCoupon(code, discountPercent)) {
             return false;
         }
-        if (currentUses < Integer.MAX_VALUE) {\n            currentUses++;\n        }
+        if (currentUses < Integer.MAX_VALUE) {
+            currentUses++;
+        }
         if (currentUses >= maxUses) {
             active = false;
         }
@@ -36,6 +38,7 @@ public class PromoCode {
                 && discountPercent <= 90.0
                 && Double.isFinite(discountPercent)
                 && !code.isEmpty()
+                && maxUses > 0
                 && currentUses < maxUses
                 && expiresAt > System.currentTimeMillis();
     }
