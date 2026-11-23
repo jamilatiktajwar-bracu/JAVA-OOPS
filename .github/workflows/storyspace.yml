@@ -2,9 +2,14 @@ name: Storyspace checks
 on:
   push:
     branches: [product/storyspace-platform, product/multiplatform-foundation]
-    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
+    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
   pull_request:
-    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
+    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
+# Avoid spending runner minutes on superseded commits from the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -19,7 +24,10 @@ jobs:
       - name: Backend tests
         run: mvn -B test
         working-directory: STORYSPACE/backend
-      - name: Frontend syntax
-        run: node --check STORYSPACE/web/app.js
+      - name: Frontend and native bridge syntax
+        run: |
+          node --check STORYSPACE/web/app.js
+          node --check STORYSPACE/web/native-bridge.js
+          node --check STORYSPACE/web/sw.js
       - name: Platform configuration smoke checks
         run: node STORYSPACE/platforms/check-platform-config.js

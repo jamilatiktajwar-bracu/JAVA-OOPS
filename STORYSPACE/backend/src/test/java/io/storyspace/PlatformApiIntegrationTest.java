@@ -5,6 +5,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:storyspace-api;DB_CLOSE_DELAY=-1","app.security.token-secret=test-secret-key-which-is-at-least-32-chars-long"})
 @AutoConfigureMockMvc class PlatformApiIntegrationTest {
  @Autowired MockMvc mvc;@Autowired ObjectMapper mapper;
+ @Test void catalogSearchRejectsBlankAndOversizedQueries()throws Exception{
+  mvc.perform(get("/api/catalog/search").param("q","   ")).andExpect(status().isBadRequest());
+  mvc.perform(get("/api/catalog/search").param("q","x".repeat(81))).andExpect(status().isBadRequest());
+  mvc.perform(get("/api/catalog/search").param("q","Signal")).andExpect(status().isOk());
+ }
+ @Test void registrationRejectsMissingPassword()throws Exception{
+  mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("email","missing-password@example.test","displayName","No Password")))).andExpect(status().isBadRequest());
+ }
  @Test void accountPreferencesLibraryAndDemoPlanFlow()throws Exception{
   String email="tester-"+System.nanoTime()+"@example.test";
   MvcResult register=mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("email",email,"password","strong-password-123","displayName","Test Explorer")))).andExpect(status().isOk()).andReturn();

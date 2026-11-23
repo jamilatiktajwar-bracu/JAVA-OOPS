@@ -1,0 +1,58 @@
+name: Storyspace Desktop Packages
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'STORYSPACE/web/**'
+      - 'STORYSPACE/platforms/desktop/**'
+      - 'STORYSPACE/platforms/mobile/**'
+      - '.github/workflows/storyspace-desktop.yml'
+
+# Avoid spending runner minutes on superseded commits from the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            artifact: storyspace-linux
+          - os: windows-latest
+            target: win
+            artifact: storyspace-windows
+          - os: macos-latest
+            target: mac
+            artifact: storyspace-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Configure API endpoint
+        working-directory: STORYSPACE/platforms/mobile
+        env:
+          STORYSPACE_API_ROOT: ${{ vars.STORYSPACE_API_ROOT }}
+        run: node configure-api-root.js
+      - name: Install desktop dependencies
+        working-directory: STORYSPACE/platforms/desktop
+        run: npm install
+      - name: Package app
+        working-directory: STORYSPACE/platforms/desktop
+        run: npm run dist
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: STORYSPACE/platforms/desktop/release/*
+          if-no-files-found: error
+          retention-days: 14

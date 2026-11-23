@@ -1,7 +1,7 @@
 package io.storyspace.api;
 import jakarta.validation.constraints.*;import java.util.List;import java.util.UUID;
 public final class ApiDtos {private ApiDtos(){}
- public record RegisterRequest(@Email @NotBlank String email,@Size(min=8,max=72) String password,@NotBlank @Size(max=80) String displayName){}
+ public record RegisterRequest(@Email @NotBlank @Size(max=190) String email,@NotBlank @Size(min=8,max=72) String password,@NotBlank @Size(max=80) String displayName){}
  public record LoginRequest(@Email @NotBlank String email,@NotBlank String password){}
  public record AuthResponse(String token,Profile profile){}
  public record Profile(UUID id,String email,String displayName,String role,List<String> genres,List<String> moods,List<String> languages){}
