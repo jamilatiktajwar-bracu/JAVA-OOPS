@@ -51,3 +51,12 @@ The custom smoke test exercises key edge cases and is valuable, but it is not a 
 
 ## Verification
 The repository's CI workflow compiles and runs the smoke suite on Java 8 and Java 17. The architecture changes above are intentionally incremental rather than a risky wholesale rewrite.
+
+
+## Follow-up refactoring performed
+- Added `MovieCatalog` as the catalog storage/lifecycle owner; retained compatibility methods on `Movies`.
+- Rejected NaN and infinite user ratings.
+- Saturated cumulative watch-time at `Integer.MAX_VALUE` rather than allowing overflow.
+- Made keyword matching locale-independent with `Locale.ROOT`.
+- Added regression checks for catalog operations, duplicate titles, invalid indices, NaN rating, overflow, and Turkish-locale keyword matching.
+- The current entry point (`NETFLIX_DEMO`) is a scripted feature showcase, not an interactive menu. A menu redesign is therefore a separate UI feature and will not be introduced silently as a behavior-breaking replacement.
