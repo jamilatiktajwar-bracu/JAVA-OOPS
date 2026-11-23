@@ -49,7 +49,7 @@ Remove-Item *.class
 | Class | Responsibility |
 |---|---|
 | `NETFLIX_DEMO` | Runs a demonstration of the system |
-| `Movies` | Movie model and static catalog operations |
+| `Movies` | Movie model and compatibility facade for catalog queries |\n| `MovieCatalog` | Catalog storage, lifecycle, search, filters, and sorting |
 | `NETFLIX_USER` | User profile and personal viewing data |
 | `Subscription`, `SubscriptionPlan` | Plan and subscription lifecycle |
 | `PaymentMethod`, `PaymentWallet`, `PromoCode` | Payment-related simulation |
