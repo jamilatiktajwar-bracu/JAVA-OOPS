@@ -3,8 +3,8 @@
 ## Cross-platform strategy
 - **Web / PWA:** installable web client, offline shell cache, responsive layouts.
 - **Windows/macOS/Linux:** Electron wrapper scaffold using the shared web client.
-- **iOS / Android:** Capacitor scaffold; native project generation/signing is SDK-dependent.
-- **Android TV / Google TV:** native TV app integration milestone; web fallback includes D-pad navigation.
+- **iOS / Android:** Capacitor shells; native project generation and signing are SDK-dependent.
+- **Android TV / Google TV:** native TV integration milestone; web fallback includes D-pad navigation.
 - **Apple TV (tvOS):** SwiftUI starter shell; API/catalog/playback integration and provisioning remain native tasks.
 - **PlayStation:** browser-compatible experience is the practical starting point. Native builds require Sony partner approval, SDK access, certification, and cannot be built/tested from this repository alone.
 
@@ -27,18 +27,33 @@ npm start
 ```
 Developer wrapper only; release installers need platform-specific packaging, signing, and notarization.
 
-## Mobile app polish milestone
-The mobile shell now includes native plugin setup for app lifecycle/back handling, haptic taps, connectivity monitoring, status bar, splash screen, keyboard resize, safe-area padding, and bottom tab navigation on narrow screens. Browser fallback remains active without native plugins.
+## Mobile app polish
+The mobile shell includes native plugin setup for app lifecycle/back handling, haptic taps, connectivity monitoring, status bar, splash screen, keyboard resize, safe-area padding, and bottom tab navigation on narrow screens. Browser fallback remains active without native plugins.
 
-## Mobile packaging
+## Android debug APK
+A GitHub Actions workflow automatically generates a temporary Android project, syncs Capacitor/web assets, and builds a debug APK:
+- Workflow: `.github/workflows/storyspace-android.yml`
+- Run manually from GitHub Actions using **Run workflow**, or trigger it by pushing relevant changes / opening a PR.
+- After a successful run, download the `storyspace-android-debug` artifact from the workflow run. It contains `app-debug.apk` (debug-signed; for testing only).
+- Workflow build does not create a Play Store release or signed production package.
+
+Local build (Android SDK/JDK 17 required):
 ```bash
 cd STORYSPACE/platforms/mobile
 npm install
-npx cap add android
-npx cap add ios
-npx cap sync
+npm run android:generate
+npm run android:build
 ```
-Android requires Android Studio/SDK. iOS requires macOS/Xcode, Apple signing, and review.
+APK output: `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+## iOS
+```bash
+cd STORYSPACE/platforms/mobile
+npm install
+npx cap add ios
+npx cap sync ios
+```
+Requires macOS/Xcode, Apple signing, device testing, and review for release.
 
 ## TV
 Android TV needs Android Studio/emulator validation. tvOS requires macOS/Xcode and provisioning. PlayStation SDK/certification is restricted by Sony.
