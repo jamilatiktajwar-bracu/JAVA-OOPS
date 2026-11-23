@@ -45,7 +45,7 @@ public class ViewingSession {
         this.user = user;
         this.startTimeMinutes = 0;
         this.watchedMinutes = 0;
-        this.totalMinutes = movie == null ? 0 : movie.getDuration();
+        this.totalMinutes = movie == null ? 0 : Math.max(0, movie.getDuration());
         this.quality = "Auto";
         this.completed = false;
         this.subtitleEnabled = false;
