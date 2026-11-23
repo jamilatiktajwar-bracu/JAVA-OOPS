@@ -87,6 +87,7 @@ public class OfflineDownloadManager {
         if (index < 0) {
             return false;
         }
+        boolean wasFailed = failed[index];
         if (completed[index]) {
             usedStorageMB = Math.max(0,
                     usedStorageMB - downloadedSizeMB[index]);
@@ -106,7 +107,7 @@ public class OfflineDownloadManager {
         progress[downloadCount] = 0;
         completed[downloadCount] = false;
         downloadedSizeMB[downloadCount] = 0;
-        if (failed[downloadCount]) {
+        if (wasFailed) {
             failedCount = Math.max(0, failedCount - 1);
         }
         failed[downloadCount] = false;
