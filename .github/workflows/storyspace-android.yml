@@ -18,8 +18,8 @@ permissions:
 jobs:
   debug-apk:
     name: Build installable debug APK
-    # Hardware-accelerated Android emulation is more reliable on macOS than Linux TCG.
-    runs-on: macos-latest
+    # Hosted Linux runners do not expose /dev/kvm; use software emulation for CI smoke coverage.
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
