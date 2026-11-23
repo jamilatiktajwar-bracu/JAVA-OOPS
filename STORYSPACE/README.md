@@ -20,6 +20,7 @@ Then open `STORYSPACE/web/index.html` in your browser. Backend health: `http://l
 - Continue Watching now stores playback position locally, resumes the last preview, clears completed previews, and syncs progress for signed-in titles already saved to My Universe. A Restart Preview action clears the resume point.
 - User data can be exported/imported as a versioned JSON file; exports deliberately exclude authentication tokens.
 - Keyboard shortcuts: `/` or `Ctrl/Cmd+K` for search, `H` for Discover, `M` for My Universe, `?` for the shortcut hint, and `Esc` to close overlays.
+- The profile menu exposes the browser's native PWA install prompt when available, with Add to Home Screen guidance on browsers such as iOS Safari.
 - Offline shell caching is versioned and bounded, leaves unrelated origin caches untouched, and never caches API responses.
 
 ## Backend
