@@ -5,7 +5,8 @@ public class OfflineDownloadManager {
     private int downloadCount;
     private int downloadLimit;
     private long storageCapacityMB;
-    private long usedStorageMB;\n    private long[] downloadSizeMB;
+    private long usedStorageMB;
+    private long[] downloadSizeMB;
     private boolean wifiOnly;
     private boolean paused;
     private String downloadQuality;
@@ -23,7 +24,8 @@ public class OfflineDownloadManager {
         this.completed = new boolean[this.downloadLimit];
         this.downloadCount = 0;
         this.storageCapacityMB = 5000;
-        this.usedStorageMB = 0;\n        this.downloadSizeMB = new long[this.downloadLimit];
+        this.usedStorageMB = 0;
+        this.downloadSizeMB = new long[this.downloadLimit];
         this.wifiOnly = true;
         this.paused = false;
         this.downloadQuality = "Standard";
@@ -38,7 +40,7 @@ public class OfflineDownloadManager {
     public boolean addDownload(Movies movie) {
         if (movie == null || !movie.isDownloadAvailable()
                 || downloadCount >= downloadLimit
-                || isDownloaded(movie) || paused
+                || findMovie(movie) >= 0 || paused
                 || !hasEnoughStorage(movie)) {
             return false;
         }
@@ -48,7 +50,8 @@ public class OfflineDownloadManager {
         priority[downloadCount] = 50;
         failed[downloadCount] = false;
         failureReason[downloadCount] = "";
-        downloadStartedAt[downloadCount] = System.currentTimeMillis();\n        downloadSizeMB[downloadCount] = estimateMovieSizeMB(movie);
+        downloadStartedAt[downloadCount] = System.currentTimeMillis();
+        downloadSizeMB[downloadCount] = estimateMovieSizeMB(movie);
         downloadCompletedAt[downloadCount] = 0;
         downloadCount++;
         return true;
@@ -59,15 +62,15 @@ public class OfflineDownloadManager {
             return false;
         }
         int index = findMovie(movie);
-        if (index < 0) {
+        if (index < 0 || failed[index]) {
             return false;
         }
         boolean wasCompleted = completed[index];
         progress[index] = percent;
         completed[index] = percent >= 100;
         if (completed[index] && !wasCompleted) {
-            long size = estimateMovieSizeMB(movie);
-            if (usedStorageMB + size > storageCapacityMB) {
+            long size = downloadSizeMB[index];
+            if (usedStorageMB > storageCapacityMB - size) {
                 progress[index] = 99;
                 completed[index] = false;
                 return false;
@@ -84,9 +87,12 @@ public class OfflineDownloadManager {
         if (index < 0) {
             return false;
         }
+        boolean wasFailed = failed[index];
+        if (wasFailed) {
+            failedCount = Math.max(0, failedCount - 1);
+        }
         if (completed[index]) {
-            usedStorageMB = Math.max(0,
-                    usedStorageMB - estimateMovieSizeMB(downloads[index]));
+            usedStorageMB = Math.max(0, usedStorageMB - downloadSizeMB[index]);
         }
         for (int i = index; i < downloadCount - 1; i++) {
             downloads[i] = downloads[i + 1];
@@ -96,11 +102,18 @@ public class OfflineDownloadManager {
             failed[i] = failed[i + 1];
             failureReason[i] = failureReason[i + 1];
             downloadStartedAt[i] = downloadStartedAt[i + 1];
-            downloadCompletedAt[i] = downloadCompletedAt[i + 1];\n            downloadSizeMB[i] = downloadSizeMB[i + 1];
+            downloadCompletedAt[i] = downloadCompletedAt[i + 1];
+            downloadSizeMB[i] = downloadSizeMB[i + 1];
         }
         downloads[--downloadCount] = null;
         progress[downloadCount] = 0;
         completed[downloadCount] = false;
+        priority[downloadCount] = 0;
+        failed[downloadCount] = false;
+        failureReason[downloadCount] = null;
+        downloadStartedAt[downloadCount] = 0;
+        downloadCompletedAt[downloadCount] = 0;
+        downloadSizeMB[downloadCount] = 0;
         return true;
     }
 
