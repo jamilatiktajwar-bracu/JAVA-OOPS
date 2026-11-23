@@ -1,0 +1,6 @@
+package io.storyspace.api;
+import io.storyspace.accounts.AccountRepository;import io.storyspace.catalog.TitleRepository;import io.storyspace.library.LibraryRepository;import io.storyspace.subscriptions.SubscriptionRepository;import org.springframework.security.access.prepost.PreAuthorize;import org.springframework.web.bind.annotation.*;import java.util.Map;
+@RestController @RequestMapping("/api/admin/metrics") @PreAuthorize("hasRole('ADMIN')")public class AdminMetricsController {private final AccountRepository accounts;private final TitleRepository titles;private final LibraryRepository library;private final SubscriptionRepository subs;
+ public AdminMetricsController(AccountRepository a,TitleRepository t,LibraryRepository l,SubscriptionRepository s){accounts=a;titles=t;library=l;subs=s;}
+ @GetMapping public Map<String,Object> get(){return Map.of("accounts",accounts.count(),"catalogTitles",titles.count(),"libraryRecords",library.count(),"subscriptions",subs.count(),"environment","DEMO");}
+}
