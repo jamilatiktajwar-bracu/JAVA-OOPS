@@ -129,3 +129,6 @@ html.tv-mode .movie-card:focus {
 
 .player-restart{min-height:40px;padding:9px 14px;font-size:12px}
 .player-panel #playerNotice{color:var(--muted);font-size:12px;line-height:1.55}
+
+.skip-link{position:fixed;z-index:200;top:8px;left:8px;padding:11px 15px;border-radius:9px;background:var(--cyan);color:#07121e;font-weight:700;transform:translateY(-160%);transition:transform .18s ease}
+.skip-link:focus{transform:translateY(0);outline:3px solid #fff;outline-offset:3px}
