@@ -7,6 +7,7 @@ public class NETFLIX_SMOKE_TEST {
         testLocaleIndependentMovieSearch();
         testSubscriptionPlanNormalization();
         testMovieConstructorNormalization();
+        testMovieMetadataArrayHandling();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -108,6 +109,17 @@ public class NETFLIX_SMOKE_TEST {
         Movies valid = new Movies("  Film  ", "  Drama  ", 120, 2020);
         require("Film".equals(valid.getTitle()) && "Drama".equals(valid.getGenre()), "constructor should trim valid text");
         require(valid.getDuration() == 120 && valid.getReleaseYear() == 2020, "valid constructor values should be retained");
+    }
+
+    private static void testMovieMetadataArrayHandling() {
+        Movies movie = new Movies("Array test", "Drama", 90);
+        require(movie.addCastMember("Actor"), "first cast entry should be accepted");
+        require(!movie.addCastMember(" actor "), "duplicate cast entry should be rejected case-insensitively");
+        require(movie.addSubtitle("en"), "first subtitle should be accepted");
+        require(!movie.addSubtitle(" EN "), "duplicate subtitle should be rejected case-insensitively");
+        String[] cast = movie.getCast();
+        cast[0] = "Mutated";
+        require("Actor".equals(movie.getCast()[0]), "cast getter should return a defensive array copy");
     }
 
     private static void require(boolean condition, String message) {
