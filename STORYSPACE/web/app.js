@@ -204,6 +204,12 @@ async function syncAccount(){
     personalized.preferences=normalizePreferences({...profile,balance:personalized.preferences.balance});
     savePrefs();
     const saved=await api("/library");personalized.serverLibrary=Array.isArray(saved)?saved:[];
+    personalized.serverLibrary.forEach(item=>{
+      const titleId=item?.title?.id,percent=Number(item?.progressPercent)||0;
+      if(titleId===undefined||percent<=0)return;
+      const title=movies.find(m=>String(m.apiId||m.id)===String(titleId));
+      if(title){title.remoteProgressPercent=Math.min(99,percent);title.progress=Math.max(Number(title.progress)||0,Math.min(99,percent));}
+    });
     state.list=new Set(personalized.serverLibrary.map(x=>x?.title?.id).filter(x=>x!==undefined&&x!==null));
     storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));
     const feed=await api("/catalog/for-you");
@@ -337,9 +343,12 @@ playerVideo.addEventListener("loadedmetadata",()=>{
   $("playerRestart").disabled=false;
   if(!activePlayerTitle)return;
   const point=resumePoints[String(activePlayerTitle.apiId||activePlayerTitle.id)];
-  if(point&&point.currentTime>5&&playerVideo.duration>point.currentTime+3){
-    playerVideo.currentTime=Math.min(point.currentTime,playerVideo.duration-2);
-    $("playerNotice").textContent="CC0 sample preview · resuming at "+formatPlayerTime(point.currentTime)+". Not the title's licensed footage.";
+  const localTime=point&&point.currentTime>5?point.currentTime:0;
+  const remotePercent=Number(activePlayerTitle.remoteProgressPercent)||0;
+  const resumeTime=localTime||((remotePercent>5&&remotePercent<100)?playerVideo.duration*remotePercent/100:0);
+  if(resumeTime>5&&playerVideo.duration>resumeTime+3){
+    playerVideo.currentTime=Math.min(resumeTime,playerVideo.duration-2);
+    $("playerNotice").textContent="CC0 sample preview · resuming at "+formatPlayerTime(resumeTime)+". Not the title's licensed footage.";
   }
 });
 $("playerRestart").addEventListener("click",()=>{
