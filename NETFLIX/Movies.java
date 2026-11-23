@@ -895,8 +895,9 @@ public class Movies {
         if (keyword == null) {
             return false;
         }
+        String normalizedKeyword = keyword.toLowerCase(java.util.Locale.ROOT);
         for (int i = 0; i < keywordCount; i++) {
-            if (keywords[i].toLowerCase().contains(keyword.toLowerCase())) {
+            if (keywords[i].toLowerCase(java.util.Locale.ROOT).contains(normalizedKeyword)) {
                 return true;
             }
         }
