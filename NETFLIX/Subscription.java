@@ -309,7 +309,7 @@ public class Subscription {
     public boolean processPayment(double amount) {
         if (!Double.isFinite(amount) || amount <= 0.0
                 || paymentMethod.equals("Not configured")
-                || !active || paused || inTrial) {
+                || !active || paused) {
             return false;
         }
         double expected = getEffectiveMonthlyFee();
