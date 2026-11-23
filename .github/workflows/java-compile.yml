@@ -23,5 +23,8 @@ jobs:
       - name: Compile project
         working-directory: NETFLIX
         run: javac *.java
+      - name: Run smoke tests
+        working-directory: NETFLIX
+        run: java NETFLIX_SMOKE_TEST
       - name: Clean compiled files
         run: find NETFLIX -name '*.class' -delete
