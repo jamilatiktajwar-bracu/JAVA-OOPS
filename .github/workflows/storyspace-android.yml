@@ -32,7 +32,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      # Runner images already contain Android SDK. Avoid setup-android's obsolete
+      # "tools" package request; install the SDK components needed by Gradle directly.
+      - name: Install Android SDK packages
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          sdkmanager --sdk_root="$ANDROID_HOME" --licenses
+          sdkmanager --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
       - name: Install Capacitor dependencies
         working-directory: STORYSPACE/platforms/mobile
         run: npm install
