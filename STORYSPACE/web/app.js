@@ -27,6 +27,7 @@ const $=id=>document.getElementById(id);
 const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 function safeAssetUrl(value){try{const u=new URL(String(value||""),location.href);if(u.protocol==="https:"||u.origin===location.origin||(u.protocol==="http:"&&["localhost","127.0.0.1"].includes(u.hostname)))return u.href}catch{}return ""}
 const art=m=>safeAssetUrl(m.poster||m.posterUrl);
+function safeMediaUrl(value){try{const url=new URL(String(value||""),location.href);if(url.protocol==="https:"||url.origin===location.origin)return url.href}catch{}return ""}
 function persistList(){storage.set("storyspace.myUniverse",JSON.stringify([...state.list]))}
 function showToast(message){const t=$("toast");t.textContent=message;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),2300)}
 function card(m){const title=String(m.title||m.name||"Untitled story");const c=document.createElement("article");c.className="movie-card";c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",`Open details for ${title}`);
@@ -175,7 +176,11 @@ updateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
 loadServerCatalog().then(()=>{renderHome();setHero(chooseHero());if(personalized.token)syncAccount()});
 if(!storage.get("storyspace.onboarded")){setTimeout(()=>openPreferences(),600)}
 $("savePreferences").addEventListener("click",()=>{storage.set("storyspace.onboarded","1")});
-setInterval(()=>{if(!$("modalBackdrop").hidden||!$("preferencesBackdrop").hidden||!$("authBackdrop").hidden)return;nextHero()},60000);
+setInterval(()=>{
+  const overlayOpen=["modalBackdrop","preferencesBackdrop","authBackdrop","subscriptionBackdrop","adminBackdrop","playerBackdrop"].some(id=>!$(id).hidden);
+  if(overlayOpen||document.hidden||window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  nextHero();
+},60000);
 
 async function openMembership(){if(!personalized.account){openAuth("register");showToast("Sign in first to manage a membership");return}$("subscriptionBackdrop").hidden=false;document.body.style.overflow="hidden";await renderMembership()}
 function closeMembership(){$("subscriptionBackdrop").hidden=true;document.body.style.overflow=""}
@@ -183,8 +188,31 @@ async function renderMembership(){const grid=$("planGrid");grid.innerHTML="";try
 async function cancelMembership(){try{const r=await api("/subscriptions/cancel",{method:"POST"});$("subscriptionCurrent").textContent="Demo membership: "+r.plan+" · "+r.status;showToast("Demo membership cancelled")}catch(e){showToast(e.message)}}
 async function openAdmin(){if(!personalized.account||personalized.account.role!=="ADMIN"){showToast("Creator console is restricted to administrator accounts");return}$("adminBackdrop").hidden=false;document.body.style.overflow="hidden";try{const m=await api("/admin/metrics");$("adminStats").innerHTML=Object.entries(m).map(([k,v])=>`<div class="admin-stat"><small>${escapeHTML(k.toUpperCase())}</small><b>${escapeHTML(v)}</b></div>`).join("")}catch(e){$("adminStats").textContent=e.message}}
 function closeAdmin(){$("adminBackdrop").hidden=true;document.body.style.overflow=""}
-async function openPlayer(m){closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";$("playerTitle").textContent=m.title||m.name||"Preview";$("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";const video=$("previewVideo");video.pause();video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";try{if(personalized.token&&m.apiId){const d=await api("/media/"+encodeURIComponent(m.apiId)+"/preview");video.src=d.previewUrl;$("playerNotice").textContent=d.notice||"Preview-only sample video."}}catch(e){$("playerNotice").textContent="Preview sample fallback. "+e.message}video.load();video.play().catch(()=>{})}
-function closePlayer(){const v=$("previewVideo");v.pause();v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow=""}
+let playerLoadId=0;
+async function openPlayer(m){
+  const request=++playerLoadId;
+  closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
+  $("playerTitle").textContent=m.title||m.name||"Preview";
+  $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
+  const video=$("previewVideo");video.pause();
+  video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+  try{
+    if(personalized.token&&m.apiId){
+      const data=await api("/media/"+encodeURIComponent(m.apiId)+"/preview");
+      if(request!==playerLoadId||$("playerBackdrop").hidden)return;
+      const preview=safeMediaUrl(data?.previewUrl);
+      if(preview){video.src=preview;$("playerNotice").textContent=data.notice||"Preview-only sample video."}
+      else $("playerNotice").textContent="The server returned an unsupported preview URL. Showing the sample clip instead.";
+    }
+  }catch(error){
+    if(request!==playerLoadId||$("playerBackdrop").hidden)return;
+    $("playerNotice").textContent="Preview service unavailable. Showing the sample clip instead.";
+  }
+  if(request!==playerLoadId||$("playerBackdrop").hidden)return;
+  video.load();
+  try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
+}
+function closePlayer(){playerLoadId++;const v=$("previewVideo");v.pause();v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow=""}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
@@ -193,6 +221,22 @@ $("adminTitleForm").onsubmit=async e=>{e.preventDefault();const f=e.currentTarge
 function updateAccountUI(){const acc=personalized.account;const label=acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V";const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=label;const row=document.querySelector(".profile-row");if(row){row.replaceChildren();const icon=document.createElement("span");icon.className="avatar";icon.textContent=label;const details=document.createElement("div");const name=document.createElement("b");name.textContent=acc?acc.displayName:"Explorer";const sub=document.createElement("small");sub.textContent=acc?acc.email:"Guest · saved on this device";details.append(name,sub);row.append(icon,details)}const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";const admin=$("adminAction");if(admin)admin.hidden=acc?.role!=="ADMIN";const membership=$("subscriptionAction");if(membership)membership.textContent=acc?"Membership & plans":"Sign in for membership";}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdrop").hidden)closePlayer();if(!$("subscriptionBackdrop").hidden)closeMembership();if(!$("adminBackdrop").hidden)closeAdmin()}});
 
+
+// Modal keyboard accessibility: keep keyboard focus inside the topmost open dialog.
+(() => {
+  const overlayIds=["playerBackdrop","adminBackdrop","subscriptionBackdrop","authBackdrop","preferencesBackdrop","modalBackdrop"];
+  const selector='button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  document.addEventListener("keydown",event=>{
+    if(event.key!=="Tab")return;
+    const overlay=overlayIds.map(id=>document.getElementById(id)).find(el=>el&&!el.hidden);
+    if(!overlay)return;
+    const focusable=[...overlay.querySelectorAll(selector)].filter(el=>el.getClientRects().length&&!el.closest("[hidden]"));
+    if(!focusable.length){event.preventDefault();return}
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(event.shiftKey&&(document.activeElement===first||!overlay.contains(document.activeElement))){event.preventDefault();last.focus()}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  });
+})();
 
 // Multi-device install and living-room navigation foundation.
 (() => {
