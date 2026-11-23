@@ -62,7 +62,9 @@ jobs:
           "$AAPT" dump xmltree app/build/outputs/apk/debug/app-debug.apk AndroidManifest.xml > "$RUNNER_TEMP/storyspace-manifest.txt"
           grep -q 'android.software.leanback' "$RUNNER_TEMP/storyspace-manifest.txt"
           grep -q 'android.intent.category.LEANBACK_LAUNCHER' "$RUNNER_TEMP/storyspace-manifest.txt"
-          grep -q 'storyspace_tv_banner' "$RUNNER_TEMP/storyspace-manifest.txt"
+          # XML dump resolves the banner to a resource ID; verify the resource table separately.
+          "$AAPT" dump resources app/build/outputs/apk/debug/app-debug.apk > "$RUNNER_TEMP/storyspace-resources.txt"
+          grep -q 'storyspace_tv_banner' "$RUNNER_TEMP/storyspace-resources.txt"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
