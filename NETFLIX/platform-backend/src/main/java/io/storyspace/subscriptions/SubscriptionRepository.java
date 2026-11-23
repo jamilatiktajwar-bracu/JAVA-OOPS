@@ -1,0 +1,3 @@
+package io.storyspace.subscriptions;
+import org.springframework.data.jpa.repository.JpaRepository;import java.util.List;import java.util.Optional;import java.util.UUID;
+public interface SubscriptionRepository extends JpaRepository<Subscription,UUID>{List<Subscription> findByAccountIdOrderByStartedAtDesc(UUID accountId);Optional<Subscription> findFirstByAccountIdAndStatusOrderByStartedAtDesc(UUID accountId,String status);}
