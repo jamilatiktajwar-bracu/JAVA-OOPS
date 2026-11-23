@@ -695,7 +695,7 @@ public class NETFLIX_USER {
     }
 
     public boolean setPassword(String password) {
-        if (password == null) {
+        if (password == null || password.trim().isEmpty()) {
             return false;
         }
         this.password = password;
