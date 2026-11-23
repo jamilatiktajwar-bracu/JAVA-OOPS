@@ -9,6 +9,7 @@ public class Subscription {
     private String couponCode;
     private int trialDaysRemaining;
     private boolean inTrial;
+    private boolean trialUsed;
     private double[] billingHistory;
     private int billingHistoryCount;
     private boolean autoRenew;
@@ -63,6 +64,7 @@ public class Subscription {
         this.couponCode = "";
         this.trialDaysRemaining = 0;
         this.inTrial = false;
+        this.trialUsed = false;
         this.billingHistory = new double[100];
         this.billingHistoryCount = 0;
         this.autoRenew = true;
@@ -132,6 +134,11 @@ public class Subscription {
     public void cancel() {
         active = false;
         autoRenew = false;
+        inTrial = false;
+        trialDaysRemaining = 0;
+        if (billingStatus.equals("Trial")) {
+            billingStatus = "Cancelled";
+        }
     }
 
     public void renew() {
@@ -162,14 +169,14 @@ public class Subscription {
     }
 
     public boolean startTrial(int days) {
-        if (days <= 0 || inTrial) {
+        if (days <= 0 || days > 3650 || inTrial || trialUsed || !active || paused) {
             return false;
         }
         inTrial = true;
+        trialUsed = true;
         trialDaysRemaining = days;
-        active = true;
-        nextBillingTime = System.currentTimeMillis()
-                + (long) days * 24L * 60L * 60L * 1000L;
+        billingStatus = "Trial";
+        nextBillingTime = safeFutureTime((long) days * 24L * 60L * 60L * 1000L);
         return true;
     }
 
@@ -182,6 +189,7 @@ public class Subscription {
         }
         if (trialDaysRemaining == 0) {
             inTrial = false;
+            billingStatus = active ? "Current" : "Cancelled";
         }
         return true;
     }
@@ -230,8 +238,16 @@ public class Subscription {
         double total = 0.0;
         for (int i = 0; i < billingHistoryCount; i++) {
             total += billingHistory[i];
+            if (!Double.isFinite(total)) {
+                return Double.MAX_VALUE;
+            }
         }
         return total;
+    }
+
+    /** Returns paid amount after refunds, without changing historical payment records. */
+    public double getNetPaid() {
+        return Math.max(0.0, getTotalPaid() - refundedAmount);
     }
 
     public void setBillingCycle(String billingCycle) {
@@ -486,9 +502,16 @@ public class Subscription {
         return difference * ((double) safeRemaining / cycleDays);
     }
 
+    private long safeFutureTime(long durationMillis) {
+        long now = System.currentTimeMillis();
+        if (durationMillis > Long.MAX_VALUE - now) {
+            return Long.MAX_VALUE;
+        }
+        return now + durationMillis;
+    }
+
     private void touchBilling() {
-        nextBillingTime = System.currentTimeMillis()
-                + 30L * 24L * 60L * 60L * 1000L;
+        nextBillingTime = safeFutureTime(30L * 24L * 60L * 60L * 1000L);
     }
 
     public void display() {
