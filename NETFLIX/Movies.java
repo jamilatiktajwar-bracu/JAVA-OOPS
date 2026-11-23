@@ -269,9 +269,9 @@ public class Movies {
         if (keyword == null) {
             return new Movies[0];
         }
-        String search = keyword.trim().toLowerCase();
+        String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
         for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getTitle().toLowerCase().contains(search)) {
+            if (movieList[i].getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)) {
                 matches[count++] = movieList[i];
             }
         }
@@ -406,10 +406,10 @@ public class Movies {
         String search = keyword.trim().toLowerCase();
         for (int i = 0; i < movieCount; i++) {
             Movies movie = movieList[i];
-            if (movie.getTitle().toLowerCase().contains(search)
-                    || movie.getGenre().toLowerCase().contains(search)
-                    || movie.getDirector().toLowerCase().contains(search)
-                    || movie.getDescription().toLowerCase().contains(search)
+            if (movie.getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)
+                    || movie.getGenre().toLowerCase(java.util.Locale.ROOT).contains(search)
+                    || movie.getDirector().toLowerCase(java.util.Locale.ROOT).contains(search)
+                    || movie.getDescription().toLowerCase(java.util.Locale.ROOT).contains(search)
                     || movie.hasKeyword(search)) {
                 matches[count++] = movie;
             }
