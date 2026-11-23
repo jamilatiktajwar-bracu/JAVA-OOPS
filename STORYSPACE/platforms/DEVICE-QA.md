@@ -41,6 +41,10 @@ Use this checklist with a signed-in test account and a non-production demo envir
 
 ### Player and performance
 - [ ] Open the sample preview and confirm playback controls appear.
+- [ ] Play a sample preview for at least 15 seconds, close it, and reopen the same title; verify it resumes near the saved position.
+- [ ] Use Restart Preview and verify the next open starts at the beginning.
+- [ ] Play to the end and verify the title leaves Continue Watching.
+- [ ] For a signed-in title in My Universe, verify playback progress eventually syncs to the account library.
 - [ ] Close the player while it is loading; verify no audio continues in the background.
 - [ ] Rotate while the player is open; verify controls remain accessible.
 - [ ] Test pause/resume, seek, mute/volume, and return to the catalog.
