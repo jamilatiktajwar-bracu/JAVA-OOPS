@@ -130,13 +130,18 @@ public class NETFLIX_USER {
     }
 
     public boolean watchMovie(Movies movie) {
-        if (movie == null || watchHistoryCount >= watchHistory.length) {
+        if (movie == null) {
             return false;
         }
+        // Re-watching an existing entry must not fail just because history is full.
         if (!isInWatchHistory(movie)) {
+            if (watchHistoryCount >= watchHistory.length) {
+                return false;
+            }
             watchHistory[watchHistoryCount++] = movie;
         }
         movie.markWatched();
+        removeFromContinueWatching(movie);
         return true;
     }
 
@@ -403,6 +408,9 @@ public class NETFLIX_USER {
                 viewingProgress[i] = progressPercent;
                 if (progressPercent >= 95) {
                     movie.markWatched();
+                    if (!isInWatchHistory(movie) && watchHistoryCount < watchHistory.length) {
+                        watchHistory[watchHistoryCount++] = movie;
+                    }
                     removeContinueWatchingAt(i);
                 }
                 return true;
@@ -554,7 +562,7 @@ public class NETFLIX_USER {
     }
 
     public boolean addFamilyProfile(NETFLIX_USER profile) {
-        if (profile == null || familyProfileCount >= familyProfiles.length) {
+        if (profile == null || profile == this || familyProfileCount >= familyProfiles.length) {
             return false;
         }
         for (int i = 0; i < familyProfileCount; i++) {
@@ -577,11 +585,14 @@ public class NETFLIX_USER {
     }
 
     public int getTotalWatchedMinutes() {
-        int total = 0;
+        long total = 0;
         for (int i = 0; i < watchHistoryCount; i++) {
             total += watchHistory[i].getDuration();
+            if (total >= Integer.MAX_VALUE) {
+                return Integer.MAX_VALUE;
+            }
         }
-        return total;
+        return (int) total;
     }
 
     public Movies[] getRecentlyWatched(int limit) {
