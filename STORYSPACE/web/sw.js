@@ -66,17 +66,19 @@ self.addEventListener("fetch", event => {
   }
 
   if (["script", "style", "image", "font"].includes(request.destination)) {
+    const runtimePromise = caches.open(RUNTIME_CACHE);
+    const shellPromise = caches.open(SHELL_CACHE);
+    const refresh = fetch(request).then(async response => {
+      try { await updateRuntimeCache(request, response); } catch { /* Cache quota must not block a network response. */ }
+      return response;
+    });
+    // Extend the service-worker lifetime before the event handler returns.
+    event.waitUntil(refresh.then(() => undefined).catch(() => {}));
     event.respondWith((async () => {
-      const runtime = await caches.open(RUNTIME_CACHE);
-      const shell = await caches.open(SHELL_CACHE);
+      const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
       const cached = await runtime.match(request) || await shell.match(request);
-      const refresh = fetch(request).then(response => updateRuntimeCache(request, response).then(() => response));
-      if (cached) {
-        event.waitUntil(refresh.catch(() => {}));
-        return cached;
-      }
+      if (cached) return cached;
       try { return await refresh; }
       catch { return (await runtime.match(request)) || (await shell.match(request)) || Response.error(); }
     })());
-  }
 });
