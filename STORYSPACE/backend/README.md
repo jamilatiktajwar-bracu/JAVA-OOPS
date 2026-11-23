@@ -10,7 +10,7 @@ mvn spring-boot:run
 The API listens at `http://localhost:8080`; health check `GET /api/health`.
 
 ## Admin bootstrap
-Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` before startup to create the first admin account. Do not commit credentials. For deployment set a long random `TOKEN_SECRET` (32+ characters), strict CORS origins, TLS, and production database.
+Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` before startup to create the first admin account. Do not commit credentials. For deployment set a long random `TOKEN_SECRET` (32+ characters), `CORS_ALLOWED_ORIGINS` as a comma-separated exact origin allowlist (no `*`), TLS, and production database. The development defaults allow local web ports and Capacitor origins only; add your deployed web app's origin explicitly.
 
 ## Routes
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`
