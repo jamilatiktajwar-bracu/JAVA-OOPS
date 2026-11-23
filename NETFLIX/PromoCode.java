@@ -10,9 +10,9 @@ public class PromoCode {
 
     public PromoCode(String code, double discountPercent, int maxUses) {
         String normalizedCode = code == null ? "" : code.trim().toUpperCase(Locale.ROOT);
-        this.code = normalizedCode.isEmpty() ? "PROMO" : normalizedCode;
+        this.code = normalizedCode;
         this.discountPercent = Double.isFinite(discountPercent) ? discountPercent : 0.0;
-        this.maxUses = maxUses > 0 ? maxUses : 1;
+        this.maxUses = Math.max(0, maxUses);
         this.currentUses = 0;
         this.active = true;
         this.expiresAt = System.currentTimeMillis()
@@ -23,7 +23,7 @@ public class PromoCode {
         if (!isValid() || subscription == null || !subscription.applyCoupon(code, discountPercent)) {
             return false;
         }
-        currentUses++;
+        if (currentUses < Integer.MAX_VALUE) {\n            currentUses++;\n        }
         if (currentUses >= maxUses) {
             active = false;
         }
