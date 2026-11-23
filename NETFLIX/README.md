@@ -1,6 +1,6 @@
 # Original Streaming Platform Concept + Java OOP Project
 
-This repository contains a Java console-based streaming-service simulation and a separate original story-discovery UI concept called **VYORA** (working name; trademark clearance not performed).
+This repository contains a Java console-based streaming-service simulation and a separate original story-discovery UI concept called **STORYSPACE** (working name; trademark clearance not performed).
 
 ## Requirements
 - JDK 8 or newer
