@@ -330,12 +330,22 @@ function formatPlayerTime(seconds){
 const playerVideo=$("previewVideo");
 playerVideo.addEventListener("timeupdate",()=>persistPlayerProgress(false));
 playerVideo.addEventListener("loadedmetadata",()=>{
+  $("playerRestart").disabled=false;
   if(!activePlayerTitle)return;
   const point=resumePoints[String(activePlayerTitle.apiId||activePlayerTitle.id)];
   if(point&&point.currentTime>5&&playerVideo.duration>point.currentTime+3){
     playerVideo.currentTime=Math.min(point.currentTime,playerVideo.duration-2);
     $("playerNotice").textContent="CC0 sample preview · resuming at "+formatPlayerTime(point.currentTime)+". Not the title's licensed footage.";
   }
+});
+$("playerRestart").addEventListener("click",()=>{
+  if(!activePlayerTitle||playerVideo.readyState<1)return;
+  const title=activePlayerTitle,key=String(title.apiId||title.id);
+  playerVideo.currentTime=0;
+  delete resumePoints[key];title.progress=0;delete title.resumePoint;
+  storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));refreshContinueRow();
+  $("playerNotice").textContent="Preview restarted from the beginning. CC0 sample footage only.";
+  playerVideo.play().catch(()=>{});
 });
 playerVideo.addEventListener("ended",()=>{
   if(!activePlayerTitle)return;
@@ -350,7 +360,7 @@ async function openPlayer(m){
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
   $("playerTitle").textContent=m.title||m.name||"Preview";
   $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
-  const video=$("previewVideo");video.pause();
+  const video=$("previewVideo");$("playerRestart").disabled=true;video.pause();
   video.onerror=()=>{if(request===playerLoadId&&!$("playerBackdrop").hidden)$("playerNotice").textContent="The preview could not be loaded. Check your connection and try again."};
   video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
   try{
@@ -369,7 +379,7 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){persistPlayerProgress(true);playerLoadId++;const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
+function closePlayer(){persistPlayerProgress(true);playerLoadId++;$("playerRestart").disabled=true;const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
