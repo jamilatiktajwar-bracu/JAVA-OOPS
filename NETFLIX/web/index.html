@@ -3,68 +3,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#09090b">
-  <meta name="description" content="A cinematic Netflix-inspired streaming UI demo.">
-  <title>NETFLIX — Stream stories</title>
+  <meta name="theme-color" content="#090f20">
+  <meta name="description" content="VYORA — a story discovery experience. An original streaming UI concept.">
+  <title>VYORA — Find your next feeling</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar" id="topbar">
-      <a class="brand" href="#" aria-label="Netflix home"><span class="brand-mark">N</span><span class="brand-word">NETFLIX</span></a>
+      <a class="brand" href="#" aria-label="Vyora home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-word">VYORA</span><span class="brand-tag">STORY SPACE</span></a>
       <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-link active" data-view="home">Home</button>
-        <button class="nav-link" data-view="series">TV Shows</button>
-        <button class="nav-link" data-view="movies">Movies</button>
-        <button class="nav-link" data-view="new">New &amp; Popular</button>
-        <button class="nav-link" data-view="mylist">My List</button>
+        <button class="nav-link active" data-view="home">Discover</button>
+        <button class="nav-link" data-view="series">Series</button>
+        <button class="nav-link" data-view="movies">Films</button>
+        <button class="nav-link" data-view="new">Fresh</button>
+        <button class="nav-link" data-view="mylist">My Universe</button>
       </nav>
       <div class="top-actions">
         <button class="icon-button search-toggle" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg></button>
-        <div class="search-box" id="searchBox"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg><input id="searchInput" type="search" placeholder="Titles, people, genres" aria-label="Search titles"><button id="clearSearch" class="clear-search" aria-label="Clear search">×</button></div>
+        <div class="search-box" id="searchBox"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg><input id="searchInput" type="search" placeholder="Find a story, feeling, genre..." aria-label="Search titles"><button id="clearSearch" class="clear-search" aria-label="Clear search">×</button></div>
         <button class="notification icon-button" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
         <div class="profile-wrap">
-          <button class="profile-button" id="profileButton" aria-label="Open profile"><span class="avatar">J</span><span class="chevron">⌄</span></button>
-          <div class="profile-menu" id="profileMenu"><div class="profile-row"><span class="avatar">J</span><div><b>Jamila</b><small>Premium Demo</small></div></div><button data-profile="Manage Profiles">Manage Profiles</button><button data-profile="Account">Account</button><button data-profile="Help Center">Help Center</button><button data-profile="Sign out">Sign out</button></div>
+          <button class="profile-button" id="profileButton" aria-label="Open profile"><span class="avatar">V</span><span class="chevron">⌄</span></button>
+          <div class="profile-menu" id="profileMenu"><div class="profile-row"><span class="avatar">V</span><div><b>Explorer</b><small>VYORA demo profile</small></div></div><button data-profile="Profile settings">Profile settings</button><button data-profile="Preferences">Preferences</button><button data-profile="Help">Help &amp; feedback</button><button data-profile="Sign out">Sign out</button></div>
         </div>
       </div>
     </header>
     <main>
       <section class="hero" id="hero">
-        <div class="hero-art" id="heroArt"></div>
-        <div class="hero-vignette"></div>
+        <div class="hero-art" id="heroArt"></div><div class="hero-vignette"></div><div class="hero-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
         <div class="hero-content">
-          <div class="eyebrow"><span class="n-mini">N</span> SERIES <span class="eyebrow-dot">•</span> <span>TOP 10 TODAY</span></div>
-          <div class="hero-title" id="heroTitle">THE<br>LAST FRONTIER</div>
-          <div class="hero-meta"><span class="top10">TOP 10</span><span>2026</span><span class="maturity">16+</span><span>2 Seasons</span><span class="quality">4K</span></div>
-          <p class="hero-description" id="heroDescription">When the edge of the known universe begins to unravel, one crew must decide what humanity is worth saving.</p>
-          <div class="hero-actions"><button class="primary-button" id="heroPlay"><span class="play-symbol">▶</span> Play</button><button class="secondary-button" id="heroInfo"><span class="info-symbol">ⓘ</span> More Info</button></div>
+          <div class="eyebrow"><span class="eyebrow-mark">✦</span> THE VYORA PREMIERE <span class="eyebrow-dot">/</span> FEATURED STORY</div>
+          <div class="hero-title" id="heroTitle">SIGNAL<br>BEYOND</div>
+          <div class="hero-meta"><span class="top10">FEATURED</span><span>2026</span><span class="maturity">16+</span><span>2 Seasons</span><span class="quality">4K</span></div>
+          <p class="hero-description" id="heroDescription">Somewhere beyond the edge of everything we know, a signal is waiting to be heard.</p>
+          <div class="hero-actions"><button class="primary-button" id="heroPlay"><span class="play-symbol">▶</span> Enter story</button><button class="secondary-button" id="heroInfo"><span class="info-symbol">✦</span> Explore</button></div>
         </div>
-        <div class="hero-rating"><span>IMDb</span><b>8.9</b><small> • Sci-Fi</small></div>
-        <div class="hero-controls"><button id="heroMute" class="round-control" aria-label="Toggle sound">◖</button><span class="rating-label">TV-MA</span></div>
+        <div class="hero-rating"><span>STORY SCORE</span><b>8.9</b><small> / Sci-Fi</small></div>
+        <div class="hero-controls"><button id="heroMute" class="round-control" aria-label="Toggle sound">◖</button><span class="rating-label">IMMERSIVE PREVIEW</span></div>
         <div class="hero-progress"><span></span></div>
       </section>
       <section class="content-area">
-        <div class="welcome-line" id="welcomeLine"><span>Good evening, Jamila.</span><small>Your next story is waiting.</small></div>
-        <section class="movie-section" id="continueSection"><div class="section-heading"><h2>Continue Watching</h2><button class="see-all" data-view="continue">See all <span>›</span></button></div><div class="movie-row" id="continueRow"></div></section>
-        <section class="movie-section" id="trendingSection"><div class="section-heading"><h2>Trending Now</h2><button class="see-all" data-view="trending">See all <span>›</span></button></div><div class="movie-row" id="trendingRow"></div></section>
-        <section class="movie-section" id="originalsSection"><div class="section-heading"><h2>Only on Netflix</h2><button class="see-all" data-view="originals">See all <span>›</span></button></div><div class="movie-row" id="originalsRow"></div></section>
-        <section class="movie-section" id="topSection"><div class="section-heading"><h2>Top Picks for You</h2><button class="see-all" data-view="top">See all <span>›</span></button></div><div class="movie-row" id="topRow"></div></section>
-        <section class="movie-section" id="mylistSection"><div class="section-heading"><h2>My List</h2><button class="see-all" data-view="mylist">See all <span>›</span></button></div><div class="movie-row" id="mylistRow"></div></section>
-        <section class="movie-section" id="searchResultsSection" hidden><div class="section-heading"><h2 id="searchHeading">Search Results</h2></div><div class="movie-grid" id="searchGrid"></div><div class="empty-state" id="emptySearch" hidden><div class="empty-icon">⌕</div><h3>No titles found</h3><p>Try searching for a different movie, series, or genre.</p></div></section>
+        <div class="welcome-line" id="welcomeLine"><span>Stories for your state of mind.</span><small>Choose a feeling. Find a world.</small></div>
+        <section class="mood-section" id="moodSection"><div class="mood-heading"><span class="eyebrow-mark">✧</span><span>WHAT ARE YOU IN THE MOOD FOR?</span></div><div class="mood-pills"><button class="mood-pill" data-mood="Sci-Fi">Beyond reality</button><button class="mood-pill" data-mood="Adventure">A little adventure</button><button class="mood-pill" data-mood="Drama">Feel something</button><button class="mood-pill" data-mood="Thriller">Keep me guessing</button><button class="mood-pill" data-mood="Romance">Soft &amp; lovely</button><button class="mood-pill" data-mood="Family">Together time</button></div></section>
+        <section class="movie-section" id="continueSection"><div class="section-heading"><h2>Pick up your journey</h2><button class="see-all" data-view="continue">View all <span>↗</span></button></div><div class="movie-row" id="continueRow"></div></section>
+        <section class="movie-section" id="trendingSection"><div class="section-heading"><div><span class="section-kicker">IN THE ORBIT</span><h2>Stories people are exploring</h2></div><button class="see-all" data-view="trending">Explore <span>↗</span></button></div><div class="movie-row" id="trendingRow"></div></section>
+        <section class="movie-section" id="originalsSection"><div class="section-heading"><div><span class="section-kicker">MADE FOR THIS SPACE</span><h2>Vyora premieres</h2></div><button class="see-all" data-view="originals">Explore <span>↗</span></button></div><div class="movie-row" id="originalsRow"></div></section>
+        <section class="movie-section" id="topSection"><div class="section-heading"><div><span class="section-kicker">YOUR SIGNALS</span><h2>Curated for you</h2></div><button class="see-all" data-view="top">Explore <span>↗</span></button></div><div class="movie-row" id="topRow"></div></section>
+        <section class="movie-section" id="mylistSection"><div class="section-heading"><div><span class="section-kicker">PERSONAL COLLECTION</span><h2>My Universe</h2></div><button class="see-all" data-view="mylist">Explore <span>↗</span></button></div><div class="movie-row" id="mylistRow"></div></section>
+        <section class="movie-section" id="searchResultsSection" hidden><div class="section-heading"><div><span class="section-kicker">YOUR SEARCH</span><h2 id="searchHeading">Found in the universe</h2></div></div><div class="movie-grid" id="searchGrid"></div><div class="empty-state" id="emptySearch" hidden><div class="empty-icon">✧</div><h3>No stories in this orbit</h3><p>Try another title, mood, or genre.</p></div></section>
       </section>
     </main>
-    <footer><div class="footer-social"><span>◎</span><span>◉</span><span>♪</span><span>▶</span></div><div class="footer-links"><a href="#">Audio Description</a><a href="#">Help Center</a><a href="#">Gift Cards</a><a href="#">Media Center</a><a href="#">Investor Relations</a><a href="#">Jobs</a><a href="#">Terms of Use</a><a href="#">Privacy</a><a href="#">Legal Notices</a><a href="#">Cookie Preferences</a><a href="#">Corporate Information</a></div><button class="service-code">Service Code</button><p class="copyright">© 2026 Netflix UI concept. For educational use.</p></footer>
+    <footer><div class="footer-brand"><span class="brand-mark small" aria-hidden="true"><i></i><i></i><i></i></span><span>VYORA</span><small>STORY SPACE</small></div><div class="footer-links"><a href="#topbar">Discover</a><a href="#topSection">Collections</a><a href="#mylistSection">My Universe</a><a href="#moodSection">Mood Discovery</a><a href="#">About this concept</a><a href="#">Privacy concept</a><a href="#">Terms concept</a><a href="#">Accessibility</a></div><p class="copyright">© 2026 VYORA concept interface. Original student project prototype; demo content and assets are placeholders.</p></footer>
   </div>
-  <div class="modal-backdrop" id="modalBackdrop" hidden>
-    <div class="details-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <button class="modal-close" id="modalClose" aria-label="Close">×</button><div class="modal-art" id="modalArt"><div class="modal-art-gradient"></div><div class="modal-art-title" id="modalArtTitle"></div><button class="primary-button modal-play" id="modalPlay">▶ Play</button></div>
-      <div class="modal-body"><div class="modal-main"><div class="modal-meta"><span class="match">98% Match</span><span id="modalYear"></span><span class="maturity" id="modalMaturity"></span><span id="modalDuration"></span><span class="quality">HD</span></div><p id="modalDescription"></p><div class="cast-line"><b>Cast:</b> <span id="modalCast"></span></div><div class="cast-line"><b>Genres:</b> <span id="modalGenres"></span></div></div><aside class="modal-side"><p><b>Available:</b> <span id="modalAvailability">Worldwide</span></p><p><b>Audio:</b> English, Bangla</p><p><b>Subtitles:</b> English, Bangla</p></aside></div>
-    </div>
-  </div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden><div class="details-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" aria-label="Close">×</button><div class="modal-art" id="modalArt"><div class="modal-art-gradient"></div><div class="modal-art-title" id="modalArtTitle"></div><button class="primary-button modal-play" id="modalPlay">▶ Enter story</button></div><div class="modal-body"><div class="modal-main"><div class="modal-meta"><span class="match">VYORA MATCH</span><span id="modalYear"></span><span class="maturity" id="modalMaturity"></span><span id="modalDuration"></span><span class="quality">HD</span></div><p id="modalDescription"></p><div class="cast-line"><b>Story type:</b> <span id="modalCast"></span></div><div class="cast-line"><b>Genre:</b> <span id="modalGenres"></span></div></div><aside class="modal-side"><p><b>Availability:</b> <span id="modalAvailability">Demo library</span></p><p><b>Audio:</b> Demo metadata</p><p><b>Subtitles:</b> Demo metadata</p></aside></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>
