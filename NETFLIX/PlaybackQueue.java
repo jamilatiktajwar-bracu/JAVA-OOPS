@@ -346,7 +346,7 @@ public class PlaybackQueue {
     }
 
     public int getRemainingCount() {
-        if (queueCount == 0) {
+        if (queueCount == 0 || currentIndex < 0) {
             return 0;
         }
         return Math.max(0, queueCount - currentIndex - 1);
