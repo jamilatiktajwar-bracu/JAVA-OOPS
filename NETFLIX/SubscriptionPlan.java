@@ -8,10 +8,12 @@ public class SubscriptionPlan {
 
     public SubscriptionPlan(String name, double monthlyFee,
             int screens, int resolutionQuality) {
-        this.name = name == null ? "Free" : name.trim();
-        this.monthlyFee = monthlyFee < 0.0 ? 0.0 : monthlyFee;
+        this.name = name == null || name.trim().isEmpty() ? "Free" : name.trim();
+        this.monthlyFee = Double.isFinite(monthlyFee) && monthlyFee >= 0.0
+                ? monthlyFee : 0.0;
         this.screens = screens > 0 ? screens : 1;
-        this.resolutionQuality = resolutionQuality;
+        this.resolutionQuality = resolutionQuality >= 480 && resolutionQuality <= 4320
+                ? resolutionQuality : 720;
         this.downloadsEnabled = monthlyFee > 0.0;
         this.spatialAudioEnabled = resolutionQuality >= 2160;
     }
