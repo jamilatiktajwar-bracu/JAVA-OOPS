@@ -109,3 +109,20 @@ html.tv-mode .movie-card:focus {
     outline-offset: 4px;
   }
 }
+
+
+/* Browse controls, activity panel, and data-portability affordances */
+.browse-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#0d1728}
+.browse-controls label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.browse-controls select{min-height:38px;min-width:130px;padding:7px 30px 7px 10px;color:var(--white);background:#17243b;border:1px solid #ffffff24;border-radius:8px;font:inherit;text-transform:none;letter-spacing:normal}
+.browse-count{margin-left:auto;color:var(--cyan);font-size:12px;font-variant-numeric:tabular-nums}
+.notification-wrap{position:relative;display:flex;align-items:center}
+.activity-panel{position:absolute;z-index:80;top:calc(100% + 12px);right:-72px;width:min(340px,calc(100vw - 28px));max-height:min(480px,70vh);overflow:auto;padding:12px;border:1px solid #ffffff20;border-radius:15px;background:#101b2df7;box-shadow:0 22px 70px #000b;backdrop-filter:blur(18px)}
+.activity-heading{display:flex;align-items:center;justify-content:space-between;padding:4px 3px 10px;border-bottom:1px solid var(--line);font-size:13px}
+.activity-heading button{width:30px;height:30px;border-radius:8px;background:#ffffff10;font-size:20px}
+.activity-item{display:flex;width:100%;flex-direction:column;gap:4px;padding:11px 8px;text-align:left;background:transparent;border-bottom:1px solid #ffffff10;border-radius:8px}
+.activity-item:hover,.activity-item:focus-visible{background:#ffffff0d}
+.activity-item b{font-size:12px;color:var(--white)}
+.activity-item small,.activity-empty{font-size:10px;color:var(--muted);line-height:1.5}
+.activity-empty{padding:12px 5px}
+@media(max-width:600px){.activity-panel{right:-40px}.browse-controls{gap:8px}.browse-controls label{font-size:10px}.browse-controls select{min-width:112px}.browse-count{width:100%;margin-left:0}}
