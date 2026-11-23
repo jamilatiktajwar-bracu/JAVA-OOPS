@@ -1,0 +1,3 @@
+# Android TV starter
+
+Create a TV-capable Android app target in Android Studio. Required integration: TV launcher metadata and banner/icon assets; D-pad focus and Back handling; TV browse/detail layouts; Storyspace API; Media3 playback for authorized adaptive streams/DRM; emulator/hardware validation. The current web client provides keyboard spatial navigation and a TV mode flag as a browser fallback.

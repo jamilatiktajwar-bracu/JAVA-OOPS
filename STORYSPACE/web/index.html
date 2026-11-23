@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/storyspace-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -67,5 +69,6 @@
   <div class="player-backdrop" id="playerBackdrop" hidden><section class="player-panel" role="dialog" aria-modal="true"><button class="modal-close" id="playerClose">×</button><span class="section-kicker">PREVIEW MODE · SAMPLE VIDEO</span><h2 id="playerTitle">Preview</h2><video id="previewVideo" controls playsinline preload="metadata"><source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">Video preview not supported by this browser.</video><p id="playerNotice">Sample footage only—not the title's licensed content.</p></section></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
+  <script>if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(() => {});</script>
 </body>
 </html>

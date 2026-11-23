@@ -1,0 +1,13 @@
+{
+  "name": "Storyspace — Find your next feeling",
+  "short_name": "Storyspace",
+  "description": "An adaptive story discovery experience.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#080d1b",
+  "theme_color": "#090f20",
+  "icons": [{ "src": "./assets/storyspace-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
