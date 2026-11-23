@@ -189,6 +189,21 @@ public class NetflixSmokeTest {
         check(downloads.removeDownload(offlineMovie), "download can be removed");
         check(downloads.getUsedStorageMB() == 0,
                 "storage removal uses recorded size rather than current quality");
+        Movies monotonicMovie = new Movies("Monotonic Download", "Drama", 40);
+        monotonicMovie.setDownloadAvailable(true);
+        check(downloads.addDownload(monotonicMovie), "monotonic download added");
+        check(downloads.updateProgress(monotonicMovie, 100), "download can complete");
+        long completedStorage = downloads.getUsedStorageMB();
+        check(!downloads.updateProgress(monotonicMovie, 50)
+                && downloads.getUsedStorageMB() == completedStorage,
+                "completed download cannot regress or corrupt storage accounting");
+        check(!downloads.markFailed(monotonicMovie, "late failure"),
+                "completed download cannot be marked failed");
+        downloads.setStorageCapacityMB(0);
+        check(downloads.getStorageCapacityMB() >= completedStorage,
+                "capacity cannot be lowered below current usage");
+        check(downloads.removeDownload(monotonicMovie)
+                && downloads.getUsedStorageMB() == 0, "completed storage freed exactly once");
         Movies failedMovie = new Movies("Retry Test", "Action", 50);
         failedMovie.setDownloadAvailable(true);
         check(downloads.addDownload(failedMovie), "failed-download test item added");
