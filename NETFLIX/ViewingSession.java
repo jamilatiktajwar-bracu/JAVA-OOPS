@@ -101,17 +101,17 @@ public class ViewingSession {
     }
 
     public boolean resumeAt(int watchedMinutes) {
-        if (completed) {
-            this.completed = false;
-        }
-        if (!pauseAt(watchedMinutes)) {
+        if (watchedMinutes < 0 || watchedMinutes >= totalMinutes) {
             return false;
         }
+        this.watchedMinutes = watchedMinutes;
+        this.completed = false;
         if (pausedAt > 0) {
-            totalPausedMillis += System.currentTimeMillis() - pausedAt;
+            totalPausedMillis += Math.max(0, System.currentTimeMillis() - pausedAt);
             pausedAt = 0;
         }
         playbackActive = true;
+        addEvent("PLAYBACK_RESUMED");
         return true;
     }
 
@@ -320,8 +320,12 @@ public class ViewingSession {
     }
 
     public void startPlayback() {
+        if (!playbackActive && pausedAt > 0) {
+            totalPausedMillis += Math.max(0, System.currentTimeMillis() - pausedAt);
+        }
         playbackActive = true;
         pausedAt = 0;
+        addEvent("PLAYBACK_STARTED");
     }
 
     public void stopPlayback() {
@@ -332,7 +336,7 @@ public class ViewingSession {
 
     public boolean setIntroRange(int startSeconds, int endSeconds) {
         if (startSeconds < 0 || endSeconds <= startSeconds
-                || endSeconds > getRemainingSeconds()) {
+                || endSeconds > getTotalSeconds()) {
             return false;
         }
         introStartSeconds = startSeconds;
