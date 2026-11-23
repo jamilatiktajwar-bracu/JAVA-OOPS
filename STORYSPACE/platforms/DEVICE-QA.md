@@ -45,6 +45,7 @@ Use this checklist with a signed-in test account and a non-production demo envir
 - [ ] Use Restart Preview and verify the next open starts at the beginning.
 - [ ] Play to the end and verify the title leaves Continue Watching.
 - [ ] For a signed-in title in My Universe, verify playback progress eventually syncs to the account library.
+- [ ] Sign into the same account on a second device/browser and verify the saved title can resume from its synced library percentage when no local resume point exists.
 - [ ] Close the player while it is loading; verify no audio continues in the background.
 - [ ] Rotate while the player is open; verify controls remain accessible.
 - [ ] Test pause/resume, seek, mute/volume, and return to the catalog.
