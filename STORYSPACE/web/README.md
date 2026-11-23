@@ -3,7 +3,7 @@
 The frontend is an original, provisional story-discovery concept. It is not affiliated with a streaming competitor.
 
 ## Run
-Open `index.html` for offline/demo mode. For API-backed accounts, start the Java service in `../platform-backend` on `http://localhost:8080`.
+Open `index.html` for offline/demo mode. For API-backed accounts, start the Java service in `../backend` on `http://localhost:8080`.
 
 ## Adaptive features
 - Taste onboarding (genres, moods, languages, discovery balance)
