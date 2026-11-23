@@ -210,7 +210,7 @@ public class Movies {
 
     public static boolean addMovie(String title, String genre, int duration) {
         if (title == null || genre == null || title.trim().isEmpty()
-                || genre.trim().isEmpty() || duration < 0) {
+                || genre.trim().isEmpty() || duration < 0 || duration > 1440) {
             return false;
         }
 
