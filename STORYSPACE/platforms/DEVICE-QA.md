@@ -66,6 +66,7 @@ adb logcat | grep -iE 'storyspace|chromium|capacitor|AndroidRuntime'
 ## Android TV / living-room browser
 - [ ] Open the web app in a TV browser with the query parameter tv=1.
 - [ ] Navigate using only the remote D-pad and Select/Enter.
+- [ ] On a native Android TV APK, press the first arrow key after launch; confirm it both activates TV mode and moves focus (regression test).
 - [ ] Confirm visible focus ring, directional movement, and dialogs can be opened/closed.
 - [ ] Check readable typography and card size at 1080p and 4K.
 - [ ] Treat this as browser/D-pad support, not a native Android TV launcher application.
