@@ -369,11 +369,29 @@ public class RecommendationEngine {
         if (!coldStartEnabled || user == null || limit <= 0) {
             return new Movies[0];
         }
-        Movies[] top = Movies.getTopRatedMovies(limit);
-        if (top.length > 0) {
-            return top;
+        Movies[] all = Movies.getAllMovies();
+        Movies[] candidates = new Movies[all.length];
+        int count = 0;
+        for (Movies movie : all) {
+            if (isCandidate(movie)) {
+                candidates[count++] = movie;
+            }
         }
-        return Movies.getFeaturedMovies();
+        // Cold-start candidates are ranked by rating, then title for deterministic ties.
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = i + 1; j < count; j++) {
+                if (candidates[i].getRating() < candidates[j].getRating()
+                        || (candidates[i].getRating() == candidates[j].getRating()
+                        && candidates[i].getTitle().compareToIgnoreCase(candidates[j].getTitle()) > 0)) {
+                    Movies temporary = candidates[i];
+                    candidates[i] = candidates[j];
+                    candidates[j] = temporary;
+                }
+            }
+        }
+        Movies[] ranked = new Movies[count];
+        System.arraycopy(candidates, 0, ranked, 0, count);
+        return ranked;
     }
 
     public double calculateSimilarity(NETFLIX_USER other) {
