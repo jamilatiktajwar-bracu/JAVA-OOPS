@@ -74,7 +74,7 @@ $("heroMute").addEventListener("click",()=>{state.mute=!state.mute;$("heroMute")
 window.addEventListener("scroll",()=> $("topbar").classList.toggle("scrolled",window.scrollY>30));
 // Initial render is performed after personalization state initializes.
 // ─────────── Personal discovery engine + optional API integration ───────────
-const API_ROOT=window.STORYSPACE_API_ROOT||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:8080/api":"/api");
+const API_ROOT=String(window.STORYSPACE_API_ROOT||document.querySelector('meta[name="storyspace-api-root"]')?.content||"").trim()||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:8080/api":"/api");
 const prefDefaults={genres:[],moods:[],languages:["English"],balance:"balanced"};
 const readJson=(key,fallback)=>{try{return JSON.parse(storage.get(key))??fallback}catch{return fallback}};
 function normalizePreferences(raw){
