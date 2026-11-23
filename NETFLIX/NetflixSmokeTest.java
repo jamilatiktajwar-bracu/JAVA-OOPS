@@ -100,6 +100,22 @@ public class NetflixSmokeTest {
         check(wallet.removeMethod(paymentB), "wallet removes method");
         check(wallet.getDefaultMethod() == paymentA, "wallet reassigns default after removal");
 
+        Subscription billing = new Subscription("Pro");
+        billing.setPaymentMethod("Visa **** 4242");
+        check(billing.processPayment(700.0), "configured subscription payment succeeds");
+        check(billing.getInvoiceCount() == 1 && billing.getInvoiceStatuses()[0].equals("Paid"),
+                "successful payment creates paid invoice");
+        check(billing.refundInvoice(0), "paid invoice can be refunded");
+        check(!billing.refundInvoice(0), "invoice cannot be refunded twice");
+        check(Math.abs(billing.getRefundedAmount() - 700.0) < 0.001,
+                "refund total is not double counted");
+        check(!billing.processPayment(Double.NaN), "payment rejects NaN");
+        check(!billing.processPayment(-1.0), "payment rejects negative amount");
+        billing.pauseBilling();
+        billing.processFailedPayment();
+        check(billing.getFailedPaymentCount() == 0,
+                "paused subscription ignores failed payment event");
+        check(billing.resumeBilling(), "paused subscription resumes");
         System.out.println("NETFLIX_SMOKE_TEST_OK");
     }
 
