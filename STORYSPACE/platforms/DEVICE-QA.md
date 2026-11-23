@@ -26,6 +26,12 @@ Use this checklist with a signed-in test account and a non-production demo envir
 ### Discovery, navigation, and accessibility
 - [ ] Open each bottom navigation destination and use the Android system Back button.
 - [ ] Search by title, genre, and partial text; clear the search and return home.
+- [ ] Search exact phrases and structured filters such as `genre:Sci-Fi type:series`, `mood:Curious`, and `language:Bangla`.
+- [ ] Change browse genre and sort order; verify the result count and empty state remain correct.
+- [ ] Open Recent Activity; select an item and verify details open.
+- [ ] Export guest data, import the JSON into a clean browser profile, and verify preferences/watchlist/history restore.
+- [ ] Confirm data exports never contain a session token.
+- [ ] Verify offline shell works after a successful visit and API responses are not cached.
 - [ ] Open and close title details using close button, backdrop, and system Back.
 - [ ] Open preferences, account, membership, and admin surfaces as permitted.
 - [ ] Confirm touch targets are comfortable and no text/buttons overlap at narrow widths.
