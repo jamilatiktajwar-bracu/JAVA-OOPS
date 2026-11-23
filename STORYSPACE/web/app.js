@@ -412,6 +412,34 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
 // ─────────── Product quality upgrades: activity, portability, and shortcuts ───────────
 (() => {
   const $el = id => document.getElementById(id);
+  const installButton=$el("installAppAction");
+  let installPromptEvent=null;
+  const alreadyInstalled=()=>window.matchMedia?.("(display-mode: standalone)").matches||navigator.standalone===true;
+  if(installButton){
+    installButton.hidden=!!window.StoryspaceNative?.native||alreadyInstalled();
+    window.addEventListener("beforeinstallprompt",event=>{
+      event.preventDefault();installPromptEvent=event;
+      if(!window.StoryspaceNative?.native&&!alreadyInstalled())installButton.hidden=false;
+    });
+    window.addEventListener("appinstalled",()=>{
+      installPromptEvent=null;installButton.hidden=true;showToast("Storyspace installed on this device");
+    });
+    installButton.addEventListener("click",async()=>{
+      $el("profileMenu")?.classList.remove("open");
+      if(!installPromptEvent){
+        showToast("Use your browser menu: Install app or Add to Home Screen.");
+        return;
+      }
+      const prompt=installPromptEvent;installPromptEvent=null;installButton.disabled=true;
+      try{
+        await prompt.prompt();
+        const choice=await prompt.userChoice;
+        if(choice?.outcome==="accepted"){installButton.hidden=true;showToast("Storyspace installation started");}
+        else showToast("Installation was cancelled");
+      }catch{showToast("Install prompt unavailable. Use the browser menu instead.");}
+      finally{installButton.disabled=false;}
+    });
+  }
   const activityButton=$el("activityButton"),activityPanel=$el("activityPanel"),activityList=$el("activityList");
   function renderActivity(){
     if(!activityList)return;
