@@ -4,6 +4,7 @@ final class CatalogSmokeTests {
         testMovieCatalogServiceAndStatisticsBoundaries();
         testMovieConstructorNormalization();
         testMovieMetadataArrayHandling();
+        testCatalogQueryMigration();
     }
 
 private static void testLocaleIndependentMovieSearch() {
@@ -73,4 +74,61 @@ private static void testMovieMetadataArrayHandling() {
         cast[0] = "Mutated";
         SmokeTestSupport.require("Actor".equals(movie.getCast()[0]), "cast getter should return a defensive array copy");
     }
+    private static void testCatalogQueryMigration() {
+        Movies.clearMovies();
+        Movies alpha = MovieCatalog.addMovie("Alpha", "Drama", 100);
+        Movies beta = MovieCatalog.addMovie("Beta Space", "Sci-Fi", 120);
+        Movies gamma = MovieCatalog.addMovie("Gamma", "Drama", 80);
+        alpha.setReleaseYear(2020);
+        beta.setReleaseYear(2024);
+        gamma.setReleaseYear(2018);
+        alpha.setRating(7.0);
+        beta.setRating(9.0);
+        gamma.setRating(8.0);
+        alpha.setAgeRating(10);
+        beta.setAgeRating(16);
+        gamma.setAgeRating(12);
+        alpha.setLanguage("Bangla");
+        beta.setLanguage("English");
+        gamma.setLanguage("Bangla");
+        alpha.markWatched();
+        beta.setFeatured(true);
+        beta.addKeyword("space");
+        gamma.setReleaseStatus("Upcoming");
+        gamma.setStreamingAvailable(false);
+
+        SmokeTestSupport.require(MovieCatalog.searchByTitle("space").length == 1,
+                "catalog title search should find matching title");
+        SmokeTestSupport.require(MovieCatalog.search("space").length == 1,
+                "catalog general search should match keywords");
+        SmokeTestSupport.require(MovieCatalog.filterByGenre("drama").length == 2,
+                "genre filter should be case-insensitive");
+        SmokeTestSupport.require(MovieCatalog.filterByReleaseYear(2019, 2024).length == 2,
+                "year filter should use inclusive boundaries");
+        SmokeTestSupport.require(MovieCatalog.filterByAgeRating(12).length == 2,
+                "age filter should respect maximum age");
+        SmokeTestSupport.require(MovieCatalog.filterByLanguage("bangla").length == 2,
+                "language filter should be case-insensitive");
+        SmokeTestSupport.require(MovieCatalog.getWatchedMovies().length == 1
+                && MovieCatalog.getUnwatchedMovies().length == 2,
+                "watched/unwatched catalog filters should partition movies");
+        SmokeTestSupport.require(MovieCatalog.getFeaturedMovies().length == 1,
+                "featured catalog query should return featured movies");
+        SmokeTestSupport.require(MovieCatalog.getTopRatedMovies(1)[0] == beta,
+                "top-rated query should return highest-rated movie");
+        SmokeTestSupport.require("Alpha".equals(MovieCatalog.sortByTitle(true)[0].getTitle()),
+                "title sorting should be ascending");
+        SmokeTestSupport.require(MovieCatalog.sortByReleaseYear(true)[0] == beta,
+                "release-year sorting should be descending");
+        SmokeTestSupport.require(MovieCatalog.getAvailableGenres().length == 2,
+                "available genres should be unique");
+        SmokeTestSupport.require(MovieCatalog.getAvailableForStreaming().length == 2,
+                "streaming query should exclude unavailable content");
+        SmokeTestSupport.require(MovieCatalog.getUpcomingMovies().length == 1,
+                "upcoming query should find upcoming content");
+        SmokeTestSupport.require(MovieCatalog.filterCatalog("Drama", 12, "Bangla", 2018, 2020).length == 2,
+                "combined catalog filter should apply all criteria");
+        Movies.clearMovies();
+    }
+
 }
