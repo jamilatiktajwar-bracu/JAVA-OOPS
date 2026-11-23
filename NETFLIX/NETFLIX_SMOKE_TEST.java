@@ -282,7 +282,8 @@ public class NETFLIX_SMOKE_TEST {
         party.restartParty();
         require(party.isPartyActive(), "restart should reactivate party");
     }
-\n    private static void require(boolean condition, String message) {
+
+    private static void require(boolean condition, String message) {
         if (!condition) {
             throw new IllegalStateException("Smoke test failed: " + message);
         }
