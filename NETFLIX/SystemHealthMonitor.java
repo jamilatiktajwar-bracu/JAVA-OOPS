@@ -15,7 +15,7 @@ public class SystemHealthMonitor {
 
     public void addUptimeSeconds(int seconds) {
         if (seconds > 0) {
-            uptimeSeconds += seconds;
+            uptimeSeconds = (int) Math.min(Integer.MAX_VALUE, (long) uptimeSeconds + seconds);
         }
     }
 
@@ -26,11 +26,11 @@ public class SystemHealthMonitor {
     }
 
     public void recordFailedJob() {
-        failedJobs++;
+        if (failedJobs < Integer.MAX_VALUE) {\n            failedJobs++;\n        }
     }
 
     public void recordWarning() {
-        warningCount++;
+        if (warningCount < Integer.MAX_VALUE) {\n            warningCount++;\n        }
     }
 
     public void setMaintenanceMode(boolean enabled) {
