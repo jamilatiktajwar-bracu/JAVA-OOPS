@@ -1,0 +1,59 @@
+public class NETFLIX_SMOKE_TEST {
+    public static void main(String[] args) {
+        testPlaybackQueue();
+        testOfflineDownloads();
+        testViewingSession();
+        System.out.println("Netflix smoke tests passed.");
+    }
+
+    private static void testPlaybackQueue() {
+        Movies first = new Movies("First", "Drama", 90);
+        Movies second = new Movies("Second", "Drama", 100);
+        PlaybackQueue queue = new PlaybackQueue(5);
+        require(queue.add(first), "queue should accept first movie");
+        require(queue.add(second), "queue should accept second movie");
+        require(queue.remove(first), "queue should remove first movie");
+        require(queue.getCurrent() == second, "current item should remain valid after removal");
+        require(queue.getQueueCount() == 1, "queue count should be updated");
+    }
+
+    private static void testOfflineDownloads() {
+        Movies movie = new Movies("Download test", "Drama", 100);
+        movie.setDownloadAvailable(true);
+        OfflineDownloadManager manager = new OfflineDownloadManager(3);
+        require(manager.addDownload(movie), "download should be queued");
+        require(!manager.addDownload(movie), "duplicate active download should be rejected");
+        manager.setDownloadQuality("HD");
+        require(manager.updateProgress(movie, 100), "download should complete");
+        require(manager.getUsedStorageMB() == 200, "size should use quality snapshot from queue time");
+        require(manager.removeDownload(movie), "download should be removable");
+        require(manager.getUsedStorageMB() == 0, "storage accounting should return to zero");
+
+        Movies failedMovie = new Movies("Failure test", "Drama", 80);
+        failedMovie.setDownloadAvailable(true);
+        require(manager.addDownload(failedMovie), "failed movie should be queueable");
+        require(manager.markFailed(failedMovie, "network"), "failure should be recorded");
+        require(manager.getFailedCount() == 1, "failed count should increase");
+        require(manager.removeDownload(failedMovie), "failed download should be removable");
+        require(manager.getFailedCount() == 0, "failed count should decrease after removal");
+    }
+
+    private static void testViewingSession() {
+        Movies movie = new Movies("Session test", "Drama", 120);
+        ViewingSession session = new ViewingSession(movie, null);
+        require(!session.setPlaybackSpeed(Double.NaN), "NaN playback speed should be rejected");
+        require(!session.setPlaybackSpeed(Double.POSITIVE_INFINITY), "infinite playback speed should be rejected");
+        require(session.setIntroRange(30, 60), "intro range should validate against full movie duration");
+        require(!session.resumeAt(-1), "negative resume position should be rejected");
+        require(session.getWatchedMinutes() == 0, "invalid resume must not change progress");
+        require(session.pauseAt(20), "session should pause at valid progress");
+        require(session.resumeAt(30), "session should resume at valid progress");
+        require(session.getWatchedMinutes() == 30, "resume progress should be applied");
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) {
+            throw new IllegalStateException("Smoke test failed: " + message);
+        }
+    }
+}
