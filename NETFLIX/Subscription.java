@@ -336,7 +336,8 @@ public class Subscription {
         if (failedPaymentCount < Integer.MAX_VALUE) {
             failedPaymentCount++;
         }
-        outstandingBalance += getEffectiveMonthlyFee();
+        double nextBalance = outstandingBalance + getEffectiveMonthlyFee();
+        outstandingBalance = Double.isFinite(nextBalance) ? nextBalance : Double.MAX_VALUE;
         billingStatus = failedPaymentCount >= 3 ? "Suspended" : "Past Due";
     }
 
