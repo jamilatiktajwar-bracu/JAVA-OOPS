@@ -19,12 +19,22 @@ const movies=[
 const readList=()=>{try{return new Set(JSON.parse(localStorage.getItem("storyspace.myUniverse")||"[5,9,12]"))}catch{return new Set([5,9,12])}};
 const state={list:readList(),view:"home",search:"",selected:null,mute:true};
 const $=id=>document.getElementById(id);
-const art=m=>m.poster;
+function safeAssetUrl(value){try{const u=new URL(String(value||""),location.href);if(u.protocol==="https:"||u.origin===location.origin||(u.protocol==="http:"&&["localhost","127.0.0.1"].includes(u.hostname)))return u.href}catch{}return ""}
+const art=m=>safeAssetUrl(m.poster||m.posterUrl);
 function persistList(){try{localStorage.setItem("storyspace.myUniverse",JSON.stringify([...state.list]))}catch{}}
 function showToast(message){const t=$("toast");t.textContent=message;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),2300)}
-function card(m){const c=document.createElement("article");c.className="movie-card";c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",`Open details for ${m.title}`);c.innerHTML=`<div class="movie-poster" style="background-image:url('${art(m)}')"></div><div class="card-shade"></div><div class="card-topline">${m.original?'<span class="card-badge">SS</span>':''}<span class="card-rating">✦ ${m.score}</span></div><div class="card-title">${m.title}</div>${m.progress>0?`<div class="progress-track"><span style="width:${m.progress}%"></span></div>`:""}<div class="card-overlay"><div class="card-actions"><button class="mini-action" data-action="play" title="Open story">▶</button><button class="mini-action dark" data-action="list" title="My Universe">${state.list.has(m.id)?"✓":"＋"}</button><button class="mini-action dark" data-action="info" title="Explore details">✦</button></div></div>`;
+function card(m){const title=String(m.title||m.name||"Untitled story");const c=document.createElement("article");c.className="movie-card";c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",`Open details for ${title}`);
+const poster=document.createElement("div");poster.className="movie-poster";if(art(m))poster.style.backgroundImage=`url("${art(m)}")`;
+const shade=document.createElement("div");shade.className="card-shade";
+const top=document.createElement("div");top.className="card-topline";if(m.original){const badge=document.createElement("span");badge.className="card-badge";badge.textContent="SS";top.append(badge)}
+const rating=document.createElement("span");rating.className="card-rating";rating.textContent="✦ "+(Number(m.score||m.communityScore)||"—");top.append(rating);
+const name=document.createElement("div");name.className="card-title";name.textContent=title;
+if(Number(m.progress)>0){const track=document.createElement("div");track.className="progress-track";const progress=document.createElement("span");progress.style.width=Math.max(0,Math.min(100,Number(m.progress)||0))+"%";track.append(progress);c.append(poster,shade,top,name,track)}else c.append(poster,shade,top,name);
+const overlay=document.createElement("div");overlay.className="card-overlay";const actions=document.createElement("div");actions.className="card-actions";
+const actionButton=(action,label,caption,dark=false)=>{const b=document.createElement("button");b.type="button";b.className="mini-action"+(dark?" dark":"");b.dataset.action=action;b.title=caption;b.setAttribute("aria-label",caption);b.textContent=label;actions.append(b)};
+actionButton("play","▶","Open story");actionButton("list",state.list.has(m.id)?"✓":"＋","Add/remove from My Universe",true);actionButton("info","✦","Explore details",true);overlay.append(actions);c.append(overlay);
 c.addEventListener("click",e=>{const b=e.target.closest("[data-action]");if(b){e.stopPropagation();const a=b.dataset.action;if(a==="play")playMovie(m);if(a==="list")toggleList(m);if(a==="info")openDetails(m)}else openDetails(m)});
-c.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openDetails(m)}});return c}
+c.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===c){e.preventDefault();openDetails(m)}});return c}
 function renderRow(id,items){const el=$(id);el.innerHTML="";items.forEach(m=>el.append(card(m)))}
 function renderHome(){renderRow("continueRow",movies.filter(m=>m.progress>0));renderRow("trendingRow",[movies[2],movies[3],movies[8],movies[9],movies[6],movies[12],movies[10],movies[1]]);renderRow("originalsRow",movies.filter(m=>m.original));renderRow("topRow",[...movies].sort((a,b)=>b.score-a.score).slice(0,8));renderRow("mylistRow",movies.filter(m=>state.list.has(m.id)));$("mylistSection").hidden=state.view==="home"&&state.list.size===0}
 function heroMovie(){return movies[0]}
