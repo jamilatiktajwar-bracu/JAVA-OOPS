@@ -7,14 +7,6 @@ on:
       - 'STORYSPACE/web/**'
       - 'STORYSPACE/platforms/desktop/**'
       - '.github/workflows/storyspace-desktop.yml'
-  push:
-    branches:
-      - product/mobile-native-milestone
-      - feature/storyspace-android-apk-ci
-    paths:
-      - 'STORYSPACE/web/**'
-      - 'STORYSPACE/platforms/desktop/**'
-      - '.github/workflows/storyspace-desktop.yml'
 
 permissions:
   contents: read
