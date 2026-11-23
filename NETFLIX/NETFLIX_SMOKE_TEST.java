@@ -14,6 +14,7 @@ public class NETFLIX_SMOKE_TEST {
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
         testPlaylistCursorAndDurationSafety();
+        testWatchPartyParticipationAndBoundaries();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -248,7 +249,40 @@ public class NETFLIX_SMOKE_TEST {
         require(!playlist.addMovie(null), "null movie should not be accepted");
     }
 
-    private static void require(boolean condition, String message) {
+
+    private static void testWatchPartyParticipationAndBoundaries() {
+        NETFLIX_USER host = new NETFLIX_USER("party-host");
+        NETFLIX_USER guest = new NETFLIX_USER("party-guest");
+        NETFLIX_USER outsider = new NETFLIX_USER("party-outsider");
+        Movies movie = new Movies("Party boundary", "Drama", 90);
+        WatchParty party = new WatchParty("Test Party", movie, host);
+
+        require(!party.invite(host), "host should not be invited as a guest");
+        require(party.invite(guest), "party should accept guest");
+        require(!party.invite(guest), "duplicate guest should be rejected");
+        require(!party.sendChat(outsider, "hello"), "outsider chat should be rejected");
+        require(party.sendChat(guest, "hello"), "participant chat should be accepted");
+        require(!party.sendChat(guest, "spam message"), "moderation should reject spam");
+        require(!party.muteGuest(host), "host should not be muteable as a guest");
+        require(!party.muteGuest(outsider), "outsider should not be muteable");
+        require(party.muteGuest(guest), "active guest should be muteable");
+        require(!party.sendChat(guest, "muted"), "muted guest chat should be rejected");
+        require(party.removeGuest(guest), "guest should be removable");
+        require(!party.isMuted(guest), "removing guest should clear mute state");
+
+        require(party.setPlaybackPosition(5400), "position at movie end should be valid in seconds");
+        require(!party.setPlaybackPosition(5401), "position beyond movie duration should be rejected");
+        party.play();
+        require(!party.syncGuestPosition(-1), "negative sync position should be rejected");
+        require(!party.syncGuestPosition(5401), "sync position beyond movie should be rejected");
+        party.endParty();
+        require(!party.invite(outsider), "ended party should not accept invitations");
+        require(!party.sendChat(host, "after end"), "ended party should reject chat");
+        require(!party.muteGuest(guest), "ended party should not allow muting");
+        party.restartParty();
+        require(party.isPartyActive(), "restart should reactivate party");
+    }
+\n    private static void require(boolean condition, String message) {
         if (!condition) {
             throw new IllegalStateException("Smoke test failed: " + message);
         }
