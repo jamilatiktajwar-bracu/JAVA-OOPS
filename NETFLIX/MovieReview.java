@@ -140,11 +140,9 @@ public class MovieReview {
     }
 
     public boolean report() {
-        if (reportCount < Integer.MAX_VALUE) {\n            if (reportCount < Integer.MAX_VALUE) {
-            if (reportCount < Integer.MAX_VALUE) {
+        if (reportCount < Integer.MAX_VALUE) {
             reportCount++;
         }
-        }\n        }
         reported = true;
         if (reportCount >= 3) {
             approved = false;
