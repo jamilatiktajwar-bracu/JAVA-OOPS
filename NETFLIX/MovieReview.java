@@ -103,7 +103,9 @@ public class MovieReview {
     }
 
     public void addHelpfulVote() {
-        helpfulVotes++;
+        if (helpfulVotes < Integer.MAX_VALUE) {
+            helpfulVotes++;
+        }
     }
 
     public void removeHelpfulVote() {
@@ -113,7 +115,9 @@ public class MovieReview {
     }
 
     public void addNotHelpfulVote() {
-        notHelpfulVotes++;
+        if (notHelpfulVotes < Integer.MAX_VALUE) {
+            notHelpfulVotes++;
+        }
     }
 
     public void removeNotHelpfulVote() {
@@ -131,11 +135,14 @@ public class MovieReview {
     }
 
     public int getHelpfulnessScore() {
-        return helpfulVotes - notHelpfulVotes;
+        long score = (long) helpfulVotes - (long) notHelpfulVotes;
+        return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, score));
     }
 
     public boolean report() {
-        if (reportCount < Integer.MAX_VALUE) {\n            reportCount++;\n        }
+        if (reportCount < Integer.MAX_VALUE) {\n            if (reportCount < Integer.MAX_VALUE) {
+            reportCount++;
+        }\n        }
         reported = true;
         if (reportCount >= 3) {
             approved = false;
