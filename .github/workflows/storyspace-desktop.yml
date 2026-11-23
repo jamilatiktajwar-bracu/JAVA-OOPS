@@ -6,6 +6,7 @@ on:
     paths:
       - 'STORYSPACE/web/**'
       - 'STORYSPACE/platforms/desktop/**'
+      - 'STORYSPACE/platforms/mobile/**'
       - '.github/workflows/storyspace-desktop.yml'
 
 permissions:
@@ -32,6 +33,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Configure API endpoint
+        working-directory: STORYSPACE/platforms/mobile
+        env:
+          STORYSPACE_API_ROOT: ${{ vars.STORYSPACE_API_ROOT }}
+        run: node configure-api-root.js
       - name: Install desktop dependencies
         working-directory: STORYSPACE/platforms/desktop
         run: npm install
