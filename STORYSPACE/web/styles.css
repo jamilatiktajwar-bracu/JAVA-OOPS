@@ -126,3 +126,6 @@ html.tv-mode .movie-card:focus {
 .activity-item small,.activity-empty{font-size:10px;color:var(--muted);line-height:1.5}
 .activity-empty{padding:12px 5px}
 @media(max-width:600px){.activity-panel{right:-40px}.browse-controls{gap:8px}.browse-controls label{font-size:10px}.browse-controls select{min-width:112px}.browse-count{width:100%;margin-left:0}}
+
+.player-restart{min-height:40px;padding:9px 14px;font-size:12px}
+.player-panel #playerNotice{color:var(--muted);font-size:12px;line-height:1.55}
