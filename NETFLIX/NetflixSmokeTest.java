@@ -218,11 +218,17 @@ public class NetflixSmokeTest {
                 "password setter rejects short passwords");
         check(profileOwner.setPassword("long-enough-password"),
                 "password setter accepts longer password");
+        check(profileOwner.verifyPassword("long-enough-password")
+                && !profileOwner.verifyPassword("wrong-password"),
+                "password verification matches correct credentials only");
         NETFLIX_USER emailProfile = new NETFLIX_USER("  profile  ", "user@example.com", "Free", "password");
         check("profile".equals(emailProfile.getUsername())
                 && "profile".equals(emailProfile.getProfileName()),
                 "profile identity trims whitespace");
         check(emailProfile.isValidEmail(), "valid email is accepted");
+        check(emailProfile.verifyPassword("password")
+                && !emailProfile.verifyPassword("incorrect"),
+                "constructor credentials are hashed and verifiable");
         emailProfile.setEmail("user@localhost");
         check(!emailProfile.isValidEmail(), "email without domain suffix is rejected");
         emailProfile.setEmail("user@@example.com");
