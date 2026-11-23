@@ -1,6 +1,6 @@
 # Storyspace
 
-An original, adaptive story-discovery platform prototype built with a responsive web interface and Java backend.
+An original adaptive story-discovery platform prototype built with a responsive web interface and Java backend.
 
 ## Quick start
 1. Start API: `cd STORYSPACE/backend && mvn spring-boot:run`.
@@ -18,12 +18,13 @@ An original, adaptive story-discovery platform prototype built with a responsive
 - **Admin:** Environment-bootstrap admin role, catalog create/delete and metrics.
 - **Media:** CC0 sample preview only; actual content delivery is not connected.
 
-## Useful links
+## Documentation
 - [Product README](STORYSPACE/README.md)
 - [Frontend README](STORYSPACE/web/README.md)
 - [Backend README](STORYSPACE/backend/README.md)
 - [Release/legal checklist](STORYSPACE/LEGAL-AND-RELEASE.md)
-- [Archived coursework](archive/java-oop)
+
+The previous Java OOP coursework remains available on the earlier branch/PR for reference; the active product branch is brand-independent.
 
 ## Development and security
 Configure `TOKEN_SECRET` (32+ characters), `BOOTSTRAP_ADMIN_EMAIL`, and `BOOTSTRAP_ADMIN_PASSWORD` through environment variables. Never commit secrets. For production use strict CORS, TLS, a production database, migration tooling, rate limits, security review, logging, backups and monitoring.
