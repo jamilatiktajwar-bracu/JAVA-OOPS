@@ -28,7 +28,11 @@ public class PaymentMethod {
     }
 
     public boolean setExpiry(int month, int year) {
-        if (month < 1 || month > 12 || year < 1900 || year > 2200) {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int currentYear = now.get(java.util.Calendar.YEAR);
+        int currentMonth = now.get(java.util.Calendar.MONTH) + 1;
+        if (month < 1 || month > 12 || year < currentYear || year > 2200
+                || (year == currentYear && month < currentMonth)) {
             return false;
         }
         expiryMonth = month;
@@ -37,7 +41,7 @@ public class PaymentMethod {
     }
 
     public boolean isExpired(int currentYear, int currentMonth) {
-        if (currentMonth < 1 || currentMonth > 12) {
+        if (currentYear < 1 || currentMonth < 1 || currentMonth > 12) {
             return false;
         }
         return expiryYear < currentYear
