@@ -22,6 +22,25 @@ const storage={
   remove(key){try{window.localStorage.removeItem(key)}catch{}}
 };
 const readList=()=>{try{const parsed=JSON.parse(storage.get("storyspace.myUniverse")||"[5,9,12]");return new Set(Array.isArray(parsed)?parsed.filter(v=>typeof v==="number"||typeof v==="string"):[5,9,12])}catch{return new Set([5,9,12])}};
+function normalizeResumePoints(raw){
+  if(!raw||typeof raw!=="object"||Array.isArray(raw))return {};
+  return Object.fromEntries(Object.entries(raw).slice(0,500).flatMap(([id,value])=>{
+    if(!id||id.length>128||!value||typeof value!=="object")return [];
+    const currentTime=Number(value.currentTime),duration=Number(value.duration),updatedAt=Number(value.updatedAt)||0;
+    if(!Number.isFinite(currentTime)||!Number.isFinite(duration)||currentTime<0||duration<=0||currentTime>=duration||duration>86400)return [];
+    return [[id,{currentTime:Math.min(currentTime,duration),duration,updatedAt}]];
+  }));
+}
+const resumePoints=(()=>{try{return normalizeResumePoints(JSON.parse(storage.get("storyspace.resumePoints")||"{}"))}catch{return {}}})();
+function applyResumePoint(title){
+  const key=String(title.apiId||title.id),point=resumePoints[key];
+  if(point&&point.currentTime<point.duration-3){
+    title.progress=Math.max(1,Math.min(99,Math.round(point.currentTime/point.duration*100)));
+    title.resumePoint=point.currentTime;
+  }else if(point){delete resumePoints[key]}
+  return title;
+}
+movies.forEach(applyResumePoint);
 const state={list:readList(),view:"home",search:"",selected:null,mute:true};
 const $=id=>document.getElementById(id);
 const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
@@ -175,7 +194,7 @@ async function api(path,options={}){
     throw error;
   }finally{if(timeout)clearTimeout(timeout)}
 }
-function apiTitle(t){return{id:t.id,title:t.name,description:t.synopsis,genre:(t.genres||[]).join(", "),moods:(t.moods||[]).join(", "),language:t.language,year:t.releaseYear,rating:t.ageRating,duration:t.format,score:t.score,poster:t.posterUrl,original:t.original,featured:t.featured,type:t.format?.toLowerCase()==="series"?"series":"movie",progress:0,apiId:t.id}}
+function apiTitle(t){return applyResumePoint({id:t.id,title:t.name,description:t.synopsis,genre:(t.genres||[]).join(", "),moods:(t.moods||[]).join(", "),language:t.language,year:t.releaseYear,rating:t.ageRating,duration:t.format,score:t.score,poster:t.posterUrl,original:t.original,featured:t.featured,type:t.format?.toLowerCase()==="series"?"series":"movie",progress:0,apiId:t.id})}
 async function loadServerCatalog(){try{const data=await api("/catalog");if(Array.isArray(data)&&data.length){personalized.serverAvailable=true;const mapped=data.map(apiTitle);personalized.apiTitles=mapped;const existing=new Set(movies.map(m=>m.title.toLowerCase()));mapped.forEach(m=>{if(!existing.has(m.title.toLowerCase()))movies.push(m)});}}catch{personalized.serverAvailable=false}}
 async function syncAccount(){
   if(!personalized.token)return;
@@ -273,9 +292,61 @@ async function renderMembership(){const grid=$("planGrid");grid.innerHTML="";try
 async function cancelMembership(){try{const r=await api("/subscriptions/cancel",{method:"POST"});$("subscriptionCurrent").textContent="Demo membership: "+r.plan+" · "+r.status;showToast("Demo membership cancelled")}catch(e){showToast(e.message)}}
 async function openAdmin(){if(!personalized.account||personalized.account.role!=="ADMIN"){showToast("Creator console is restricted to administrator accounts");return}$("adminBackdrop").hidden=false;document.body.style.overflow="hidden";try{const m=await api("/admin/metrics");$("adminStats").innerHTML=Object.entries(m).map(([k,v])=>`<div class="admin-stat"><small>${escapeHTML(k.toUpperCase())}</small><b>${escapeHTML(v)}</b></div>`).join("")}catch(e){$("adminStats").textContent=e.message}}
 function closeAdmin(){$("adminBackdrop").hidden=true;document.body.style.overflow=""}
-let playerLoadId=0;
+let playerLoadId=0,activePlayerTitle=null,lastProgressPersistAt=0,lastProgressSyncAt=0,lastRemoteProgress=0;
+function refreshContinueRow(){
+  if(typeof renderRow==="function")renderRow("continueRow",movies.filter(m=>Number(m.progress)>0));
+}
+function persistPlayerProgress(force=false){
+  const video=$("previewVideo"),title=activePlayerTitle;
+  if(!title||!Number.isFinite(video.duration)||video.duration<=0||!Number.isFinite(video.currentTime))return;
+  const currentTime=Math.max(0,Math.min(video.currentTime,video.duration));
+  const key=String(title.apiId||title.id);
+  if(currentTime>=video.duration-3){
+    delete resumePoints[key];title.progress=0;delete title.resumePoint;
+    storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));refreshContinueRow();
+    return;
+  }
+  if(currentTime<2)return;
+  const percent=Math.max(1,Math.min(99,Math.round(currentTime/video.duration*100)));
+  title.progress=percent;title.resumePoint=currentTime;
+  resumePoints[key]={currentTime,duration:video.duration,updatedAt:Date.now()};
+  const now=Date.now();
+  if(force||now-lastProgressPersistAt>=8000){
+    lastProgressPersistAt=now;
+    storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));
+    refreshContinueRow();
+  }
+  if(personalized.token&&title.apiId&&state.list.has(title.id)&&
+     (force||now-lastProgressSyncAt>=60000||Math.abs(percent-lastRemoteProgress)>=10)){
+    lastProgressSyncAt=now;lastRemoteProgress=percent;
+    api("/library/"+encodeURIComponent(title.apiId)+"/progress",{method:"PATCH",body:{progressPercent:percent}}).catch(()=>{});
+  }
+}
+function formatPlayerTime(seconds){
+  const value=Math.max(0,Math.floor(Number(seconds)||0));
+  const hours=Math.floor(value/3600),minutes=Math.floor(value%3600/60),secs=value%60;
+  return hours?hours+":"+String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0"):minutes+":"+String(secs).padStart(2,"0");
+}
+const playerVideo=$("previewVideo");
+playerVideo.addEventListener("timeupdate",()=>persistPlayerProgress(false));
+playerVideo.addEventListener("loadedmetadata",()=>{
+  if(!activePlayerTitle)return;
+  const point=resumePoints[String(activePlayerTitle.apiId||activePlayerTitle.id)];
+  if(point&&point.currentTime>5&&playerVideo.duration>point.currentTime+3){
+    playerVideo.currentTime=Math.min(point.currentTime,playerVideo.duration-2);
+    $("playerNotice").textContent="CC0 sample preview · resuming at "+formatPlayerTime(point.currentTime)+". Not the title's licensed footage.";
+  }
+});
+playerVideo.addEventListener("ended",()=>{
+  if(!activePlayerTitle)return;
+  const title=activePlayerTitle,key=String(title.apiId||title.id);
+  delete resumePoints[key];title.progress=0;delete title.resumePoint;
+  storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));refreshContinueRow();
+  $("playerNotice").textContent="Preview finished. Your continue-watching progress has been cleared.";
+});
 async function openPlayer(m){
   const request=++playerLoadId;
+  activePlayerTitle=m;lastProgressPersistAt=0;lastProgressSyncAt=0;lastRemoteProgress=Number(m.progress)||0;
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
   $("playerTitle").textContent=m.title||m.name||"Preview";
   $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
@@ -298,7 +369,7 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){playerLoadId++;const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow=""}
+function closePlayer(){persistPlayerProgress(true);playerLoadId++;const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
@@ -365,7 +436,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
     const payload={format:"storyspace-user-data",version:1,exportedAt:new Date().toISOString(),
       preferences:normalizePreferences(personalized.preferences),
       savedTitles:[...state.list].filter(v=>typeof v==="string"||typeof v==="number"),
-      history:normalizeHistory(personalized.history)};
+      history:normalizeHistory(personalized.history),resumePoints:normalizeResumePoints(resumePoints)};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
     link.href=url;link.download="storyspace-my-data.json";document.body.append(link);link.click();link.remove();
@@ -382,7 +453,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
         personalized.preferences=normalizePreferences(data.preferences);
         state.list=new Set(Array.isArray(data.savedTitles)?data.savedTitles.filter(v=>typeof v==="string"||typeof v==="number").slice(0,500):[]);
         personalized.history=normalizeHistory(data.history);
-        savePrefs();persistList();storage.set("storyspace.history",JSON.stringify(personalized.history));
+        Object.keys(resumePoints).forEach(key=>delete resumePoints[key]);Object.assign(resumePoints,normalizeResumePoints(data.resumePoints));
+        movies.forEach(applyResumePoint);
+        savePrefs();persistList();storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));
         drawPreferences();renderHome();setHero(chooseHero());showToast(personalized.account?"Imported on this device; account sync may replace remote items.":"Preferences, saved stories, and activity imported");
       }catch(error){showToast(error.message||"That file could not be imported")}
     };
