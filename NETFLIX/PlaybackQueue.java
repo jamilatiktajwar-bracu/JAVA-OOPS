@@ -57,6 +57,9 @@ public class PlaybackQueue {
         }
         queue[insertIndex] = movie;
         queueCount++;
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        }
         touch();
         return true;
     }
@@ -68,9 +71,17 @@ public class PlaybackQueue {
                     queue[j] = queue[j + 1];
                 }
                 queue[--queueCount] = null;
-                if (i < currentIndex) {
+                if (queueCount == 0) {
+                    currentIndex = 0;
+                } else if (i < currentIndex) {
                     currentIndex--;
+                } else if (i == currentIndex) {
+                    // Keep the next item at the same slot, or select the new last item.
+                    currentIndex = Math.min(i, queueCount - 1);
+                } else if (currentIndex >= queueCount) {
+                    currentIndex = queueCount - 1;
                 }
+                touch();
                 return true;
             }
         }
@@ -97,9 +108,17 @@ public class PlaybackQueue {
             return current;
         }
         if (shuffleEnabled) {
-            currentIndex = (int) (Math.random() * queueCount);
-        } else if (currentIndex >= 0) {
-            currentIndex++;
+            if (queueCount == 1) {
+                currentIndex = 0;
+            } else {
+                int selected;
+                do {
+                    selected = (int) (Math.random() * queueCount);
+                } while (selected == currentIndex);
+                currentIndex = selected;
+            }
+        } else {
+            currentIndex = currentIndex < 0 ? 0 : currentIndex + 1;
         }
         if (currentIndex >= queueCount) {
             if (repeatAll) {
@@ -138,6 +157,8 @@ public class PlaybackQueue {
         }
         queueCount = 0;
         currentIndex = 0;
+        clearHistory();
+        touch();
     }
 
     public Movies[] getQueue() {
@@ -156,6 +177,10 @@ public class PlaybackQueue {
 
     public void setRepeatAll(boolean repeatAll) {
         this.repeatAll = repeatAll;
+        if (repeatAll) {
+            repeatOne = false;
+        }
+        touch();
     }
 
     public boolean isRepeatAll() {
@@ -164,6 +189,7 @@ public class PlaybackQueue {
 
     public void setShuffleEnabled(boolean shuffleEnabled) {
         this.shuffleEnabled = shuffleEnabled;
+        touch();
     }
 
     public boolean isShuffleEnabled() {
@@ -203,7 +229,7 @@ public class PlaybackQueue {
         if (index < 0) {
             return false;
         }
-        int target = Math.min(currentIndex + 1, queueCount - 1);
+        int target = currentIndex < 0 ? 0 : Math.min(currentIndex + 1, queueCount - 1);
         return move(index, target);
     }
 
@@ -340,11 +366,11 @@ public class PlaybackQueue {
     }
 
     public int getTotalDuration() {
-        int total = 0;
+        long total = 0L;
         for (int i = 0; i < queueCount; i++) {
-            total += queue[i].getDuration();
+            total += Math.max(0, queue[i].getDuration());
         }
-        return total;
+        return total > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) total;
     }
 
     public long getLastUpdatedAt() {
