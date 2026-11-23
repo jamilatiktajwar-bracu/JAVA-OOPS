@@ -81,4 +81,5 @@ self.addEventListener("fetch", event => {
       try { return await refresh; }
       catch { return (await runtime.match(request)) || (await shell.match(request)) || Response.error(); }
     })());
+  }
 });
