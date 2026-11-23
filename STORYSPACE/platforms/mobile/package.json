@@ -10,7 +10,10 @@
     "android:build": "cap sync android && cd android && ./gradlew assembleDebug",
     "android": "cap open android",
     "ios": "cap open ios",
-    "doctor": "cap doctor"
+    "doctor": "cap doctor",
+    "api:configure": "node configure-api-root.js",
+    "android:tv:prepare": "node ../android-tv/prepare-android-tv.js android",
+    "android:release:prepare": "node prepare-release-gradle.js android/app/build.gradle"
   },
   "dependencies": {
     "@capacitor/core": "^7.0.0",
