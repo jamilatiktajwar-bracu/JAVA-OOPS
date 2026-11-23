@@ -20,7 +20,10 @@ public class PromoCode {
     }
 
     public boolean redeem(Subscription subscription) {
-        if (!isValid() || subscription == null || !subscription.applyCoupon(code, discountPercent)) {
+        if (!isValid() || subscription == null
+                || (subscription.getCouponCode() != null
+                && !subscription.getCouponCode().trim().isEmpty())
+                || !subscription.applyCoupon(code, discountPercent)) {
             return false;
         }
         currentUses++;
