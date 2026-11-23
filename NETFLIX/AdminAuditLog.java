@@ -14,6 +14,8 @@ public class AdminAuditLog {
     public boolean record(String actor, String action) {
         if (actor == null || actor.trim().isEmpty()
                 || action == null || action.trim().isEmpty()
+                || actor.trim().length() > 128 || action.trim().length() > 512
+                || containsControlCharacters(actor) || containsControlCharacters(action)
                 || logCount >= actions.length) {
             return false;
         }
@@ -22,6 +24,16 @@ public class AdminAuditLog {
         timestamps[logCount] = System.currentTimeMillis();
         logCount++;
         return true;
+    }
+
+    private boolean containsControlCharacters(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            char character = value.charAt(i);
+            if (Character.isISOControl(character) && character != '\t') {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String[] getActions() {
