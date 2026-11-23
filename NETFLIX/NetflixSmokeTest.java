@@ -153,6 +153,43 @@ public class NetflixSmokeTest {
         check(downloads.removeDownload(failedMovie), "failed item removed");
         check(downloads.getFailedCount() == 0, "removal clears failed counter");
 
+        // Viewing-session state, overflow-safe progress and pause accounting.
+        Movies sessionMovie = new Movies("Session Test", "Drama", 90);
+        ViewingSession session = new ViewingSession(sessionMovie, profileOwner);
+        check(session.getProgressPercent() == 0, "new session progress starts at zero");
+        check(!session.pauseAt(-1) && session.isPlaybackActive(),
+                "invalid pause position leaves playback unchanged");
+        check(session.pauseAt(20) && !session.isPlaybackActive(),
+                "pause records progress and pauses playback");
+        check(!session.resumeAt(91) && !session.isPlaybackActive(),
+                "invalid resume position does not resume");
+        check(session.resumeAt(30) && session.isPlaybackActive(),
+                "valid resume restarts playback");
+        check(session.pauseAt(90) && session.isCompleted() && sessionMovie.isWatched(),
+                "completion marks movie watched");
+        session.startPlayback();
+        check(!session.isPlaybackActive(), "completed session cannot restart accidentally");
+        check(session.getTotalSeconds() == 5400 && session.getRemainingSeconds() == 0,
+                "session time values are correct");
+
+        // Playlist cursor remains valid after removals and reordering.
+        NetflixPlaylist playlist = new NetflixPlaylist("Cursor Test", 3);
+        check(playlist.addMovie(queueA) && playlist.addMovie(queueB) && playlist.addMovie(queueC),
+                "playlist accepts movies");
+        check(playlist.getNextMovie() == queueA, "playlist cursor starts at first movie");
+        check(playlist.removeMovie(queueA), "playlist can remove previously played movie");
+        check(playlist.getNextMovie() == queueB, "removal does not skip next playlist movie");
+        check(playlist.moveMovie(1, 0), "playlist reorders movies");
+        check(playlist.getMovieAt(0) == queueC, "playlist move changes item order");
+        check(playlist.getTotalDuration() == 285, "playlist total duration is calculated");
+
+        PaymentMethod sanitizedCard = new PaymentMethod("Card", "AB12-34 5678 9XYZ", "Test");
+        check(sanitizedCard.getMaskedNumber().endsWith("6789"),
+                "payment mask exposes only final numeric digits");
+        java.util.Calendar current = java.util.Calendar.getInstance();
+        check(sanitizedCard.getExpiryYear() == current.get(java.util.Calendar.YEAR) + 3,
+                "payment expiry default uses current calendar year");
+
         System.out.println("NETFLIX_SMOKE_TEST_OK");
     }
 
