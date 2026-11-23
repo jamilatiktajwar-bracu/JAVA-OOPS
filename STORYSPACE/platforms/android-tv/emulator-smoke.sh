@@ -11,6 +11,7 @@ if [[ ! -f "$APK" ]]; then
 fi
 
 adb wait-for-device
+adb logcat -c
 adb install -r "$APK"
 adb shell monkey -p "$PACKAGE" 1
 sleep 12
