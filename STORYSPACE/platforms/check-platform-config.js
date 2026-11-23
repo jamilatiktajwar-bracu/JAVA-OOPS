@@ -22,6 +22,9 @@ const nativeBridgePath = path.join(root, "web", "native-bridge.js");
 execFileSync(process.execPath, ["--check", nativeBridgePath], { stdio: "pipe" });
 execFileSync(process.execPath, ["--check", path.join(root, "web", "sw.js")], { stdio: "pipe" });
 
+const apiConfigScript = path.join(__dirname, "mobile", "configure-api-root.js");
+if (!fs.existsSync(apiConfigScript)) throw new Error("Native API configuration script missing");
+execFileSync(process.execPath, ["--check", apiConfigScript], { stdio: "pipe" });
 const tvScript = path.join(__dirname, "android-tv", "prepare-android-tv.js");
 if (!fs.existsSync(tvScript)) throw new Error("Android TV manifest setup script missing");
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "storyspace-tv-manifest-"));
