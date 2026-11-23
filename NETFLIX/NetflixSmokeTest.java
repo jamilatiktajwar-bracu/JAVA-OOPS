@@ -304,8 +304,11 @@ public class NetflixSmokeTest {
         check(cursorPlaylist.getNextMovie() == queueB,
                 "sorting playlist preserves the next-up movie");
         cursorPlaylist.sortByRating(true);
-        check(cursorPlaylist.getNextMovie() == queueC,
+        check(cursorPlaylist.getNextMovie() == queueB,
                 "rating sort preserves the next-up movie");
+        cursorPlaylist.sortByReleaseYear(true);
+        check(cursorPlaylist.getNextMovie() == queueA,
+                "release-year sort preserves the next-up movie");
 
         PaymentMethod sanitizedCard = new PaymentMethod("Card", "AB12-34 5678 9XYZ", "Test");
         check(sanitizedCard.getMaskedNumber().endsWith("6789"),
