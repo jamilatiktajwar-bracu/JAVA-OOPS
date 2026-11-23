@@ -37,6 +37,11 @@ public class RecommendationEngine {
         if (user == null || limit <= 0) {
             return new Movies[0];
         }
+        if (coldStartEnabled && isColdStartUser()) {
+            Movies[] coldStart = getColdStartRecommendations(limit);
+            rememberRecommendations(coldStart);
+            return coldStart;
+        }
         Movies[] all = Movies.getAllMovies();
         Movies[] result = new Movies[all.length];
         int count = 0;
