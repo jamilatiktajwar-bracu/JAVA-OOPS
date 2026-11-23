@@ -190,6 +190,20 @@ public class NETFLIX_SMOKE_TEST {
         require(user.getWatchHistoryCount() == 1, "re-watch must not duplicate history");
         require(!user.addFamilyProfile(user), "profile must not add itself as a family profile");
         require(user.getTotalWatchedMinutes() == 100, "watch time should count unique history entries");
+        NETFLIX_USER fullHistory = new NETFLIX_USER("full-history");
+        for (int i = 0; i < 100; i++) {
+            require(fullHistory.watchMovie(new Movies("History " + i, "Drama", 1)),
+                    "history should accept entries up to its capacity");
+        }
+        Movies overflowMovie = new Movies("Overflow completion", "Drama", 1);
+        require(fullHistory.updateViewingProgress(overflowMovie, 50),
+                "partial progress can be stored while history is full");
+        require(!fullHistory.updateViewingProgress(overflowMovie, 95),
+                "completion should fail atomically when history is full");
+        require(fullHistory.getViewingProgress(overflowMovie) == 50,
+                "failed completion must preserve previous progress");
+        require(!overflowMovie.isWatched(), "failed completion should not mark movie watched");
+
     }
 
     private static void testRecommendationEngineSafety() {
