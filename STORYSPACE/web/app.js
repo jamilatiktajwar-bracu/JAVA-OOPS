@@ -292,7 +292,12 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   }
   document.addEventListener("keydown", event => {
     if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) return;
-    if(!tvMode && isNativeAndroid) window.StoryspaceTV.enable();
+    // On native Android, the first remote arrow enables TV mode and must
+    // still be processed instead of being swallowed during mode activation.
+    if(!tvMode && isNativeAndroid) {
+      window.StoryspaceTV.enable();
+      tvMode = true;
+    }
     if(!tvMode) return;
     const tag=document.activeElement?.tagName;
     if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
