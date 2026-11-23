@@ -136,6 +136,11 @@ public class NetflixSmokeTest {
                 "password setter rejects short passwords");
         check(profileOwner.setPassword("long-enough-password"),
                 "password setter accepts longer password");
+        Movies defensiveMovie = new Movies(null, "  ", -10);
+        check("Untitled".equals(defensiveMovie.getTitle())
+                && "Unknown".equals(defensiveMovie.getGenre())
+                && defensiveMovie.getDuration() == 0,
+                "movie constructor normalizes invalid metadata");
         Movies safeMovie = new Movies("Overflow Safety", "Drama", 1440);
         check(!safeMovie.setRating(Double.NaN) && !safeMovie.setRating(Double.POSITIVE_INFINITY),
                 "movie rating rejects non-finite values");
