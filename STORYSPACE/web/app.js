@@ -116,3 +116,39 @@ $("playerClose").onclick=closePlayer;$("playerBackdrop").onclick=e=>{if(e.target
 $("adminTitleForm").onsubmit=async e=>{e.preventDefault();const f=e.currentTarget;const d=new FormData(f);const body={slug:d.get("slug"),name:d.get("name"),synopsis:d.get("synopsis"),genres:d.get("genres"),moods:d.get("moods"),language:d.get("language"),releaseYear:Number(d.get("releaseYear")),ageRating:d.get("ageRating"),format:d.get("format"),score:Number(d.get("score")),posterUrl:d.get("posterUrl"),backdropUrl:d.get("backdropUrl"),featured:d.get("featured")==="on",original:d.get("original")==="on"};$("adminStatus").textContent="Publishing…";try{const created=await api("/admin/catalog",{method:"POST",body});const m=apiTitle(created);movies.unshift(m);renderHome();$("adminStatus").textContent="Added "+m.title;f.reset();showToast("Catalog title added")}catch(err){$("adminStatus").textContent=err.message}};
 function updateAccountUI(){const acc=personalized.account;const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V";const row=document.querySelector(".profile-row");if(row)row.innerHTML=`<span class="avatar">${acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V"}</span><div><b>${acc?acc.displayName:"Explorer"}</b><small>${acc?acc.email:"Guest · saved on this device"}</small></div>`;const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";const admin=$("adminAction");if(admin)admin.hidden=acc?.role!=="ADMIN";const membership=$("subscriptionAction");if(membership)membership.textContent=acc?"Membership & plans":"Sign in for membership";}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdrop").hidden)closePlayer();if(!$("subscriptionBackdrop").hidden)closeMembership();if(!$("adminBackdrop").hidden)closeAdmin()}});
+
+
+// Multi-device install and living-room navigation foundation.
+(() => {
+  const tvMode = new URLSearchParams(location.search).get("tv") === "1";
+  if (tvMode) document.documentElement.classList.add("tv-mode");
+  const isFocusable = el => el && el.matches("button,a,input,select,textarea,[tabindex]") && !el.disabled && el.tabIndex >= 0 && !el.closest("[hidden]") && el.getClientRects().length;
+  const candidates = () => [...document.querySelectorAll("button,a,input,select,textarea,[tabindex]")].filter(isFocusable);
+  function moveFocus(key) {
+    const list = candidates(); if (!list.length) return;
+    const current = document.activeElement;
+    if (!list.includes(current)) { (list.find(el => el.closest(".main-nav")) || list[0]).focus(); return; }
+    const a = current.getBoundingClientRect(), ax = a.left+a.width/2, ay=a.top+a.height/2;
+    const vectors = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+    const [dx,dy]=vectors[key]; let best=null, bestScore=Infinity;
+    for (const el of list) {
+      if(el===current) continue; const r=el.getBoundingClientRect(), x=r.left+r.width/2, y=r.top+r.height/2, vx=x-ax, vy=y-ay;
+      const primary=vx*dx+vy*dy, cross=Math.abs(vx*dy-vy*dx);
+      if(primary<=8) continue;
+      const score=primary+cross*2.2+(cross>primary?cross*2:0);
+      if(score<bestScore){bestScore=score;best=el}
+    }
+    if(best) { best.focus(); best.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); }
+  }
+  document.addEventListener("keydown", event => {
+    if(!tvMode || !["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) return;
+    const tag=document.activeElement?.tagName;
+    if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
+    event.preventDefault(); moveFocus(event.key);
+  });
+  if(tvMode) setTimeout(()=>{(document.querySelector(".nav-link.active")||document.querySelector("button,a")).focus()},350);
+  document.addEventListener("click", event => {
+    const btn=event.target.closest("button");
+    if(tvMode && btn) btn.classList.add("tv-activated");
+  });
+})();
