@@ -92,6 +92,8 @@ public class NetflixSmokeTest {
         WatchParty party = new WatchParty("Regression Party", queueA, host);
         check(!party.invite(host), "watch party cannot invite host as guest");
         check(party.invite(guest), "watch party accepts guest");
+        NETFLIX_USER secondGuest = new NETFLIX_USER("party-guest-two");
+        check(party.invite(secondGuest), "watch party accepts another guest");
         check(!party.setMaxGuests(0) && !party.setMaxGuests(1),
                 "guest capacity cannot drop below existing membership");
         check(!party.invite(guest), "watch party rejects duplicate guest");
