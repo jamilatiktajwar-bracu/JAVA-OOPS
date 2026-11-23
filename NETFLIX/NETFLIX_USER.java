@@ -2,7 +2,8 @@ public class NETFLIX_USER {
     public String username;
     public String email;
     public String Plan;
-    private String password;
+    private String passwordHash;
+    private String passwordSalt;
     public Movies[] favourite_movies;
     public int favourite_movies_count;
     private Movies[] watchHistory;
@@ -66,7 +67,11 @@ public class NETFLIX_USER {
         this.preferredLanguage = "English";
         this.pin = "";
         this.paymentWallet = new PaymentWallet(5);
-        this.password = password == null ? "" : password;
+        this.passwordHash = "";
+        this.passwordSalt = "";
+        if (password != null && !password.isEmpty()) {
+            setPassword(password);
+        }
     }
 
     public NETFLIX_USER(String username) {
@@ -685,8 +690,48 @@ public class NETFLIX_USER {
                 || password.trim().isEmpty()) {
             return false;
         }
-        this.password = password;
+        byte[] salt = new byte[16];
+        new java.security.SecureRandom().nextBytes(salt);
+        String hash = hashPassword(password, salt);
+        if (hash == null) {
+            return false;
+        }
+        this.passwordSalt = java.util.Base64.getEncoder().encodeToString(salt);
+        this.passwordHash = hash;
         return true;
+    }
+
+    public boolean verifyPassword(String candidate) {
+        if (candidate == null || passwordHash == null || passwordHash.isEmpty()
+                || passwordSalt == null || passwordSalt.isEmpty()) {
+            return false;
+        }
+        try {
+            byte[] salt = java.util.Base64.getDecoder().decode(passwordSalt);
+            String candidateHash = hashPassword(candidate, salt);
+            return candidateHash != null && java.security.MessageDigest.isEqual(
+                    passwordHash.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                    candidateHash.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException invalidSalt) {
+            return false;
+        }
+    }
+
+    private String hashPassword(String password, byte[] salt) {
+        char[] passwordChars = password.toCharArray();
+        java.security.spec.PBEKeySpec spec = new java.security.spec.PBEKeySpec(
+                passwordChars, salt, 120000, 256);
+        try {
+            java.security.SecretKeyFactory factory =
+                    java.security.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            byte[] hash = factory.generateSecret(spec).getEncoded();
+            return java.util.Base64.getEncoder().encodeToString(hash);
+        } catch (java.security.GeneralSecurityException unavailable) {
+            return null;
+        } finally {
+            spec.clearPassword();
+            java.util.Arrays.fill(passwordChars, (char) 0);
+        }
     }
 
     public void setpassword(String password) {
