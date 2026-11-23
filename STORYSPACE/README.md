@@ -17,6 +17,7 @@ Then open `STORYSPACE/web/index.html` in your browser. Backend health: `http://l
 - Sign-up/login syncs profile preferences and watchlist to the backend.
 - Search supports phrase queries plus `genre:`, `mood:`, `language:`, and `type:` filters (for example: `genre:Sci-Fi type:series`). Browse results can be filtered by genre and sorted by recommendation, rating, release year, or title.
 - Recent activity is available from the clock/bell control and is stored locally for the guest/device experience.
+- Continue Watching now stores playback position locally, resumes the last preview, clears completed previews, and syncs progress for signed-in titles already saved to My Universe. A Restart Preview action clears the resume point.
 - User data can be exported/imported as a versioned JSON file; exports deliberately exclude authentication tokens.
 - Keyboard shortcuts: `/` or `Ctrl/Cmd+K` for search, `H` for Discover, `M` for My Universe, `?` for the shortcut hint, and `Esc` to close overlays.
 - Offline shell caching is versioned and bounded, leaves unrelated origin caches untouched, and never caches API responses.
