@@ -149,6 +149,19 @@ public class NetflixSmokeTest {
                 "password setter rejects short passwords");
         check(profileOwner.setPassword("long-enough-password"),
                 "password setter accepts longer password");
+        NETFLIX_USER emailProfile = new NETFLIX_USER("  profile  ", "user@example.com", "Free", "password");
+        check("profile".equals(emailProfile.getUsername())
+                && "profile".equals(emailProfile.getProfileName()),
+                "profile identity trims whitespace");
+        check(emailProfile.isValidEmail(), "valid email is accepted");
+        emailProfile.setEmail("user@localhost");
+        check(!emailProfile.isValidEmail(), "email without domain suffix is rejected");
+        emailProfile.setEmail("user@@example.com");
+        check(!emailProfile.isValidEmail(), "multiple email separators are rejected");
+        emailProfile.setEmail("user name@example.com");
+        check(!emailProfile.isValidEmail(), "email whitespace is rejected");
+        emailProfile.setEmail("user..name@example.com");
+        check(!emailProfile.isValidEmail(), "consecutive local-part dots are rejected");
         Movies defensiveMovie = new Movies(null, "  ", -10);
         check("Untitled".equals(defensiveMovie.getTitle())
                 && "Unknown".equals(defensiveMovie.getGenre())
