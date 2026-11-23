@@ -45,6 +45,8 @@ jobs:
       - name: Sync web assets and native plugins
         working-directory: STORYSPACE/platforms/mobile
         run: npx cap sync android
+      - name: Configure Android TV launcher and banner
+        run: node STORYSPACE/platforms/android-tv/prepare-android-tv.js "$GITHUB_WORKSPACE/STORYSPACE/platforms/mobile/android"
       - name: Build debug APK
         working-directory: STORYSPACE/platforms/mobile/android
         run: ./gradlew assembleDebug --no-daemon
