@@ -54,7 +54,7 @@ if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) t
 if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
-if (!androidWorkflow.includes('ANDROID_I_WANT_MY_TCG: "yes"') || !androidWorkflow.includes("disable-linux-hw-accel: false")) throw new Error("Android emulator must enable the supported TCG fallback on Linux runners");
+if (!androidWorkflow.includes("runs-on: macos-latest") || !androidWorkflow.includes("arch: arm64-v8a")) throw new Error("Android emulator smoke test must use the accelerated macOS ARM64 runner");
 if (!androidWorkflow.includes("Capture emulator diagnostics")) throw new Error("Android emulator failure diagnostics step missing");
 if (!androidWorkflow.includes('dump resources app/build/outputs/apk/debug/app-debug.apk')) throw new Error("Android TV banner must be verified through the APK resource table");
 const emulatorSmoke = path.join(__dirname, "android-tv", "emulator-smoke.sh");
