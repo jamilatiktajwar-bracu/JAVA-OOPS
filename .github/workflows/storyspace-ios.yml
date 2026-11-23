@@ -31,7 +31,7 @@ jobs:
       - name: Build iOS Simulator app
         working-directory: STORYSPACE/platforms/mobile
         run: |
-          xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator \
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator \
             -configuration Debug -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
       - name: Archive simulator app
