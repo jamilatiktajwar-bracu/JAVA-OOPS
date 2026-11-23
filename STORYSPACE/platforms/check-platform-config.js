@@ -43,6 +43,8 @@ if (!webClient.includes("storyspace-user-data")) throw new Error("User data expo
 if (!webClient.includes("storyspace.resumePoints") || !webClient.includes('playerVideo.addEventListener("timeupdate"')) throw new Error("Continue-watching progress persistence missing");
 if (!webClient.includes('$("playerRestart").addEventListener("click"')) throw new Error("Player restart control missing");
 if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
+const webHtml = read("web/index.html");
+if (!webHtml.includes('class="skip-link"') || !webHtml.includes('aria-labelledby="playerTitle"')) throw new Error("Skip navigation and player dialog labels missing");
 if (!webClient.includes("beforeinstallprompt") || !webClient.includes("Add to Home Screen")) throw new Error("Cross-browser PWA install guidance missing");
 if (!webClient.includes("matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType")) throw new Error("Structured search filters missing");
 if (!webClient.includes("row.replaceChildren()") || webClient.includes('row.innerHTML=`<span class="avatar"')) throw new Error("Profile details must be rendered with safe text nodes");
