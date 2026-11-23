@@ -21,6 +21,7 @@ If the backend is running, the app can register/sign in, sync account preference
 - Demo data only; titles and metadata are fictional sample entries.
 - Preview playback uses a CC0 sample clip, not a title's actual footage.
 - No licensed catalog, full video delivery, DRM, production payment processing, or commercial readiness.
+- Packaged native sign-in requires a configured absolute HTTPS API endpoint; no production API host is currently configured in this repository.
 - Remote imagery requires an asset-license review and replacement/clearance for commercial use.
 - Storyspace is a working name, not trademark-cleared. Brand and design clearance is not represented as completed.
 
