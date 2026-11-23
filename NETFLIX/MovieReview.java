@@ -4,6 +4,7 @@ public class MovieReview {
     private String comment;
     private long createdAt;
     private long updatedAt;
+    private boolean edited;
     private boolean verifiedViewer;
     private boolean spoiler;
     private boolean approved;
@@ -21,6 +22,7 @@ public class MovieReview {
         this.comment = comment == null ? "" : comment.trim();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = createdAt;
+        this.edited = false;
         this.verifiedViewer = false;
         this.spoiler = false;
         this.approved = true;
@@ -60,7 +62,8 @@ public class MovieReview {
         }
         comment = newComment.trim();
         rating = newRating;
-        updatedAt = System.currentTimeMillis();
+        edited = true;
+        updatedAt = nextUpdateTimestamp();
         return true;
     }
 
@@ -69,7 +72,15 @@ public class MovieReview {
     }
 
     public boolean wasEdited() {
-        return updatedAt != createdAt;
+        return edited;
+    }
+
+    private long nextUpdateTimestamp() {
+        long now = System.currentTimeMillis();
+        if (updatedAt == Long.MAX_VALUE) {
+            return Long.MAX_VALUE;
+        }
+        return Math.max(now, updatedAt + 1L);
     }
 
     public void setVerifiedViewer(boolean verifiedViewer) {
@@ -81,8 +92,10 @@ public class MovieReview {
     }
 
     public void setSpoiler(boolean spoiler) {
-        this.spoiler = spoiler;
-        updatedAt = System.currentTimeMillis();
+        if (this.spoiler != spoiler) {
+            this.spoiler = spoiler;
+            updatedAt = nextUpdateTimestamp();
+        }
     }
 
     public boolean containsSpoiler() {
@@ -103,7 +116,9 @@ public class MovieReview {
     }
 
     public void addHelpfulVote() {
-        helpfulVotes++;
+        if (helpfulVotes < Integer.MAX_VALUE) {
+            helpfulVotes++;
+        }
     }
 
     public void removeHelpfulVote() {
@@ -113,7 +128,9 @@ public class MovieReview {
     }
 
     public void addNotHelpfulVote() {
-        notHelpfulVotes++;
+        if (notHelpfulVotes < Integer.MAX_VALUE) {
+            notHelpfulVotes++;
+        }
     }
 
     public void removeNotHelpfulVote() {
@@ -135,7 +152,9 @@ public class MovieReview {
     }
 
     public boolean report() {
-        reportCount++;
+        if (reportCount < Integer.MAX_VALUE) {
+            reportCount++;
+        }
         reported = true;
         if (reportCount >= 3) {
             approved = false;
