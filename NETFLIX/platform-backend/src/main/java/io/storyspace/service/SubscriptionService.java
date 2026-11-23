@@ -1,0 +1,12 @@
+package io.storyspace.service;
+import io.storyspace.accounts.Account;import io.storyspace.subscriptions.*;import org.springframework.stereotype.Service;import org.springframework.transaction.annotation.Transactional;import java.time.Instant;import java.time.temporal.ChronoUnit;import java.util.List;import java.util.Map;
+@Service public class SubscriptionService {
+ private final SubscriptionRepository repo;public SubscriptionService(SubscriptionRepository r){repo=r;}
+ public List<Map<String,Object>> plans(){return List.of(Map.of("id","FREE","name","Free Orbit","price",0,"currency","BDT","period","month","features",List.of("Explore catalog","Personalized discovery","Preview content")),Map.of("id","PLUS","name","Plus Journey","price",299,"currency","BDT","period","month","features",List.of("Full catalog access (when licensed)","HD playback (when available)","Multiple profiles (planned)")));}
+ public Map<String,Object> current(Account a){return repo.findFirstByAccountIdAndStatusOrderByStartedAtDesc(a.getId(),"ACTIVE").map(s->Map.of("plan",s.getPlanKey(),"status",s.getStatus(),"startedAt",s.getStartedAt().toString(),"endsAt",s.getEndsAt()==null?"":s.getEndsAt().toString(),"demo",true)).orElse(Map.of("plan","FREE","status","ACTIVE","demo",true));}
+ @Transactional public Map<String,Object> activate(Account a,String key){String plan=key==null?"FREE":key.trim().toUpperCase();if(!List.of("FREE","PLUS").contains(plan))throw new IllegalArgumentException("Unknown plan.");
+  repo.findFirstByAccountIdAndStatusOrderByStartedAtDesc(a.getId(),"ACTIVE").ifPresent(Subscription::cancel);
+  Instant end=plan.equals("FREE")?null:Instant.now().plus(30,ChronoUnit.DAYS);repo.save(new Subscription(a,plan,end));return current(a);}
+ @Transactional public Map<String,Object> cancel(Account a){var s=repo.findFirstByAccountIdAndStatusOrderByStartedAtDesc(a.getId(),"ACTIVE").orElseThrow(()->new IllegalArgumentException("No active subscription found."));s.cancel();repo.save(s);return Map.of("plan",s.getPlanKey(),"status",s.getStatus(),"cancelledAt",s.getCancelledAt().toString(),"demo",true);}
+ public boolean hasPaidAccess(Account a){return repo.findFirstByAccountIdAndStatusOrderByStartedAtDesc(a.getId(),"ACTIVE").map(s->s.getPlanKey().equals("PLUS")).orElse(false);}
+}
