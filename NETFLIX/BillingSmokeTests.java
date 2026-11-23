@@ -4,6 +4,7 @@ final class BillingSmokeTests {
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
         testPromoCodeRedemptionConsistency();
+        testPaymentMethodExpiryValidation();
     }
 
 private static void testSubscriptionPlanNormalization() {
@@ -65,5 +66,22 @@ private static void testPromoCodeRedemptionConsistency() {
         SmokeTestSupport.require(second.getRemainingUses() == 5, "failed redemption should not consume promo usage");
         subscription.removeCoupon();
         SmokeTestSupport.require(second.redeem(subscription), "second promo should redeem after active coupon is removed");
+    }
+    private static void testPaymentMethodExpiryValidation() {
+        PaymentMethod method = new PaymentMethod("  ", "12-3456", " Holder ");
+        SmokeTestSupport.require("Card".equals(method.getType()), "blank card type should normalize");
+        SmokeTestSupport.require("**** **** **** 3456".equals(method.getMaskedNumber()),
+                "card number should be masked to last four digits");
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int year = now.get(java.util.Calendar.YEAR);
+        int month = now.get(java.util.Calendar.MONTH) + 1;
+        SmokeTestSupport.require(!method.setExpiry(0, year + 2), "invalid expiry month should fail");
+        SmokeTestSupport.require(!method.setExpiry(month, year - 1), "past expiry year should fail");
+        int pastMonth = month == 1 ? 12 : month - 1;
+        int pastYear = month == 1 ? year - 1 : year;
+        SmokeTestSupport.require(!method.setExpiry(pastMonth, pastYear), "past expiry month should fail");
+        SmokeTestSupport.require(method.setExpiry(month, year + 2), "future expiry should succeed");
+        SmokeTestSupport.require(!method.isExpired(year, month), "future expiry should not be expired");
+        SmokeTestSupport.require(!method.isExpired(year, 13), "invalid current month should not be accepted");
     }
 }
