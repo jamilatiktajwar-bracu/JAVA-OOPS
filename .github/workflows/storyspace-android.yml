@@ -7,6 +7,11 @@ on:
       - 'STORYSPACE/**'
       - '.github/workflows/storyspace-android.yml'
 
+# Keep only the newest Android APK/emulator run for this PR or branch.
+concurrency:
+  group: storyspace-android-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
