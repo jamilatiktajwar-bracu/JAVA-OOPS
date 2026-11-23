@@ -29,7 +29,7 @@ const apiConfigScript = path.join(__dirname, "mobile", "configure-api-root.js");
 if (!fs.existsSync(apiConfigScript)) throw new Error("Native API configuration script missing");
 execFileSync(process.execPath, ["--check", apiConfigScript], { stdio: "pipe" });
 const webClient = read("web/app.js");
-if (!webClient.includes("window.StoryspaceTV.enable();\\n      tvMode = true;")) throw new Error("Native Android TV mode must preserve the first D-pad key");
+if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) throw new Error("Native Android TV mode must preserve the first D-pad key");
 if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
