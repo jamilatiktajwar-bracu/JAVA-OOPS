@@ -10,6 +10,7 @@ public class NETFLIX_SMOKE_TEST {
         testMovieMetadataArrayHandling();
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
+        testPromoCodeRedemptionConsistency();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -161,6 +162,18 @@ public class NETFLIX_SMOKE_TEST {
         require(wallet.removeMethod(second), "default method should be removable");
         require(wallet.getDefaultMethod() == first, "wallet should select remaining method as default");
         require(wallet.getMethodCount() == 1, "wallet count should remain consistent");
+    }
+
+    private static void testPromoCodeRedemptionConsistency() {
+        Subscription subscription = new Subscription("Pro");
+        PromoCode first = new PromoCode("SAVE10", 10.0, 5);
+        PromoCode second = new PromoCode("SAVE20", 20.0, 5);
+        require(first.redeem(subscription), "first promo should redeem");
+        require(!second.redeem(subscription), "second promo should not replace active coupon");
+        require(first.getRemainingUses() == 4, "successful redemption should consume one use");
+        require(second.getRemainingUses() == 5, "failed redemption should not consume promo usage");
+        subscription.removeCoupon();
+        require(second.redeem(subscription), "second promo should redeem after active coupon is removed");
     }
 
     private static void require(boolean condition, String message) {
