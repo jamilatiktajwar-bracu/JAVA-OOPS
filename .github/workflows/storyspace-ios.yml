@@ -8,6 +8,11 @@ on:
       - 'STORYSPACE/platforms/mobile/**'
       - '.github/workflows/storyspace-ios.yml'
 
+# Avoid spending runner minutes on superseded commits from the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
