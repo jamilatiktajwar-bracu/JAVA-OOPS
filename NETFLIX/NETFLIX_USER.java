@@ -405,6 +405,10 @@ public class NETFLIX_USER {
         }
         for (int i = 0; i < continueWatchingCount; i++) {
             if (continueWatching[i] == movie) {
+                if (progressPercent >= 95 && !isInWatchHistory(movie)
+                        && watchHistoryCount >= watchHistory.length) {
+                    return false;
+                }
                 viewingProgress[i] = progressPercent;
                 if (progressPercent >= 95) {
                     movie.markWatched();
@@ -415,6 +419,10 @@ public class NETFLIX_USER {
                 }
                 return true;
             }
+        }
+        if (progressPercent >= 95 && !isInWatchHistory(movie)
+                && watchHistoryCount >= watchHistory.length) {
+            return false;
         }
         if (continueWatchingCount >= continueWatching.length) {
             return false;
