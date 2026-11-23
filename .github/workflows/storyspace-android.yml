@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       # Runner images already contain Android SDK. Avoid setup-android's obsolete
       # "tools" package request; install the SDK components needed by Gradle directly.
       - name: Install Android SDK packages
