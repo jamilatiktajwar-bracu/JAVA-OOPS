@@ -10,9 +10,11 @@ import java.util.UUID;
 @Service
 public class TokenService {
  private final byte[] secret; private final long ttl;
- public TokenService(@Value("${app.security.token-secret}") String secret,@Value("${app.security.token-ttl-hours:72}") long ttlHours){
+ public TokenService(@Value("${app.security.token-secret}") String secret,@Value("${app.security.token-ttl-hours:72}") long ttlHours,@Value("${spring.profiles.active:}") String profiles){
+  if(java.util.Arrays.stream(profiles.split(",")).map(String::trim).anyMatch("prod"::equalsIgnoreCase)&&secret.equals("local-development-secret-change-before-deployment-0123456789"))throw new IllegalStateException("Production must provide a unique TOKEN_SECRET.");
   this.secret=secret.getBytes(StandardCharsets.UTF_8);this.ttl=ttlHours*3600L;
   if(secret.length()<32)throw new IllegalStateException("Token secret must be at least 32 characters.");
+  if(ttlHours<1||ttlHours>720)throw new IllegalStateException("Token TTL must be between 1 and 720 hours.");
  }
  public String issue(UUID userId,String role){String payload=userId+"|"+(Instant.now().getEpochSecond()+ttl)+"|"+role;
   String encoded=Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));return encoded+"."+sign(encoded);}
