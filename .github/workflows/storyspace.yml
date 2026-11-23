@@ -4,7 +4,7 @@ on:
     branches: [product/storyspace-platform, product/multiplatform-foundation]
     paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
   pull_request:
-    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
+    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
 jobs:
   verify:
     runs-on: ubuntu-latest
