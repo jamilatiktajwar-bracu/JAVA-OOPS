@@ -58,7 +58,8 @@ self.addEventListener("fetch", event => {
         }
         return response;
       } catch {
-        const shell = await caches.open(SHELL_CACHE);\n        return (await shell.match("./index.html")) || Response.error();
+        const shell = await caches.open(SHELL_CACHE);
+        return (await shell.match("./index.html")) || Response.error();
       }
     })());
     return;
@@ -66,7 +67,9 @@ self.addEventListener("fetch", event => {
 
   if (["script", "style", "image", "font"].includes(request.destination)) {
     event.respondWith((async () => {
-      const runtime = await caches.open(RUNTIME_CACHE);\n      const shell = await caches.open(SHELL_CACHE);\n      const cached = await runtime.match(request) || await shell.match(request);
+      const runtime = await caches.open(RUNTIME_CACHE);
+      const shell = await caches.open(SHELL_CACHE);
+      const cached = await runtime.match(request) || await shell.match(request);
       const refresh = fetch(request).then(response => updateRuntimeCache(request, response).then(() => response));
       if (cached) {
         event.waitUntil(refresh.catch(() => {}));
