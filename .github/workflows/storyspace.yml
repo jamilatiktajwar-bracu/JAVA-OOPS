@@ -5,6 +5,11 @@ on:
     paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
   pull_request:
     paths: ['STORYSPACE/**','.github/workflows/storyspace.yml','.github/workflows/storyspace*.yml']
+# Avoid spending runner minutes on superseded commits from the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
