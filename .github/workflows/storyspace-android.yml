@@ -18,7 +18,7 @@ permissions:
 jobs:
   debug-apk:
     name: Build installable debug APK
-    # Hosted Linux runners do not expose /dev/kvm; use software emulation for CI smoke coverage.
+    # Hosted Linux runners may not expose /dev/kvm; use the emulator's software renderer.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
