@@ -74,7 +74,9 @@ $("heroMute").addEventListener("click",()=>{state.mute=!state.mute;$("heroMute")
 window.addEventListener("scroll",()=> $("topbar").classList.toggle("scrolled",window.scrollY>30));
 // Initial render is performed after personalization state initializes.
 // ─────────── Personal discovery engine + optional API integration ───────────
-const API_ROOT=String(window.STORYSPACE_API_ROOT||document.querySelector('meta[name="storyspace-api-root"]')?.content||"").trim()||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:8080/api":"/api");
+const configuredApiRoot=String(window.STORYSPACE_API_ROOT||document.querySelector('meta[name="storyspace-api-root"]')?.content||"").trim();
+const nativeApiMisconfigured=window.StoryspaceNative?.native===true&&(!configuredApiRoot||!/^https:\/\//i.test(configuredApiRoot));
+const API_ROOT=configuredApiRoot||(location.hostname==="localhost"||location.hostname==="127.0.0.1"?"http://localhost:8080/api":"/api");
 const prefDefaults={genres:[],moods:[],languages:["English"],balance:"balanced"};
 const readJson=(key,fallback)=>{try{return JSON.parse(storage.get(key))??fallback}catch{return fallback}};
 function normalizePreferences(raw){
@@ -109,6 +111,7 @@ function drawPreferences(){const p=personalized.preferences;chips("genreChoices"
 function resetPreferences(){personalized.preferences={...prefDefaults,genres:[],moods:[],languages:["English"]};drawPreferences()}
 function savePreferences(){savePrefs();closePreferences();renderHome();setHero(chooseHero());if(personalized.account&&personalized.token){api("/profile/preferences",{method:"PUT",body:{displayName:personalized.account.displayName,genres:personalized.preferences.genres,moods:personalized.preferences.moods,languages:personalized.preferences.languages}}).catch(e=>showToast("Saved locally · sync unavailable"));}showToast("Your discovery feed has been tuned");}
 async function api(path,options={}){
+  if(nativeApiMisconfigured)throw new Error("Sign-in is not enabled in this app build yet. Configure the Storyspace HTTPS API endpoint and rebuild the app.");
   const controller=typeof AbortController==="function"?new AbortController():null;
   const timeout=controller?setTimeout(()=>controller.abort(),15000):null;
   const headers={"Content-Type":"application/json",...(personalized.token?{Authorization:"Bearer "+personalized.token}:{})};
