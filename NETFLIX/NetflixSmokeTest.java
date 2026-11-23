@@ -145,6 +145,20 @@ public class NetflixSmokeTest {
         check(wallet.removeMethod(paymentB), "wallet removes method");
         check(wallet.getDefaultMethod() == paymentA, "wallet reassigns default after removal");
 
+        Subscription trialSubscription = new Subscription("Pro");
+        check(trialSubscription.startTrial(7), "trial starts within supported limit");
+        for (int day = 0; day < 7; day++) {
+            check(trialSubscription.consumeTrialDay(), "trial day consumption accepted");
+        }
+        check(!trialSubscription.isInTrial() && !trialSubscription.startTrial(3),
+                "expired trial cannot be restarted on same subscription");
+        check(!trialSubscription.startTrial(3651), "trial duration is bounded");
+        Subscription cancelledTrial = new Subscription("Pro");
+        check(cancelledTrial.startTrial(14), "trial cancellation fixture starts");
+        cancelledTrial.cancel();
+        check(!cancelledTrial.isInTrial() && cancelledTrial.getTrialDaysRemaining() == 0,
+                "cancel terminates trial state");
+
         Subscription billing = new Subscription("Pro");
         billing.setPaymentMethod("Visa **** 4242");
         check(billing.processPayment(700.0), "configured subscription payment succeeds");
@@ -154,6 +168,8 @@ public class NetflixSmokeTest {
         check(!billing.refundInvoice(0), "invoice cannot be refunded twice");
         check(Math.abs(billing.getRefundedAmount() - 700.0) < 0.001,
                 "refund total is not double counted");
+        check(Math.abs(billing.getNetPaid()) < 0.001,
+                "net paid correctly subtracts refunds");
         check(!billing.processPayment(Double.NaN), "payment rejects NaN");
         check(!billing.processPayment(-1.0), "payment rejects negative amount");
         billing.pauseBilling();
@@ -279,6 +295,17 @@ public class NetflixSmokeTest {
         check(playlist.moveMovie(1, 0), "playlist reorders movies");
         check(playlist.getMovieAt(0) == queueC, "playlist move changes item order");
         check(playlist.getTotalDuration() == 195, "playlist total duration excludes removed movie");
+        NetflixPlaylist cursorPlaylist = new NetflixPlaylist("Sort Cursor", 3);
+        cursorPlaylist.addMovie(queueA);
+        cursorPlaylist.addMovie(queueB);
+        cursorPlaylist.addMovie(queueC);
+        check(cursorPlaylist.getNextMovie() == queueA, "sort cursor fixture consumes first item");
+        cursorPlaylist.sortByTitle(false);
+        check(cursorPlaylist.getNextMovie() == queueB,
+                "sorting playlist preserves the next-up movie");
+        cursorPlaylist.sortByRating(true);
+        check(cursorPlaylist.getNextMovie() == queueC,
+                "rating sort preserves the next-up movie");
 
         PaymentMethod sanitizedCard = new PaymentMethod("Card", "AB12-34 5678 9XYZ", "Test");
         check(sanitizedCard.getMaskedNumber().endsWith("6789"),
