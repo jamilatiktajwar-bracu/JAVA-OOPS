@@ -92,9 +92,17 @@ public class NetflixSmokeTest {
         WatchParty party = new WatchParty("Regression Party", queueA, host);
         check(!party.invite(host), "watch party cannot invite host as guest");
         check(party.invite(guest), "watch party accepts guest");
+        check(!party.setMaxGuests(0) && !party.setMaxGuests(1),
+                "guest capacity cannot drop below existing membership");
         check(!party.invite(guest), "watch party rejects duplicate guest");
         check(party.muteGuest(guest), "host can mute a guest");
         check(!party.sendChat(guest, "hello"), "muted guest chat is blocked");
+        party.unmuteGuest(guest);
+        check(!party.sendChat(guest, new String(new char[501]).replace("\\0", "x")),
+                "watch-party chat enforces message length");
+        check(!party.sendReaction(guest, new String(new char[33]).replace("\\0", "x")),
+                "watch-party reactions enforce size limit");
+        party.muteGuest(guest);
         check(party.removeGuest(guest), "guest can be removed");
         check(!party.isMuted(guest), "removed guest mute state is cleared");
         check(!party.setPlaybackPosition(-1), "watch party rejects negative position");
