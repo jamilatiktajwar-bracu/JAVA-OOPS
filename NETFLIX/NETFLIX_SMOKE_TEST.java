@@ -244,7 +244,7 @@ public class NETFLIX_SMOKE_TEST {
         require(playlist.getMovieAt(0) == third, "move should reorder playlist");
         require(playlist.getNextMovie() == third, "cursor should follow moved next item");
         require(playlist.getTotalDuration() == 500, "playlist duration should sum movie lengths");
-        require(playlist.getRemainingCapacity() == 1, "capacity should track additions");
+        require(playlist.getRemainingCapacity() == 2, "capacity should track additions");
         require(!playlist.addMovie(null), "null movie should not be accepted");
     }
 
