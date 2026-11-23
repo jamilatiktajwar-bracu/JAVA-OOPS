@@ -19,7 +19,7 @@ public class PaymentMethod {
         if (number == null) {
             return "****";
         }
-        String value = number.replaceAll("\\s+", "");
+        String value = number.replaceAll("\\D", "");
         if (value.isEmpty()) {
             return "****";
         }
