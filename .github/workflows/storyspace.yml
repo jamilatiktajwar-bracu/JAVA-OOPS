@@ -1,0 +1,23 @@
+name: Storyspace checks
+on:
+  push:
+    branches: [product/storyspace-platform]
+    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
+  pull_request:
+    paths: ['STORYSPACE/**','.github/workflows/storyspace.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: STORYSPACE/backend/pom.xml
+      - name: Backend tests
+        run: mvn -B test
+        working-directory: STORYSPACE/backend
+      - name: Frontend syntax
+        run: node --check STORYSPACE/web/app.js
