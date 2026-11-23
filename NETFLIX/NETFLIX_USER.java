@@ -719,11 +719,11 @@ public class NETFLIX_USER {
 
     private String hashPassword(String password, byte[] salt) {
         char[] passwordChars = password.toCharArray();
-        javax.crypto.spec.PBEKeySpec spec = new java.security.spec.PBEKeySpec(
+        javax.crypto.spec.PBEKeySpec spec = new javax.crypto.spec.PBEKeySpec(
                 passwordChars, salt, 120000, 256);
         try {
             javax.crypto.SecretKeyFactory factory =
-                    java.security.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+                    javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
             byte[] hash = factory.generateSecret(spec).getEncoded();
             return java.util.Base64.getEncoder().encodeToString(hash);
         } catch (java.security.GeneralSecurityException unavailable) {
