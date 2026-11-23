@@ -100,7 +100,7 @@ public class PlaybackQueue {
             return null;
         }
         Movies current = getCurrent();
-        if (current != null) {
+        if (current != null && !(repeatOne && current != null)) {
             addToHistory(current);
         }
         if (repeatOne && current != null) {
@@ -250,10 +250,14 @@ public class PlaybackQueue {
     }
 
     public void setRepeatOne(boolean repeatOne) {
+        if (this.repeatOne == repeatOne) {
+            return;
+        }
         this.repeatOne = repeatOne;
         if (repeatOne) {
             repeatAll = false;
         }
+        touch();
     }
 
     public boolean isRepeatOne() {
@@ -261,7 +265,8 @@ public class PlaybackQueue {
     }
 
     public boolean setPlaybackSpeed(double speed) {
-        if (speed < 0.25 || speed > 4.0) {
+        if (Double.isNaN(speed) || Double.isInfinite(speed)
+                || speed < 0.25 || speed > 4.0) {
             return false;
         }
         playbackSpeed = speed;
