@@ -58,6 +58,7 @@ if (!androidWorkflow.includes("runs-on: macos-latest") || !androidWorkflow.inclu
 if (!androidWorkflow.includes("cancel-in-progress: true")) throw new Error("Superseded Android emulator workflows must be cancelled");
 if (!androidWorkflow.includes("Capture emulator diagnostics")) throw new Error("Android emulator failure diagnostics step missing");
 if (!androidWorkflow.includes('dump resources app/build/outputs/apk/debug/app-debug.apk')) throw new Error("Android TV banner must be verified through the APK resource table");
+for (const workflowPath of ["../.github/workflows/storyspace.yml", "../.github/workflows/storyspace-desktop.yml", "../.github/workflows/storyspace-ios.yml"]) if (!read(workflowPath).includes("cancel-in-progress: true")) throw new Error("Superseded Storyspace CI runs must be cancelled");
 const emulatorSmoke = path.join(__dirname, "android-tv", "emulator-smoke.sh");
 if (!fs.existsSync(emulatorSmoke)) throw new Error("Android emulator smoke script missing");
 execFileSync("bash", ["-n", emulatorSmoke], { stdio: "pipe" });
