@@ -73,7 +73,7 @@ jobs:
             exit 1
           fi
           case "$APP_IDENTIFIER" in
-            *.io.storyspace.app|*. *) ;;
+            *".io.storyspace.app"|*".*" ) ;;
             *) echo "::error::Provisioning profile is not compatible with io.storyspace.app."; exit 1 ;;
           esac
 
