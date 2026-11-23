@@ -280,8 +280,18 @@ public class NETFLIX_SMOKE_TEST {
         require(!party.invite(outsider), "ended party should not accept invitations");
         require(!party.sendChat(host, "after end"), "ended party should reject chat");
         require(!party.muteGuest(guest), "ended party should not allow muting");
+        require(!party.setPlaybackPosition(30), "ended party should reject playback seeks");
+        party.play();
+        require(!party.isPlaying(), "ended party should not restart playback implicitly");
+        require(!party.syncGuestPosition(30), "ended party should reject guest synchronization");
+        require(!party.synchronizeAllGuests(30), "ended party should reject host synchronization");
         party.restartParty();
         require(party.isPartyActive(), "restart should reactivate party");
+        require(!party.isPlaying(), "restart should begin paused");
+        require(party.getPlaybackPosition() == 0, "restart should reset playback position");
+        require(!party.isMuted(guest), "restart should clear stale mute state");
+        party.play();
+        require(party.isPlaying(), "active party should play after explicit restart");
     }
 
     private static void testPlaybackQueueRecoveryAfterEnd() {
