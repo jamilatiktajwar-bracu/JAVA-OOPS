@@ -89,6 +89,14 @@ public class NetflixSmokeTest {
         check(!promo.redeem(promoSubscription), "single-use promo cannot be redeemed twice");
         PromoCode invalidPromo = new PromoCode("INVALID", 120.0, 2);
         check(!invalidPromo.isValid(), "invalid promo discount is rejected");
+        check(!new PromoCode("  ", 10.0, 1).isValid(),
+                "blank promo code is invalid rather than defaulting");
+        check(!new PromoCode("ZERO-USE", 10.0, 0).isValid(),
+                "promo with no uses allowed is invalid");
+        MovieReview cappedReview = new MovieReview("Test", 9.5, "Good");
+        cappedReview.addHelpfulVote();
+        cappedReview.addNotHelpfulVote();
+        check(cappedReview.getHelpfulnessScore() == 0, "review votes balance");
 
         PaymentWallet wallet = new PaymentWallet(2);
         PaymentMethod paymentA = new PaymentMethod("Card", "12345678", "Test");
