@@ -241,7 +241,9 @@ public class WatchParty {
     }
 
     public boolean muteGuest(NETFLIX_USER guest) {
-        if (guest == null || mutedGuestCount >= mutedGuests.length
+        // Only active-party guests may be muted; never allow the host or outsiders.
+        if (guest == null || !partyActive || guest == host
+                || !isParticipant(guest) || mutedGuestCount >= mutedGuests.length
                 || isMuted(guest)) {
             return false;
         }
