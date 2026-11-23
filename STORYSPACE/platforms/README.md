@@ -1,5 +1,7 @@
 # Storyspace multi-platform development
 
+See [STATUS.md](STATUS.md) for the current platform matrix and remaining release blockers.
+
 ## Cross-platform strategy
 - **Web / PWA:** installable web client, offline shell cache, responsive layouts.
 - **Windows/macOS/Linux:** Electron wrapper scaffold using the shared web client.
