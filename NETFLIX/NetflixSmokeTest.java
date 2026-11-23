@@ -116,6 +116,24 @@ public class NetflixSmokeTest {
         check(billing.getFailedPaymentCount() == 0,
                 "paused subscription ignores failed payment event");
         check(billing.resumeBilling(), "paused subscription resumes");
+        NETFLIX_USER profileOwner = new NETFLIX_USER("profile-owner");
+        NETFLIX_USER childProfile = new NETFLIX_USER("child-profile");
+        check(!profileOwner.addFamilyProfile(profileOwner),
+                "profile cannot add itself to family profiles");
+        check(profileOwner.addFamilyProfile(childProfile),
+                "family profile can be added");
+        check(!profileOwner.addFamilyProfile(childProfile),
+                "duplicate family profile is rejected");
+        check(!profileOwner.setPassword("short"),
+                "password setter rejects short passwords");
+        check(profileOwner.setPassword("long-enough-password"),
+                "password setter accepts longer password");
+        Movies completedMovie = new Movies("Nearly Finished", "Drama", 100);
+        check(profileOwner.updateViewingProgress(completedMovie, 96),
+                "new near-complete movie progress accepted");
+        check(completedMovie.isWatched()
+                && profileOwner.getContinueWatchingCount() == 0,
+                "near-complete movie is marked watched without queue residue");
         System.out.println("NETFLIX_SMOKE_TEST_OK");
     }
 
