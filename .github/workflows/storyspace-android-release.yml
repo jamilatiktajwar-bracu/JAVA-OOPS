@@ -28,14 +28,14 @@ jobs:
 
       - name: Validate Android signing configuration
         env:
-          ANDROID_KEYSTORE_BASE64: \${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: \${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: \${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: \${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
-            if [ -z "\${!name}" ]; then
+            if [ -z "${!name}" ]; then
               echo "::error::Missing required GitHub Actions secret: $name"
               exit 1
             fi
@@ -63,7 +63,7 @@ jobs:
       - name: Configure API endpoint
         working-directory: STORYSPACE/platforms/mobile
         env:
-          STORYSPACE_API_ROOT: \${{ vars.STORYSPACE_API_ROOT }}
+          STORYSPACE_API_ROOT: ${{ vars.STORYSPACE_API_ROOT }}
         run: node configure-api-root.js
 
       - name: Sync web assets and native plugins
@@ -76,7 +76,7 @@ jobs:
       - name: Install Android signing key
         working-directory: STORYSPACE/platforms/mobile
         env:
-          ANDROID_KEYSTORE_BASE64: \${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/storyspace-release.keystore"
@@ -85,16 +85,16 @@ jobs:
       - name: Configure Gradle release signing
         working-directory: STORYSPACE/platforms/mobile
         env:
-          ANDROID_KEYSTORE_PATH: \${{ runner.temp }}/storyspace-release.keystore
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/storyspace-release.keystore
         run: node prepare-release-gradle.js android/app/build.gradle
 
       - name: Build signed Android App Bundle
         working-directory: STORYSPACE/platforms/mobile/android
         env:
-          ANDROID_KEYSTORE_PATH: \${{ runner.temp }}/storyspace-release.keystore
-          ANDROID_KEYSTORE_PASSWORD: \${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: \${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: \${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/storyspace-release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew bundleRelease --no-daemon
 
       - name: Verify Android App Bundle signature
