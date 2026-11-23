@@ -11,6 +11,7 @@ public class NETFLIX_SMOKE_TEST {
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
         testPromoCodeRedemptionConsistency();
+        testNetflixUserHistoryConsistency();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -174,6 +175,19 @@ public class NETFLIX_SMOKE_TEST {
         require(second.getRemainingUses() == 5, "failed redemption should not consume promo usage");
         subscription.removeCoupon();
         require(second.redeem(subscription), "second promo should redeem after active coupon is removed");
+    }
+
+    private static void testNetflixUserHistoryConsistency() {
+        NETFLIX_USER user = new NETFLIX_USER("history-tester");
+        Movies movie = new Movies("History completion", "Drama", 100);
+        require(user.updateViewingProgress(movie, 40), "partial progress should be tracked");
+        require(user.updateViewingProgress(movie, 95), "completion progress should be accepted");
+        require(user.getContinueWatchingCount() == 0, "completed movie should leave continue-watching");
+        require(user.isInWatchHistory(movie), "completed movie should enter watch history");
+        require(user.watchMovie(movie), "watching an already-recorded movie should succeed");
+        require(user.getWatchHistoryCount() == 1, "re-watch must not duplicate history");
+        require(!user.addFamilyProfile(user), "profile must not add itself as a family profile");
+        require(user.getTotalWatchedMinutes() == 100, "watch time should count unique history entries");
     }
 
     private static void require(boolean condition, String message) {
