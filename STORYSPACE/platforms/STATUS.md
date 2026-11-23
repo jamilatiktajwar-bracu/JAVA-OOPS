@@ -5,7 +5,7 @@ This repository contains a shared web client and platform shells. The current cr
 | Platform | Foundation | CI build | Release readiness |
 | --- | --- | --- | --- |
 | Web / PWA | Responsive client, manifest, offline shell | Syntax + configuration smoke checks | Needs hosted API, QA, deployment |
-| Android phone | Capacitor shell, native lifecycle/network/back/haptic plugins | Debug APK workflow | Debug-signed only; physical-device QA required |
+| Android phone | Capacitor shell, native lifecycle/network/back/haptic plugins | Debug APK + Android emulator launch smoke test | Debug-signed only; physical-device QA required |
 | iOS / iPadOS | Capacitor native shell | Unsigned iOS Simulator workflow | Simulator archive only; signing and device QA pending |
 | Windows | Electron shell | NSIS package workflow | Unsigned developer installer |
 | macOS | Electron shell | DMG package workflow | Unsigned; notarization/signing pending |
@@ -20,6 +20,12 @@ This repository contains a shared web client and platform shells. The current cr
 - **Desktop:** `storyspace-windows`, `storyspace-macos`, and `storyspace-linux` → development packages.
 
 Artifacts are only available for successful runs and expire after 14 days. Debug and Simulator artifacts are not signed production releases. Optional manual signed-build workflows are available for Android AAB and iOS IPA once the required signing secrets are configured.
+
+## Recent QA and security improvements
+
+- Native Android D-pad automatically enables TV mode without losing the first key event; a smoke assertion guards this behavior.
+- APK workflow verifies the Leanback manifest and compiled TV banner resource, then boots the APK in an Android emulator, sends remote-arrow events, checks for fatal crash signatures, and uploads a screenshot.
+- Backend CORS now uses explicit configurable origins (`CORS_ALLOWED_ORIGINS`), not a wildcard. Production profile refuses the default development token secret; token lifetime is bounded and unit-tested.
 
 ## API endpoint configuration
 Set the repository variable `STORYSPACE_API_ROOT` to the absolute HTTPS base URL of the deployed Storyspace API (for example, `https://api.example.com/api`). Android, iOS Simulator, and desktop build workflows inject this value into the web client before packaging. Never place API credentials or signing secrets in this variable. When it is unset, native sign-in shows a configuration message instead of attempting to call the packaged app's local WebView origin. Local web development still defaults to `http://localhost:8080/api`.
