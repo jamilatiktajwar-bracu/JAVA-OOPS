@@ -403,7 +403,7 @@ public class Movies {
         }
         Movies[] matches = new Movies[movieCount];
         int count = 0;
-        String search = keyword.trim().toLowerCase();
+        String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
         for (int i = 0; i < movieCount; i++) {
             Movies movie = movieList[i];
             if (movie.getTitle().toLowerCase(java.util.Locale.ROOT).contains(search)
@@ -653,7 +653,7 @@ public class Movies {
     }
 
     public boolean setRating(double rating) {
-        if (rating < 0.0 || rating > 10.0) {
+        if (!Double.isFinite(rating) || rating < 0.0 || rating > 10.0) {
             return false;
         }
         this.rating = rating;
