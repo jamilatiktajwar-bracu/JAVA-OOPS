@@ -89,7 +89,7 @@ public class ViewingSession {
             return false;
         }
         this.watchedMinutes = watchedMinutes;
-        this.completed = watchedMinutes >= totalMinutes;
+        this.completed = totalMinutes > 0 && watchedMinutes >= totalMinutes;
         if (completed && movie != null) {
             movie.markWatched();
         }
@@ -101,26 +101,41 @@ public class ViewingSession {
     }
 
     public boolean resumeAt(int watchedMinutes) {
-        if (completed) {
-            this.completed = false;
-        }
-        if (!pauseAt(watchedMinutes)) {
+        if (watchedMinutes < 0 || watchedMinutes > totalMinutes) {
             return false;
         }
-        if (pausedAt > 0) {
-            totalPausedMillis += System.currentTimeMillis() - pausedAt;
-            pausedAt = 0;
+        this.watchedMinutes = watchedMinutes;
+        this.completed = totalMinutes > 0 && watchedMinutes >= totalMinutes;
+        if (completed) {
+            if (movie != null) {
+                movie.markWatched();
+            }
+            playbackActive = false;
+            return true;
         }
+        accruePausedDuration();
         playbackActive = true;
         return true;
+    }
+
+    private void accruePausedDuration() {
+        if (pausedAt > 0) {
+            long now = System.currentTimeMillis();
+            long elapsed = Math.max(0L, now - pausedAt);
+            if (Long.MAX_VALUE - totalPausedMillis < elapsed) {
+                totalPausedMillis = Long.MAX_VALUE;
+            } else {
+                totalPausedMillis += elapsed;
+            }
+            pausedAt = 0;
+        }
     }
 
     public int getProgressPercent() {
         if (totalMinutes == 0) {
             return 0;
         }
-        int progress = (watchedMinutes * 100) / totalMinutes;
-        return Math.min(progress, 100);
+        return (int) Math.min(100L, ((long) watchedMinutes * 100L) / totalMinutes);
     }
 
     public void setQuality(String quality) {
@@ -291,7 +306,7 @@ public class ViewingSession {
     }
 
     public int getRemainingSeconds() {
-        return getRemainingMinutes() * 60;
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, (long) getRemainingMinutes() * 60L));
     }
 
     public int getEstimatedBufferSeconds() {
@@ -320,14 +335,20 @@ public class ViewingSession {
     }
 
     public void startPlayback() {
+        if (completed) {
+            return;
+        }
+        accruePausedDuration();
         playbackActive = true;
-        pausedAt = 0;
+        addEvent("PLAYBACK_STARTED");
     }
 
     public void stopPlayback() {
-        playbackActive = false;
-        pausedAt = System.currentTimeMillis();
-        addEvent("PLAYBACK_STOPPED");
+        if (playbackActive) {
+            playbackActive = false;
+            pausedAt = System.currentTimeMillis();
+            addEvent("PLAYBACK_STOPPED");
+        }
     }
 
     public boolean setIntroRange(int startSeconds, int endSeconds) {
@@ -416,7 +437,7 @@ public class ViewingSession {
     }
 
     public int getTotalSeconds() {
-        return totalMinutes * 60;
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, (long) totalMinutes * 60L));
     }
 
     public void setLowDataMode(boolean enabled) {
@@ -478,7 +499,8 @@ public class ViewingSession {
         long endTime = playbackActive
                 ? System.currentTimeMillis()
                 : (pausedAt > 0 ? pausedAt : System.currentTimeMillis());
-        return Math.max(0, endTime - startedAt - totalPausedMillis);
+        long elapsed = Math.max(0L, endTime - startedAt);
+        return Math.max(0L, elapsed - Math.min(elapsed, totalPausedMillis));
     }
 
     public void addEvent(String eventName) {
