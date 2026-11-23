@@ -57,7 +57,7 @@ public class RecommendationEngine {
     }
 
     private boolean isCandidate(Movies movie) {
-        if (movie == null || user.isFavourite(movie) || user.isInWatchHistory(movie)) {
+        if (user == null || movie == null || user.isFavourite(movie) || user.isInWatchHistory(movie)) {
             return false;
         }
         if (user.isParentalControlEnabled() && movie.getAgeRating() > user.getMaximumAgeRating()) {
@@ -241,8 +241,8 @@ public class RecommendationEngine {
     }
 
     public String explainRecommendation(Movies movie) {
-        if (movie == null) {
-            return "No movie";
+        if (movie == null || user == null) {
+            return "No movie or user context";
         }
         if (movie.getGenre().equalsIgnoreCase(user.getFavouriteGenre())) {
             return "Matches your favourite genre: " + movie.getGenre();
@@ -263,19 +263,27 @@ public class RecommendationEngine {
         if (limit <= 0) {
             return new Movies[0];
         }
+        if (user == null) {
+            return new Movies[0];
+        }
         Movies[] all = Movies.getAllMovies();
-        Movies[] result = new Movies[all.length];
+        Movies[] candidates = new Movies[all.length];
         int count = 0;
         for (Movies movie : all) {
             if (isCandidate(movie)
                     && !movie.getGenre().equalsIgnoreCase(user.getFavouriteGenre())) {
-                result[count++] = movie;
+                candidates[count++] = movie;
             }
         }
         int size = Math.min(limit, count);
+        // Partial Fisher-Yates shuffle: unique, unbiased picks without replacement.
         Movies[] surprise = new Movies[size];
         for (int i = 0; i < size; i++) {
-            surprise[i] = result[(int) (Math.random() * count)];
+            int selected = i + (int) (Math.random() * (count - i));
+            Movies temporary = candidates[i];
+            candidates[i] = candidates[selected];
+            candidates[selected] = temporary;
+            surprise[i] = candidates[i];
         }
         return surprise;
     }
