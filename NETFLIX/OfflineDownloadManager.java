@@ -64,6 +64,10 @@ public class OfflineDownloadManager {
         if (index < 0) {
             return false;
         }
+        if (failed[index] || (completed[index] && percent < 100)
+                || percent < progress[index]) {
+            return false;
+        }
         boolean wasCompleted = completed[index];
         progress[index] = percent;
         completed[index] = percent >= 100;
@@ -159,7 +163,7 @@ public class OfflineDownloadManager {
     }
 
     public void setStorageCapacityMB(long capacityMB) {
-        if (capacityMB >= 0) {
+        if (capacityMB >= usedStorageMB) {
             storageCapacityMB = capacityMB;
         }
     }
@@ -242,7 +246,7 @@ public class OfflineDownloadManager {
 
     public boolean markFailed(Movies movie, String reason) {
         int index = findMovie(movie);
-        if (index < 0) {
+        if (index < 0 || completed[index]) {
             return false;
         }
         if (!failed[index]) {
@@ -265,6 +269,7 @@ public class OfflineDownloadManager {
         progress[index] = 0;
         completed[index] = false;
         downloadStartedAt[index] = System.currentTimeMillis();
+        downloadCompletedAt[index] = 0;
         return true;
     }
 
