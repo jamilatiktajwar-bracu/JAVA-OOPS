@@ -69,3 +69,9 @@ Remove-Item *.class
 ## Architecture review
 
 See [ARCHITECTURE_REVIEW.md](ARCHITECTURE_REVIEW.md) for the architecture findings, completed hardening, and a prioritized modernization roadmap.
+
+## Catalog service refactor
+
+Basic catalog ownership and lifecycle operations now live in `MovieCatalog` (add, remove, lookup, count, clear). The original static methods on `Movies` remain as compatibility facades so existing project code and assignment-facing examples continue to work. Additional catalog queries are being migrated incrementally.
+
+The smoke suite now covers catalog lifecycle behavior, duplicate-title rejection, invalid indexes, NaN ratings, saturating watch-time arithmetic, and locale-independent keyword matching.
