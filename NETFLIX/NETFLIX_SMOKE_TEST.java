@@ -8,6 +8,7 @@ public class NETFLIX_SMOKE_TEST {
         testLocaleIndependentMovieSearch();
         testSubscriptionPlanNormalization();
         testMovieConstructorNormalization();
+        testMovieCatalogServiceAndStatisticsBoundaries();
         testMovieMetadataArrayHandling();
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
@@ -77,6 +78,30 @@ public class NETFLIX_SMOKE_TEST {
         require(review.getHelpfulnessScore() == 0, "vote score should reflect both vote types");
         require(review.report(), "report should be accepted");
         require(review.needsReview(), "reported review should require moderation");
+    }
+
+    private static void testMovieCatalogServiceAndStatisticsBoundaries() {
+        Movies.clearMovies();
+        Movies movie = MovieCatalog.addMovie("Catalog entry", "Drama", 120);
+        require(movie != null, "catalog service should add valid movies");
+        require(MovieCatalog.size() == 1, "catalog service should expose its count");
+        require(MovieCatalog.get(0) == movie, "catalog lookup should return the added movie");
+        require(MovieCatalog.addMovie("catalog ENTRY", "Drama", 90) == null,
+                "catalog should reject duplicate titles case-insensitively");
+        require(!MovieCatalog.removeMovie(-1), "catalog should reject invalid indices");
+        require(MovieCatalog.removeMovie("Catalog entry"), "catalog should remove by title");
+        require(MovieCatalog.size() == 0, "catalog count should update after removal");
+
+        Movies stats = new Movies("Statistics boundary", "Drama", 1);
+        require(!stats.addUserRating(Double.NaN), "NaN user ratings should be rejected");
+        require(!stats.addUserRating(Double.POSITIVE_INFINITY), "infinite user ratings should be rejected");
+        stats.recordWatchSeconds(Integer.MAX_VALUE);
+        stats.recordWatchSeconds(Integer.MAX_VALUE);
+        require(stats.getTotalWatchSeconds() == Integer.MAX_VALUE,
+                "watch time should saturate instead of overflowing");
+        require(stats.getCompletionCount() == 2,
+                "valid full-duration watch records should increment completion count");
+        Movies.clearMovies();
     }
 
     private static void testLocaleIndependentMovieSearch() {
