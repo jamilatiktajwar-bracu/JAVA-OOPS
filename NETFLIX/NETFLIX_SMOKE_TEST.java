@@ -225,9 +225,10 @@ public class NETFLIX_SMOKE_TEST {
                 "bulk add should accept unique movies");
         require(playlist.getNextMovie() == first, "cursor should begin at first item");
         require(playlist.removeMovie(first), "removing an item before cursor should succeed");
-        require(playlist.getNextMovie() == third, "cursor should stay aligned after removing passed item");
+        require(playlist.getNextMovie() == second, "cursor should stay aligned after removing passed item");
         require(playlist.moveMovie(1, 0), "moving item should succeed");
         require(playlist.getMovieAt(0) == third, "move should reorder playlist");
+        require(playlist.getNextMovie() == third, "cursor should follow moved next item");
         require(playlist.getTotalDuration() == 500, "playlist duration should sum movie lengths");
         require(playlist.getRemainingCapacity() == 1, "capacity should track additions");
         require(!playlist.addMovie(null), "null movie should not be accepted");
