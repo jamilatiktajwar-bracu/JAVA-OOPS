@@ -5,6 +5,7 @@ public class NETFLIX_SMOKE_TEST {
         testViewingSession();
         testMovieReview();
         testLocaleIndependentMovieSearch();
+        testSubscriptionPlanNormalization();
         System.out.println("Netflix smoke tests passed.");
     }
 
@@ -85,6 +86,16 @@ public class NETFLIX_SMOKE_TEST {
             java.util.Locale.setDefault(original);
             Movies.removeMovie("INDIGO");
         }
+    }
+
+    private static void testSubscriptionPlanNormalization() {
+        SubscriptionPlan invalid = new SubscriptionPlan("Invalid", Double.NaN, 0, 5000);
+        require(invalid.getMonthlyFee() == 0.0, "invalid fee should normalize to zero");
+        require(invalid.getScreens() == 1, "invalid screen count should normalize to one");
+        require(invalid.getResolutionQuality() == 720, "invalid resolution should normalize to default");
+        require(!invalid.isDownloadsEnabled(), "download capability should follow normalized fee");
+        require(!invalid.isSpatialAudioEnabled(), "spatial audio should follow normalized resolution");
+        require(SubscriptionPlan.maxPlan().isSpatialAudioEnabled(), "Max plan should enable spatial audio");
     }
 
     private static void require(boolean condition, String message) {
