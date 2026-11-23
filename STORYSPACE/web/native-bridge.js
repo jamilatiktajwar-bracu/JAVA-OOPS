@@ -36,6 +36,10 @@
   };
   window.StoryspaceNative = bridge;
   document.addEventListener("DOMContentLoaded", () => bridge.setup());
+  const notice = () => document.getElementById("nativeNetworkNotice");
+  window.addEventListener("storyspace:network", e => { const n=notice(); if(n) n.hidden=!!e.detail?.connected; });
+  window.addEventListener("offline", () => { const n=notice(); if(n) n.hidden=false; });
+  window.addEventListener("online", () => { const n=notice(); if(n) n.hidden=true; });
   document.addEventListener("click", e => {
     if (native && e.target.closest("button,[role=button],.movie-card")) bridge.haptic("light");
   }, { passive: true });
