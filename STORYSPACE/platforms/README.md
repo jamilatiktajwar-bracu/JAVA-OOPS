@@ -43,7 +43,7 @@ A GitHub Actions workflow automatically generates a temporary Android project, s
 - After a successful run, download the `storyspace-android-debug` artifact from the workflow run. It contains `app-debug.apk` (debug-signed; for testing only).
 - Workflow build does not create a Play Store release or signed production package.
 
-Local build (Android SDK/JDK 17 required):
+Local build (Android SDK/JDK 21 required):
 ```bash
 cd STORYSPACE/platforms/mobile
 npm install
