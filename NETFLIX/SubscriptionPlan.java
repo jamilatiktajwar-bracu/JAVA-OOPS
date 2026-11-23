@@ -14,8 +14,8 @@ public class SubscriptionPlan {
         this.screens = screens > 0 ? screens : 1;
         this.resolutionQuality = resolutionQuality >= 480 && resolutionQuality <= 4320
                 ? resolutionQuality : 720;
-        this.downloadsEnabled = monthlyFee > 0.0;
-        this.spatialAudioEnabled = resolutionQuality >= 2160;
+        this.downloadsEnabled = this.monthlyFee > 0.0;
+        this.spatialAudioEnabled = this.resolutionQuality >= 2160;
     }
 
     public static SubscriptionPlan freePlan() {
