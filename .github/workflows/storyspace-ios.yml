@@ -1,0 +1,48 @@
+name: Storyspace iOS Simulator Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'STORYSPACE/web/**'
+      - 'STORYSPACE/platforms/mobile/**'
+      - '.github/workflows/storyspace-ios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  simulator-build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Capacitor dependencies
+        working-directory: STORYSPACE/platforms/mobile
+        run: npm install
+      - name: Generate iOS project
+        working-directory: STORYSPACE/platforms/mobile
+        run: npx cap add ios
+      - name: Sync web assets and native plugins
+        working-directory: STORYSPACE/platforms/mobile
+        run: npx cap sync ios
+      - name: Build iOS Simulator app
+        working-directory: STORYSPACE/platforms/mobile
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator \
+            -configuration Debug -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Archive simulator app
+        working-directory: STORYSPACE/platforms/mobile
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/Build/Products/Debug-iphonesimulator/App.app Storyspace-iOS-Simulator.zip
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: storyspace-ios-simulator
+          path: STORYSPACE/platforms/mobile/Storyspace-iOS-Simulator.zip
+          if-no-files-found: error
+          retention-days: 14
