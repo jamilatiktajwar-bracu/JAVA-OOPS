@@ -27,6 +27,9 @@ npm start
 ```
 Developer wrapper only; release installers need platform-specific packaging, signing, and notarization.
 
+## Mobile app polish milestone
+The mobile shell now includes native plugin setup for app lifecycle/back handling, haptic taps, connectivity monitoring, status bar, splash screen, keyboard resize, safe-area padding, and bottom tab navigation on narrow screens. Browser fallback remains active without native plugins.
+
 ## Mobile packaging
 ```bash
 cd STORYSPACE/platforms/mobile
