@@ -13,6 +13,7 @@ public class NETFLIX_SMOKE_TEST {
         testPromoCodeRedemptionConsistency();
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
+        testColdStartRecommendationLimit();
         testPlaylistCursorAndDurationSafety();
         testWatchPartyParticipationAndBoundaries();
         System.out.println("Netflix smoke tests passed.");
@@ -229,6 +230,38 @@ public class NETFLIX_SMOKE_TEST {
         require(noUser.getSurpriseRecommendations(3).length == 0, "null-user surprise should return empty");
         require("No movie or user context".equals(noUser.explainRecommendation(new Movies("Explain", "Drama", 90))),
                 "explanation should handle missing user safely");
+    }
+
+    private static void testColdStartRecommendationLimit() {
+        String suffix = Long.toString(System.nanoTime());
+        String[] titles = new String[] {
+            "Cold Start Limit A " + suffix,
+            "Cold Start Limit B " + suffix,
+            "Cold Start Limit C " + suffix,
+            "Cold Start Limit D " + suffix
+        };
+        try {
+            for (int i = 0; i < titles.length; i++) {
+                require(Movies.addMovie(titles[i], "Test Genre", 90),
+                        "temporary cold-start catalog movie should be added");
+                Movies movie = Movies.searchByTitle(titles[i])[0];
+                require(movie.setRating(10.0 - i),
+                        "temporary movie should accept a valid rating");
+            }
+
+            NETFLIX_USER user = new NETFLIX_USER("cold-start-limit-" + suffix);
+            RecommendationEngine engine = new RecommendationEngine(user);
+            require(engine.getColdStartRecommendations(2).length == 2,
+                    "cold-start helper should honor its requested limit");
+            require(engine.recommend(2).length == 2,
+                    "cold-start recommend should honor its requested limit");
+            require(engine.recommend(1).length <= 1,
+                    "repeat cold-start recommendation should still honor its limit");
+        } finally {
+            for (String title : titles) {
+                Movies.removeMovie(title);
+            }
+        }
     }
 
     private static void testPlaylistCursorAndDurationSafety() {
