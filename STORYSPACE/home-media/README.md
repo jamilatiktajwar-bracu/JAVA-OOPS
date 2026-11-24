@@ -13,44 +13,44 @@ This optional service streams owner-approved media from your Windows PC using HT
 ## 1. Start the local media server
 
 1. Open PowerShell in this folder.
-2. If script execution is blocked, run \`Set-ExecutionPolicy -Scope Process Bypass\` in that window.
-3. Run \`./Start-Storyspace-Media.ps1\`.
-4. Keep the window open. Confirm the health endpoint reports \`ok: true\`: \`http://127.0.0.1:8787/health\`.
+2. If script execution is blocked, run `Set-ExecutionPolicy -Scope Process Bypass` in that window.
+3. Run `./Start-Storyspace-Media.ps1`.
+4. Keep the window open. Confirm the health endpoint reports `ok: true`: `http://127.0.0.1:8787/health`.
 
-The first run creates \`%LOCALAPPDATA%\\Storyspace\\HomeMedia\\media-host.json\` with two separate secrets:
+The first run creates `%LOCALAPPDATA%\Storyspace\HomeMedia\media-host.json` with two separate secrets:
 
-- \`adminToken\`: private owner-only approval/admin access. Never share it or paste it into a public issue, repository, or screenshot.
-- \`uploadToken\`: uploader invitation key. Share only with people you trust to submit media. It is a shared invitation key, not per-user accounts; rotate it by changing the value and restarting the service if it leaks.
+- `adminToken`: private owner-only approval/admin access. Never share it or paste it into a public issue, repository, or screenshot.
+- `uploadToken`: uploader invitation key. Share only with people you trust to submit media. It is a shared invitation key, not per-user accounts; rotate it by changing the value and restarting the service if it leaks.
 
 The startup script upgrades older config files by generating a missing upload invitation key. Keep the config file private.
 
 ## 2. Configure a stable HTTPS address (one-time setup)
 
-Install Cloudflared on Windows and ensure \`cloudflared --version\` works in a new PowerShell window. Then, from this folder, run:
+Install Cloudflared on Windows and ensure `cloudflared --version` works in a new PowerShell window. Then, from this folder, run:
 
-\`\`\`powershell
+```powershell
 ./Setup-Cloudflare-Tunnel.ps1 -TunnelName storyspace-home-media -Hostname media.yourdomain.com
-\`\`\`
+```
 
-Replace \`media.yourdomain.com\` with a hostname in a domain/zone already managed by your Cloudflare account. The script opens Cloudflare login if this PC has not been authorized, creates a named tunnel, creates the DNS route, and saves a local config under \`%USERPROFILE%\\.cloudflared\\storyspace-home-media.yml\`. Cloudflare login and domain authorization require your action; this repository cannot do them for you.
+Replace `media.yourdomain.com` with a hostname in a domain/zone already managed by your Cloudflare account. The script opens Cloudflare login if this PC has not been authorized, creates a named tunnel, creates the DNS route, and saves a local config under `%USERPROFILE%\.cloudflared\storyspace-home-media.yml`. Cloudflare login and domain authorization require your action; this repository cannot do them for you.
 
-For an existing named tunnel created on this same PC, pass its UUID with \`-TunnelId\` to skip tunnel creation. Do not commit the local Cloudflare credentials or config files.
+For an existing named tunnel created on this same PC, pass its UUID with `-TunnelId` to skip tunnel creation. Do not commit the local Cloudflare credentials or config files.
 
 For each session, keep the media server window running, then open a second PowerShell window and run:
 
-\`\`\`powershell
+```powershell
 ./Run-Storyspace-Tunnel.ps1
-\`\`\`
+```
 
-The tunnel forwards HTTPS requests to \`http://127.0.0.1:8787\`. Do not configure router port forwarding, bind the media server to \`0.0.0.0\`, or expose port 8787 directly. Both the PC and both processes must remain running for uploads and playback. A Quick Tunnel is temporary and is not a substitute for this named tunnel.
+The tunnel forwards HTTPS requests to `http://127.0.0.1:8787`. Do not configure router port forwarding, bind the media server to `0.0.0.0`, or expose port 8787 directly. Both the PC and both processes must remain running for uploads and playback. A Quick Tunnel is temporary and is not a substitute for this named tunnel.
 
 ## 3. Connect Storyspace and upload
 
 1. Open the Storyspace app and choose **Upload**.
-2. Enter the public HTTPS address from the tunnel setup (for example, \`https://media.yourdomain.com\`).
-3. Enter the \`uploadToken\` value from the private \`media-host.json\` file and save the connection.
+2. Enter the public HTTPS address from the tunnel setup (for example, `https://media.yourdomain.com`).
+3. Enter the `uploadToken` value from the private `media-host.json` file and save the connection.
 4. Enter a title, select an MP4/M4V/WebM/MOV file, and start the upload. The server accepts files up to 15 GB in 8 MiB resumable chunks.
-5. Open the owner approval section in Upload, enter the private \`adminToken\`, load pending uploads, then approve or reject each item.
+5. Open the owner approval section in Upload, enter the private `adminToken`, load pending uploads, then approve or reject each item.
 6. Approved items appear in the Community Library and stream through the HTTPS tunnel.
 
 The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified.
