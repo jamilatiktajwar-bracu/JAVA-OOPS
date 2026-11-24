@@ -167,6 +167,8 @@ public class NetflixPlaylist {
     }
 
     public void sortByTitle(boolean ascending) {
+        Movies nextMovie = getCursorMovie();
+        boolean cursorAtEnd = currentPosition >= movieCount;
         for (int i = 0; i < movieCount - 1; i++) {
             for (int j = i + 1; j < movieCount; j++) {
                 int comparison = movies[i].getTitle()
@@ -179,10 +181,13 @@ public class NetflixPlaylist {
                 }
             }
         }
+        restoreCursor(nextMovie, cursorAtEnd);
         touch();
     }
 
     public void sortByRating(boolean descending) {
+        Movies nextMovie = getCursorMovie();
+        boolean cursorAtEnd = currentPosition >= movieCount;
         for (int i = 0; i < movieCount - 1; i++) {
             for (int j = i + 1; j < movieCount; j++) {
                 if ((descending && movies[i].getRating() < movies[j].getRating())
@@ -193,10 +198,13 @@ public class NetflixPlaylist {
                 }
             }
         }
+        restoreCursor(nextMovie, cursorAtEnd);
         touch();
     }
 
     public void sortByReleaseYear(boolean descending) {
+        Movies nextMovie = getCursorMovie();
+        boolean cursorAtEnd = currentPosition >= movieCount;
         for (int i = 0; i < movieCount - 1; i++) {
             for (int j = i + 1; j < movieCount; j++) {
                 if ((descending && movies[i].getReleaseYear() < movies[j].getReleaseYear())
@@ -207,17 +215,34 @@ public class NetflixPlaylist {
                 }
             }
         }
+        restoreCursor(nextMovie, cursorAtEnd);
         touch();
     }
 
     public void shuffle() {
+        Movies nextMovie = getCursorMovie();
+        boolean cursorAtEnd = currentPosition >= movieCount;
         for (int i = movieCount - 1; i > 0; i--) {
             int j = (int) (Math.random() * (i + 1));
             Movies temporary = movies[i];
             movies[i] = movies[j];
             movies[j] = temporary;
         }
+        restoreCursor(nextMovie, cursorAtEnd);
         touch();
+    }
+
+    private Movies getCursorMovie() {
+        return currentPosition >= 0 && currentPosition < movieCount
+                ? movies[currentPosition] : null;
+    }
+
+    private void restoreCursor(Movies nextMovie, boolean cursorAtEnd) {
+        if (nextMovie != null) {
+            currentPosition = indexOf(nextMovie);
+        } else {
+            currentPosition = cursorAtEnd ? movieCount : 0;
+        }
     }
 
     public Movies[] filterByGenre(String genre) {
@@ -330,7 +355,9 @@ public class NetflixPlaylist {
     }
 
     private void touch() {
-        updatedAt = Math.max(System.currentTimeMillis(), updatedAt + 1);
+        if (updatedAt < Long.MAX_VALUE) {
+            updatedAt = Math.max(System.currentTimeMillis(), updatedAt + 1L);
+        }
     }
 
     public int getMovieCount() {
