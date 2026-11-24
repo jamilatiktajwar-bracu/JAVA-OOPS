@@ -245,11 +245,22 @@ async function syncAccount(){
     savePrefs();
     const saved=await api("/library");personalized.serverLibrary=Array.isArray(saved)?saved:[];
     personalized.serverLibrary.forEach(item=>{
-      const titleId=item?.title?.id,percent=Number(item?.progressPercent)||0;
-      if(titleId===undefined||percent<=0)return;
+      const titleId=item?.title?.id;
+      if(titleId===undefined||titleId===null)return;
+      const percent=Math.max(0,Math.min(100,Number(item?.progressPercent)||0));
       const title=movies.find(m=>String(m.apiId||m.id)===String(titleId));
-      if(title){title.remoteProgressPercent=Math.min(99,percent);title.progress=Math.max(Number(title.progress)||0,Math.min(99,percent));}
+      if(title&&percent>0&&percent<100){title.remoteProgressPercent=percent;title.progress=Math.max(Number(title.progress)||0,percent);}
+      const key=String(titleId),position=Number(item?.resumePositionSeconds),duration=Number(item?.durationSeconds);
+      const remoteUpdatedAt=Date.parse(item?.lastPlayedAt||"")||0,local=resumePoints[key];
+      if(Number.isFinite(position)&&Number.isFinite(duration)&&duration>0&&position>=0&&position<duration-3&&remoteUpdatedAt>(Number(local?.updatedAt)||0)){
+        resumePoints[key]={currentTime:position,duration,updatedAt:remoteUpdatedAt};
+        if(title){title.resumePoint=position;title.progress=Math.max(1,Math.min(99,percent||Math.round(position/duration*100)));}
+      }else if(percent>=100&&remoteUpdatedAt>(Number(local?.updatedAt)||0)){
+        delete resumePoints[key];
+        if(title){title.progress=0;delete title.resumePoint;}
+      }
     });
+    storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));persistLocalProfiles();
     state.list=new Set(personalized.serverLibrary.map(x=>x?.title?.id).filter(x=>x!==undefined&&x!==null));
     storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));
     const feed=await api("/catalog/for-you");
@@ -351,7 +362,11 @@ function persistPlayerProgress(force=false){
   const key=String(title.apiId||title.id);
   if(currentTime>=video.duration-3){
     delete resumePoints[key];title.progress=0;delete title.resumePoint;
-    storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));refreshContinueRow();
+    storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));persistLocalProfiles();refreshContinueRow();
+    if(personalized.token&&title.apiId&&state.list.has(title.id)){
+      lastProgressSyncAt=Date.now();lastRemoteProgress=100;
+      api("/library/"+encodeURIComponent(title.apiId)+"/progress",{method:"PATCH",body:{progressPercent:100,currentTime:video.duration,duration:video.duration}}).catch(()=>{});
+    }
     return;
   }
   if(currentTime<2)return;
@@ -368,7 +383,7 @@ function persistPlayerProgress(force=false){
   if(personalized.token&&title.apiId&&state.list.has(title.id)&&
      (force||now-lastProgressSyncAt>=60000||Math.abs(percent-lastRemoteProgress)>=10)){
     lastProgressSyncAt=now;lastRemoteProgress=percent;
-    api("/library/"+encodeURIComponent(title.apiId)+"/progress",{method:"PATCH",body:{progressPercent:percent}}).catch(()=>{});
+    api("/library/"+encodeURIComponent(title.apiId)+"/progress",{method:"PATCH",body:{progressPercent:percent,currentTime,duration:video.duration}}).catch(()=>{});
   }
 }
 function updatePlayerTimeline(){
