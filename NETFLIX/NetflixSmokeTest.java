@@ -195,6 +195,12 @@ public class NetflixSmokeTest {
                 "blank promo code is invalid rather than defaulting");
         check(!new PromoCode("ZERO-USE", 10.0, 0).isValid(),
                 "promo with no uses allowed is invalid");
+        NETFLIX_USER reviewOwner = new NETFLIX_USER("review-owner");
+        MovieReview duplicateReview = new MovieReview("reviewer", 8.0, "Nice");
+        check(reviewOwner.addReview(duplicateReview)
+                && !reviewOwner.addReview(duplicateReview)
+                && reviewOwner.getReviewCount() == 1,
+                "same review object cannot be added twice to a profile");
         MovieReview cappedReview = new MovieReview("Test", 9.5, "Good");
         cappedReview.addHelpfulVote();
         cappedReview.addNotHelpfulVote();
