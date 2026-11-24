@@ -55,7 +55,7 @@ execFileSync(process.execPath, ["--check", path.join(root, "web", "sw.js")], { s
 if (!serviceWorker.includes('key.startsWith(CACHE_PREFIX)')) throw new Error("Service worker must not delete unrelated app caches");
 if (!serviceWorker.includes('url.pathname.includes("/api/")')) throw new Error("Authenticated API responses must not enter the offline cache");
 if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) throw new Error("Native Android TV mode must preserve the first D-pad key");
-if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
+if (!webClient.includes("document.addEventListener(\"keydown\",event=>{") || !webClient.includes("event.preventDefault();moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
 if (!androidWorkflow.includes("debug-apk:") || !androidWorkflow.includes("runs-on: ubuntu-latest") || !androidWorkflow.includes("emulator-smoke:") || !androidWorkflow.includes("if: github.event_name == 'workflow_dispatch'") || !androidWorkflow.includes("runs-on: macos-14") || !androidWorkflow.includes("continue-on-error: true")) throw new Error("APK build must be required while hosted emulator smoke is manual and non-blocking");
