@@ -194,3 +194,8 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+:root[data-profile-theme="violet"]{--cyan:#c2a4ff;--aqua:#a17cff;--violet:#df9bff}.app-shell:has([data-profile-theme="violet"]){background:radial-gradient(ellipse at 80% 0%,#30204b80,transparent 42%),linear-gradient(180deg,#090b1c,#100c21 48%,#090b1c)}
+:root[data-profile-theme="ember"]{--cyan:#ffc68a;--aqua:#ff985c;--violet:#ff6d88}.app-shell:has([data-profile-theme="ember"]){background:radial-gradient(ellipse at 80% 0%,#4b241c80,transparent 42%),linear-gradient(180deg,#100b19,#1b101c 48%,#100b19)}
+:root[data-profile-theme="forest"]{--cyan:#a6f5b9;--aqua:#65d99a;--violet:#7bd5c7}.app-shell:has([data-profile-theme="forest"]){background:radial-gradient(ellipse at 80% 0%,#183c3280,transparent 42%),linear-gradient(180deg,#071411,#0c1d1b 48%,#071411)}
+.profile-theme-note{color:var(--muted);font-size:12px;margin:4px 0 14px}
