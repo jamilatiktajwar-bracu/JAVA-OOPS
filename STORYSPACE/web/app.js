@@ -326,7 +326,7 @@ function formatScreenMinutes(seconds){
 }
 function screenTimeLimitReached(profile=activeLocalProfile){
  const usage=profileScreenTime(profile);
- return usage.limitMinutes>0&&usage.seconds>=usage.limitMinutes*60;
+ return !!profile?.kidsMode&&usage.limitMinutes>0&&usage.seconds>=usage.limitMinutes*60;
 }
 function weeklyScreenTimeRows(usage=profileScreenTime()){
  const history=new Map((usage.history||[]).map(entry=>[entry.day,entry.seconds]));
@@ -603,7 +603,7 @@ function stopScreenTimeTicker(accrue=true){
 }
 async function handleQuietHoursChange(){
  const start=normalizeQuietTime($("quietHoursStart").value),end=normalizeQuietTime($("quietHoursEnd").value);
- if((start&&!end)||(!start&&end)){showToast("Set both quiet-hours times, or clear both");renderScreenTimeDashboard();return}
+ if((start&&!end)||(!start&&end)){showToast("Set both quiet-hours times, or clear both");return}
  if(start&&end&&start===end){showToast("Start and end times must be different");renderScreenTimeDashboard();return}
  if(!activeLocalProfile?.kidsMode){renderScreenTimeDashboard();return}
  if(activeLocalProfile.parentPin&&!(await verifyParentPin())){renderScreenTimeDashboard();return}
@@ -631,7 +631,7 @@ function accrueScreenTime(force=false){
  activeBreakSeconds+=Math.max(1,Math.floor(elapsed/1000));
  persistLocalProfiles();
  renderScreenTimeDashboard();
- const breakInterval=Number(activeLocalProfile?.breakReminderMinutes)||0;
+ const breakInterval=activeLocalProfile?.kidsMode?(Number(activeLocalProfile?.breakReminderMinutes)||0):0;
  if(breakInterval>0&&activeBreakSeconds>=breakInterval*60){activeBreakSeconds=0;showToast("Time for a quick break — rest your eyes and stretch a little.")}
  if(screenTimeLimitReached()){
   if(!playerVideo.paused)playerVideo.pause();
