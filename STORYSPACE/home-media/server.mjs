@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const mediaDir = path.resolve(process.env.STORYSPACE_MEDIA_DIR || path.join(root, "media"));
-const catalogFile = path.join(root, "catalog.json");
+const catalogFile = path.resolve(process.env.STORYSPACE_MEDIA_CATALOG_FILE || path.join(root, "catalog.json"));
 const host = process.env.STORYSPACE_MEDIA_HOST || "127.0.0.1";
 const port = Number(process.env.STORYSPACE_MEDIA_PORT || 8787);
 const adminToken = String(process.env.STORYSPACE_MEDIA_ADMIN_TOKEN || "");
