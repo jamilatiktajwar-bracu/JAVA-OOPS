@@ -15,6 +15,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/storyspace-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="enhancements.css">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -75,6 +76,7 @@
   <div class="native-network-notice" id="nativeNetworkNotice" role="status" aria-live="polite" hidden>Connection lost · Some features may be unavailable</div>
   <script src="native-bridge.js"></script>
   <script src="app.js"></script>
+  <script src="enhancements.js"></script>
   <script>if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(() => {});</script>
 </body>
 </html>
