@@ -118,7 +118,7 @@ public class PlaybackQueue {
             if (selected < 0 && repeatAll) {
                 resetShufflePlayed();
                 markShufflePlayed(current);
-                selected = chooseUnplayedShuffleIndex();
+                selected = queueCount == 1 ? 0 : chooseUnplayedShuffleIndex();
             }
             if (selected < 0) {
                 currentIndex = -1;
