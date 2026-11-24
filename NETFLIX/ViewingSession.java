@@ -283,9 +283,7 @@ public class ViewingSession {
             return false;
         }
         this.volumePercent = volumePercent;
-        if (volumePercent > 0) {
-            muted = false;
-        }
+        muted = volumePercent == 0;
         return true;
     }
 

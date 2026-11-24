@@ -345,6 +345,17 @@ public class NetflixSmokeTest {
                 && !session.setPlaybackSpeed(Double.POSITIVE_INFINITY)
                 && session.setPlaybackSpeed(1.5),
                 "viewing session playback speed rejects non-finite values");
+        check(session.setVolume(0) && session.isMuted(),
+                "zero volume automatically mutes playback");
+        check(session.setVolume(35) && !session.isMuted()
+                && session.getVolumePercent() == 35,
+                "raising volume automatically unmutes playback");
+        session.setMuted(true);
+        check(session.isMuted() && session.getVolumePercent() == 35,
+                "manual mute preserves selected volume");
+        session.setMuted(false);
+        check(!session.isMuted() && session.getVolumePercent() == 35,
+                "manual unmute restores selected volume");
         check(session.setBandwidthMbps(Integer.MAX_VALUE)
                 && session.setBufferingPercent(0)
                 && session.getEstimatedBufferSeconds() == Integer.MAX_VALUE,
