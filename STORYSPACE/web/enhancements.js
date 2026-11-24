@@ -211,7 +211,7 @@
       if (!chosen.length) {
         results.append(element("p", "discovery-empty", "No stories match this mood yet. Try another feeling."));
       } else {
-        chosen.forEach(item => results.append(buildCard(item.movie)));
+        chosen.forEach(movie => results.append(buildCard(movie)));
       }
       moodBar.querySelectorAll(".discovery-mood").forEach(button => {
         button.setAttribute("aria-pressed", String(button.dataset.mood === activeMood));
