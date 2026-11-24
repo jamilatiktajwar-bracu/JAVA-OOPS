@@ -12,6 +12,13 @@ const headers={"x-storyspace-upload-token":invite};
 try{
  let ready=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
  assert.equal(ready,true,"server starts");
+ const uploaderCheck=await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers});
+ assert.equal(uploaderCheck.status,200);assert.deepEqual(await uploaderCheck.json(),{ok:true,role:"uploader"});
+ const adminHeaders={"x-storyspace-admin-token":admin};
+ const adminCheck=await fetch(base+"/api/auth/verify/admin",{method:"POST",headers:adminHeaders});
+ assert.equal(adminCheck.status,200);assert.deepEqual(await adminCheck.json(),{ok:true,role:"admin"});
+ assert.equal((await fetch(base+"/api/auth/verify/admin",{method:"POST",headers})).status,401,"uploader key cannot authenticate as admin");
+ assert.equal((await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers:adminHeaders})).status,401,"admin key cannot authenticate as uploader");
  assert.equal((await fetch(base+"/api/uploads/init",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:"Denied",filename:"x.mp4",size:16})})).status,401);
  const init=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Review Me",filename:"demo.mp4",size:16})});
  assert.equal(init.status,201);const session=await init.json();
