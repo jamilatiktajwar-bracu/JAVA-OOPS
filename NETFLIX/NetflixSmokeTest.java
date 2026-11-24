@@ -104,6 +104,12 @@ public class NetflixSmokeTest {
                 "shuffle cycle visits every queue item exactly once");
         check(shuffleQueue.next() == null && shuffleQueue.getCurrent() == null,
                 "non-repeat shuffle stops after one complete cycle");
+        PlaybackQueue singleShuffle = new PlaybackQueue(1);
+        singleShuffle.add(queueA);
+        singleShuffle.setShuffleEnabled(true);
+        singleShuffle.setRepeatAll(true);
+        check(singleShuffle.next() == queueA,
+                "repeat-all shuffle loops a single-item queue");
         check(!shuffleQueue.setPlaybackSpeed(Double.NaN)
                 && !shuffleQueue.setPlaybackSpeed(Double.POSITIVE_INFINITY),
                 "playback speed rejects non-finite values");
