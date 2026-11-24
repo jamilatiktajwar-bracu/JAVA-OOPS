@@ -209,6 +209,18 @@ public class NetflixSmokeTest {
         cancelledTrial.cancel();
         check(!cancelledTrial.isInTrial() && cancelledTrial.getTrialDaysRemaining() == 0,
                 "cancel terminates trial state");
+        check("Cancelled".equals(cancelledTrial.getBillingStatus()),
+                "cancelling trial sets cancelled billing status");
+        Subscription cancelledPaid = new Subscription("Pro");
+        cancelledPaid.cancel();
+        check(!cancelledPaid.isActive()
+                && "Cancelled".equals(cancelledPaid.getBillingStatus()),
+                "cancelling non-trial subscription updates status consistently");
+        cancelledPaid.renew();
+        check(cancelledPaid.isActive() && cancelledPaid.isAutoRenew()
+                && !cancelledPaid.isPaused()
+                && "Current".equals(cancelledPaid.getBillingStatus()),
+                "renew restores consistent active billing state");
 
         Subscription billing = new Subscription("Pro");
         billing.setPaymentMethod("Visa **** 4242");
