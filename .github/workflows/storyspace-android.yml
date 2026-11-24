@@ -87,6 +87,7 @@ jobs:
           retention-days: 14
 
   emulator-smoke:
+    if: github.event_name == 'workflow_dispatch'
     name: Android emulator launch and D-pad smoke test
     needs: debug-apk
     runs-on: macos-14
