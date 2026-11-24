@@ -2,7 +2,7 @@ const CACHE_PREFIX = "storyspace-";
 const SHELL_CACHE = "storyspace-shell-v3";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
-  "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./native-bridge.js",
+  "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./quick-discovery.js", "./native-bridge.js",
   "./manifest.webmanifest", "./assets/storyspace-icon.svg"
 ];
 const MAX_RUNTIME_ENTRIES = 80;
