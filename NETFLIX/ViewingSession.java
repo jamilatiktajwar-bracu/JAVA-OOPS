@@ -187,7 +187,8 @@ public class ViewingSession {
     }
 
     public boolean setPlaybackSpeed(double speed) {
-        if (speed < 0.25 || speed > 4.0) {
+        if (Double.isNaN(speed) || Double.isInfinite(speed)
+                || speed < 0.25 || speed > 4.0) {
             return false;
         }
         playbackSpeed = speed;
@@ -313,7 +314,8 @@ public class ViewingSession {
         if (bandwidthMbps == 0) {
             return 0;
         }
-        return (100 - bufferingPercent) * bandwidthMbps;
+        long estimate = (long) (100 - bufferingPercent) * bandwidthMbps;
+        return (int) Math.min(Integer.MAX_VALUE, estimate);
     }
 
     public boolean isQualityAvailable(String qualityName) {
