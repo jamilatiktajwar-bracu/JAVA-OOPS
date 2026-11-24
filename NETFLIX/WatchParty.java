@@ -292,8 +292,7 @@ public class WatchParty {
         if (difference <= syncToleranceSeconds) {
             return true;
         }
-        playbackPosition = guestPosition;
-        lastSyncPosition = guestPosition;
+        // A guest's position is observational; only the host may set the authoritative timeline.
         return false;
     }
 
