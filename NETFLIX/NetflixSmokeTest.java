@@ -349,6 +349,23 @@ public class NetflixSmokeTest {
                 && session.setBufferingPercent(0)
                 && session.getEstimatedBufferSeconds() == Integer.MAX_VALUE,
                 "buffer estimate clamps large bandwidth without integer overflow");
+        ViewingSession lowDataSession = new ViewingSession(sessionMovie, profileOwner);
+        lowDataSession.setLowDataMode(true);
+        check("480p".equals(lowDataSession.getQuality()),
+                "low-data mode forces 480p quality");
+        lowDataSession.setQuality("4K");
+        check("480p".equals(lowDataSession.getQuality()),
+                "manual quality selection cannot bypass low-data mode");
+        check(lowDataSession.setBandwidthMbps(100)
+                && "480p".equals(lowDataSession.getQuality()),
+                "bandwidth updates respect low-data mode");
+        lowDataSession.setLowDataMode(false);
+        check(lowDataSession.setBandwidthMbps(100)
+                && "4K".equals(lowDataSession.getQuality()),
+                "disabling low-data mode restores bandwidth-based quality");
+        lowDataSession.setQuality("invalid-quality");
+        check("4K".equals(lowDataSession.getQuality()),
+                "unsupported manual quality is ignored");
 
         // Playlist cursor remains valid after removals and reordering.
         NetflixPlaylist playlist = new NetflixPlaylist("Cursor Test", 3);
