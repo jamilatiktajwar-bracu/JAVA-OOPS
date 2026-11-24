@@ -362,16 +362,44 @@ function persistPlayerProgress(force=false){
     api("/library/"+encodeURIComponent(title.apiId)+"/progress",{method:"PATCH",body:{progressPercent:percent}}).catch(()=>{});
   }
 }
+function updatePlayerTimeline(){
+  const duration=Number.isFinite(playerVideo.duration)?playerVideo.duration:0;
+  const current=Number.isFinite(playerVideo.currentTime)?playerVideo.currentTime:0;
+  const seek=$("playerSeek"),currentLabel=$("playerCurrentTime"),durationLabel=$("playerDuration");
+  if(currentLabel)currentLabel.textContent=formatPlayerTime(current);
+  if(durationLabel)durationLabel.textContent=formatPlayerTime(duration);
+  if(seek){
+    seek.disabled=duration<=0;
+    if(document.activeElement!==seek)seek.value=String(duration>0?Math.round(current/duration*1000):0);
+    seek.setAttribute("aria-valuetext",formatPlayerTime(current)+" of "+formatPlayerTime(duration));
+  }
+}
 function formatPlayerTime(seconds){
   const value=Math.max(0,Math.floor(Number(seconds)||0));
   const hours=Math.floor(value/3600),minutes=Math.floor(value%3600/60),secs=value%60;
   return hours?hours+":"+String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0"):minutes+":"+String(secs).padStart(2,"0");
 }
 const playerVideo=$("previewVideo");
-playerVideo.addEventListener("timeupdate",()=>persistPlayerProgress(false));
+playerVideo.addEventListener("timeupdate",()=>{persistPlayerProgress(false);updatePlayerTimeline()});
+playerVideo.addEventListener("durationchange",updatePlayerTimeline);
+playerVideo.addEventListener("seeking",updatePlayerTimeline);
+$("playerSeek").addEventListener("input",()=>{
+  if(!Number.isFinite(playerVideo.duration)||playerVideo.duration<=0)return;
+  const fraction=Math.max(0,Math.min(1,Number($("playerSeek").value)/1000));
+  const target=fraction*playerVideo.duration;
+  $("playerCurrentTime").textContent=formatPlayerTime(target);
+  $("playerSeek").setAttribute("aria-valuetext",formatPlayerTime(target)+" of "+formatPlayerTime(playerVideo.duration));
+});
+$("playerSeek").addEventListener("change",()=>{
+  if(!Number.isFinite(playerVideo.duration)||playerVideo.duration<=0)return;
+  playerVideo.currentTime=(Math.max(0,Math.min(1000,Number($("playerSeek").value)))/1000)*playerVideo.duration;
+  persistPlayerProgress(true);
+  updatePlayerTimeline();
+});
 document.addEventListener("visibilitychange",()=>{if(document.hidden)persistPlayerProgress(true)});
 window.addEventListener("pagehide",()=>persistPlayerProgress(true));
 playerVideo.addEventListener("loadedmetadata",()=>{
+  updatePlayerTimeline();
   $("playerRestart").disabled=false;
   ["skipBack","skipForward"].forEach(id=>{const control=$(id);if(control)control.disabled=false});
   $("playerPip").disabled=!playerVideo.requestPictureInPicture;
@@ -426,7 +454,7 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){persistPlayerProgress(true);playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
+function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
