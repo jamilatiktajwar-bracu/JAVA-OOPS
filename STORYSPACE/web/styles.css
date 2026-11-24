@@ -194,3 +194,28 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+/* Kids family experience */
+.kids-welcome{position:relative;overflow:hidden;margin:14px 0 25px;padding:24px 28px;border:1px solid #8ce9c766;border-radius:20px;background:radial-gradient(circle at 92% 18%,#8ce9c744,transparent 28%),linear-gradient(115deg,#153d54,#263d72 58%,#3c2d70);box-shadow:0 18px 55px #07132755;color:#f7fcff}
+.kids-welcome[hidden],.kids-section[hidden]{display:none!important}
+.kids-eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;color:#a6f4cf}
+.kids-welcome h2{margin:7px 0 4px;font-family:var(--display);font-size:clamp(24px,4vw,38px);letter-spacing:-.04em}
+.kids-welcome p{max-width:540px;margin:0;color:#d4e7fa;font-size:13px;line-height:1.6}
+.kids-sparkle{position:absolute;right:7%;top:8%;font-size:86px;color:#b9a9ff88;transform:rotate(12deg);pointer-events:none}
+.kids-category-list{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 16px}
+.kids-category{min-height:36px;padding:8px 13px;border:1px solid #ffffff26;border-radius:999px;background:#ffffff0d;color:#d8e7f6;font-size:11px;font-weight:700;transition:transform .2s ease,background .2s ease,border-color .2s ease}
+.kids-category:hover{transform:translateY(-2px);border-color:#8ce9c7}
+.kids-category.active{background:#b8f2d9;color:#112d38;border-color:#b8f2d9}
+.kids-picks-count{color:#a8f0d2;font-size:11px;font-variant-numeric:tabular-nums}
+.kids-age-setting{display:grid;gap:7px;margin:12px 0;color:#dce8f6;font-size:12px;font-weight:700}
+.kids-age-setting select{width:100%;min-height:40px;padding:8px 11px;border:1px solid #ffffff25;border-radius:9px;background:#091629;color:#f5f8ff;font:inherit}
+.kids-age-setting select:disabled{opacity:.52}
+.kids-pin-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.kids-pin-actions button{min-height:40px;font-size:11px;justify-content:center}
+html.kids-mode .app-shell{background:linear-gradient(180deg,#111c39 0%,#080d1b 40%)}
+html.kids-mode .brand-mark i{background:#a7f1cd;box-shadow:0 0 12px #a7f1cd88}
+html.kids-mode .section-kicker{color:#9be8cb}
+html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bezier(.2,.75,.25,1)}
+@keyframes storyspaceProfileSwap{0%{opacity:1;transform:translateY(0) scale(1)}42%{opacity:.45;transform:translateY(8px) scale(.992)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){html.profile-switching .app-shell,.kids-category{animation:none!important;transition:none!important}}
+@media(max-width:600px){.kids-welcome{padding:20px 18px}.kids-sparkle{right:4%;top:14%;font-size:58px}.kids-category-list{gap:6px}.kids-category{padding:7px 10px;font-size:10px}.kids-pin-actions{grid-template-columns:1fr}}
