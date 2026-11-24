@@ -87,11 +87,27 @@ public class NETFLIX_SMOKE_TEST {
     }
 
     private static void testLocaleIndependentMovieSearch() {
+        int initialCount = Movies.getMovieCount();
+        require(!Movies.addMovie("Invalid release year", "Drama", 90, 1800),
+                "catalog overload should reject invalid release years");
+        require(Movies.getMovieCount() == initialCount,
+                "invalid release year must not partially add a catalog movie");
+        require(Movies.searchByTitle(" ").length == 0,
+                "blank title search should return no results");
         require(Movies.addMovie("INDIGO", "Drama", 90), "test movie should be added");
         Movies testMovie = Movies.getMovie(Movies.getMovieCount() - 1);
         require(!testMovie.setRating(Double.NaN), "NaN movie rating should be rejected");
         require(!testMovie.setRating(Double.POSITIVE_INFINITY), "infinite movie rating should be rejected");
         require(testMovie.setRating(8.5), "finite rating within range should be accepted");
+        require(!testMovie.addUserRating(Double.NaN), "NaN community rating should be rejected");
+        require(!testMovie.addUserRating(Double.POSITIVE_INFINITY), "infinite community rating should be rejected");
+        require(testMovie.getRating() == 8.5, "invalid community ratings should not poison the aggregate");
+        require(testMovie.addKeyword("INDIGO"), "keyword should be accepted");
+        Movies watchCounter = new Movies("Watch counter", "Drama", 90);
+        watchCounter.recordWatchSeconds(Integer.MAX_VALUE);
+        watchCounter.recordWatchSeconds(100);
+        require(watchCounter.getTotalWatchSeconds() == Integer.MAX_VALUE,
+                "watch seconds should saturate instead of overflowing");
         java.util.Locale original = java.util.Locale.getDefault();
         try {
             java.util.Locale.setDefault(new java.util.Locale("tr", "TR"));
@@ -99,6 +115,8 @@ public class NETFLIX_SMOKE_TEST {
                     "title search should not depend on Turkish casing rules");
             require(Movies.search("indigo").length == 1,
                     "general search should not depend on Turkish casing rules");
+            require(testMovie.hasKeyword("indigo"),
+                    "keyword matching should not depend on Turkish casing rules");
         } finally {
             java.util.Locale.setDefault(original);
             Movies.removeMovie("INDIGO");
