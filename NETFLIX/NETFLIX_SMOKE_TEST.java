@@ -36,9 +36,16 @@ public class NETFLIX_SMOKE_TEST {
         OfflineDownloadManager manager = new OfflineDownloadManager(3);
         require(manager.addDownload(movie), "download should be queued");
         require(!manager.addDownload(movie), "duplicate active download should be rejected");
+        require(manager.updateProgress(movie, 40), "partial progress should be accepted");
+        require(!manager.updateProgress(movie, 20), "download progress should not move backward");
+        require(manager.getProgress(movie) == 40, "rejected progress update should preserve state");
         manager.setDownloadQuality("HD");
         require(manager.updateProgress(movie, 100), "download should complete");
         require(manager.getUsedStorageMB() == 200, "size should use quality snapshot from queue time");
+        require(!manager.updateProgress(movie, 50), "completed download must not be downgraded");
+        require(manager.isDownloaded(movie), "completed state should remain true after rejected downgrade");
+        require(manager.getUsedStorageMB() == 200, "rejected downgrade must not leak storage accounting");
+        require(!manager.markFailed(movie, "late failure"), "completed download cannot be marked failed");
         require(manager.removeDownload(movie), "download should be removable");
         require(manager.getUsedStorageMB() == 0, "storage accounting should return to zero");
 
@@ -166,6 +173,7 @@ public class NETFLIX_SMOKE_TEST {
         require(wallet.setDefault(second), "wallet should allow switching default");
         require(wallet.removeMethod(second), "default method should be removable");
         require(wallet.getDefaultMethod() == first, "wallet should select remaining method as default");
+        require(!second.isDefaultMethod(), "removed method should no longer carry a default flag");
         require(wallet.getMethodCount() == 1, "wallet count should remain consistent");
     }
 
