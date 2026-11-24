@@ -135,12 +135,17 @@ public class NETFLIX_USER {
     }
 
     public boolean watchMovie(Movies movie) {
-        if (movie == null || watchHistoryCount >= watchHistory.length) {
+        if (movie == null) {
             return false;
         }
-        if (!isInWatchHistory(movie)) {
-            watchHistory[watchHistoryCount++] = movie;
+        if (isInWatchHistory(movie)) {
+            movie.markWatched();
+            return true;
         }
+        if (watchHistoryCount >= watchHistory.length) {
+            return false;
+        }
+        watchHistory[watchHistoryCount++] = movie;
         movie.markWatched();
         return true;
     }
