@@ -384,7 +384,7 @@ function importProfileBackup(file){
    const imported=data.profiles.map(profileSanitize),existingNames=new Set(localProfiles.map(p=>p.name.toLowerCase())),ids=new Set(localProfiles.map(p=>p.id));
    imported.forEach((profile,index)=>{
     const baseName=profile.name;let name=baseName,suffix=2;
-    while(existingNames.has(name.toLowerCase()))name=profileCleanName(baseName+" ("+suffix+++")");
+    while(existingNames.has(name.toLowerCase())){const tag=" ("+suffix+++")";name=profileCleanName(baseName.slice(0,Math.max(1,32-tag.length))+tag)}
     profile.name=name;existingNames.add(name.toLowerCase());
     if(ids.has(profile.id))profile.id=profileCleanId("restore-"+Date.now()+"-"+index+"-"+Math.floor(Math.random()*100000));
     while(ids.has(profile.id))profile.id=profileCleanId("restore-"+Date.now()+"-"+Math.floor(Math.random()*100000));
