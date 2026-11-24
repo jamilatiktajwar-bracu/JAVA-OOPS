@@ -139,9 +139,14 @@ public class ViewingSession {
     }
 
     public void setQuality(String quality) {
-        if (quality != null && !quality.trim().isEmpty()) {
-            this.quality = quality.trim();
+        if (quality == null || quality.trim().isEmpty()
+                || !isQualityAvailable(quality.trim())) {
+            return;
         }
+        if (lowDataMode && !"480p".equalsIgnoreCase(quality.trim())) {
+            return;
+        }
+        this.quality = quality.trim();
     }
 
     public void setSubtitleEnabled(boolean enabled) {
@@ -255,7 +260,9 @@ public class ViewingSession {
             return false;
         }
         this.bandwidthMbps = bandwidthMbps;
-        if (bandwidthMbps >= 25) {
+        if (lowDataMode) {
+            quality = "480p";
+        } else if (bandwidthMbps >= 25) {
             quality = "4K";
         } else if (bandwidthMbps >= 10) {
             quality = "1080p";
