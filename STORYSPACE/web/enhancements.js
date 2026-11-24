@@ -175,7 +175,7 @@
       save.type = "button";
       save.dataset.mixAction = "save";
       save.setAttribute("aria-label", (saved ? "Remove " : "Save ") + title + (saved ? " from" : " to") + " My Universe");
-      actions.append(details, save);
+      const watchId = String(movie.apiId || movie.id);\n      const watchButton = element("button", "discovery-action", typeof window.storyspaceWatchLater !== "undefined" && window.storyspaceWatchLater.has(watchId) ? "✓ Watch later" : "＋ Watch later");\n      watchButton.type = "button"; watchButton.dataset.mixAction = "watch-later"; watchButton.setAttribute("aria-pressed", String(Boolean(window.storyspaceWatchLater && window.storyspaceWatchLater.has(watchId))));\n      watchButton.setAttribute("aria-label", "Add " + title + " to Watch later");\n      actions.append(details, save, watchButton);
       body.append(actions);
       article.append(poster, body);
 
@@ -198,9 +198,7 @@
           openDetails(movie);
         } else if (button.dataset.mixAction === "save" && typeof toggleList === "function") {
           toggleList(movie);
-          render(false);
-        }
-      });
+          render(false);\n        } else if (button.dataset.mixAction === "watch-later" && window.storyspaceWatchLater) {\n          window.storyspaceWatchLater.add(String(movie.apiId || movie.id));\n          button.textContent = "✓ Watch later"; button.setAttribute("aria-pressed", "true");\n        }\n      });
       return article;
     }
 
