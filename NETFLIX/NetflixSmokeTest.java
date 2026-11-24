@@ -35,6 +35,11 @@ public class NetflixSmokeTest {
                 "null recommendation explanation safe");
         check(!engine.setRatingThreshold(Double.NaN) && !engine.setPopularityWeight(Double.POSITIVE_INFINITY),
                 "recommendation tuning rejects non-finite values");
+        check(!engine.setRatingWeight(Double.NaN) && !engine.setGenreWeight(Double.POSITIVE_INFINITY)
+                && !engine.setRecencyWeight(Double.NEGATIVE_INFINITY),
+                "all recommendation weights reject non-finite values");
+        check(engine.setRatingWeight(2.0) && engine.setGenreWeight(0.5)
+                && engine.setRecencyWeight(0.0), "finite recommendation weights are accepted");
         check(engine.excludeGenre("Drama") && !engine.excludeGenre(" drama "),
                 "excluded genres are unique case-insensitively");
         check(noUser.isColdStartUser() == false && noUser.getColdStartRecommendations(3).length == 0,
