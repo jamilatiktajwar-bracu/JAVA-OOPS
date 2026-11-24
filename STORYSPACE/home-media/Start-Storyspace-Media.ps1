@@ -11,7 +11,8 @@ New-Item -ItemType Directory -Force -Path $ConfigDir | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $Root "media") | Out-Null
 if (-not (Test-Path $ConfigFile)) {
   $Bytes = New-Object byte[] 48
-  [System.Security.Cryptography.RandomNumberGenerator]::Fill($Bytes)
+  $Rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+  try { $Rng.GetBytes($Bytes) } finally { $Rng.Dispose() }
   $Token = [Convert]::ToBase64String($Bytes).Replace("+","-").Replace("/","_").TrimEnd("=")
   @{ adminToken = $Token; createdAt = (Get-Date).ToString("o") } | ConvertTo-Json | Set-Content -Encoding UTF8 $ConfigFile
   Write-Host "Created a private upload token at $ConfigFile" -ForegroundColor Green
