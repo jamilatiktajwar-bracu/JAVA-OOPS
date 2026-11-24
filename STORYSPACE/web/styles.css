@@ -194,3 +194,11 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+/* Profile-aware welcome micro-interaction */
+.welcome-line{position:relative;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;padding:12px 15px;margin:0 0 16px;border:1px solid #ffffff12;border-radius:13px;background:linear-gradient(100deg,#112237aa,#11192a66);overflow:hidden}
+.welcome-line>span{font-family:var(--display);font-size:clamp(16px,2.2vw,21px);font-weight:700;letter-spacing:-.02em;color:#f2f8ff}
+.welcome-line>small{font-size:12px;line-height:1.5;color:#91a8c4}
+.welcome-line[data-daypart="late-night"]{border-color:#a18bff24;background:linear-gradient(100deg,#211c3baa,#11192a66)}
+@media(max-width:600px){.welcome-line{gap:5px 10px;padding:10px 12px}.welcome-line>small{font-size:11px}}
+@media(prefers-reduced-motion:no-preference){.welcome-line>span{animation:welcome-arrive .38s ease-out both}@keyframes welcome-arrive{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}}
