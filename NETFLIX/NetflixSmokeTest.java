@@ -321,6 +321,9 @@ public class NetflixSmokeTest {
         Movies offlineMovie = new Movies("Offline Test", "Drama", 60);
         offlineMovie.setDownloadAvailable(true);
         check(downloads.addDownload(offlineMovie), "download manager accepts available title");
+        check(!downloads.addDownload(offlineMovie)
+                && downloads.getDownloadCount() == 1,
+                "duplicate movie download is rejected while queued");
         check(downloads.updateProgress(offlineMovie, 100), "download completion succeeds");
         check(downloads.getUsedStorageMB() == 120, "standard download storage is tracked");
         downloads.setDownloadQuality("4K");

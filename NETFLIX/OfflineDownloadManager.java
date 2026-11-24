@@ -40,7 +40,7 @@ public class OfflineDownloadManager {
     public boolean addDownload(Movies movie) {
         if (movie == null || !movie.isDownloadAvailable()
                 || downloadCount >= downloadLimit
-                || isDownloaded(movie) || paused
+                || findMovie(movie) >= 0 || paused
                 || !hasEnoughStorage(movie)) {
             return false;
         }
@@ -73,7 +73,7 @@ public class OfflineDownloadManager {
         completed[index] = percent >= 100;
         if (completed[index] && !wasCompleted) {
             long size = estimateMovieSizeMB(movie);
-            if (usedStorageMB + size > storageCapacityMB) {
+            if (size > storageCapacityMB - usedStorageMB) {
                 progress[index] = 99;
                 completed[index] = false;
                 return false;
