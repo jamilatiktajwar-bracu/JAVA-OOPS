@@ -46,6 +46,7 @@ public class PaymentWallet {
             methods[i] = methods[i + 1];
         }
         methods[--methodCount] = null;
+        method.setDefault(false);
         if (methodCount > 0) {
             PaymentMethod currentDefault = getDefaultMethod();
             setDefault(wasDefault || currentDefault == null ? methods[0] : currentDefault);
