@@ -262,6 +262,16 @@ public class NetflixSmokeTest {
                 "profile cannot add itself to family profiles");
         check(profileOwner.addFamilyProfile(childProfile),
                 "family profile can be added");
+        NETFLIX_USER fullHistoryUser = new NETFLIX_USER("full-history");
+        Movies[] historyFixtures = new Movies[100];
+        for (int historyIndex = 0; historyIndex < historyFixtures.length; historyIndex++) {
+            historyFixtures[historyIndex] = new Movies("History " + historyIndex, "Drama", 60);
+            check(fullHistoryUser.watchMovie(historyFixtures[historyIndex]),
+                    "watch history fills within capacity");
+        }
+        check(fullHistoryUser.watchMovie(historyFixtures[0])
+                && fullHistoryUser.getWatchHistoryCount() == 100,
+                "rewatching existing history item succeeds at capacity without duplicate");
         check(!profileOwner.addFamilyProfile(childProfile),
                 "duplicate family profile is rejected");
         check(!profileOwner.setPassword("short"),
