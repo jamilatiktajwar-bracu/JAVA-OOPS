@@ -256,3 +256,7 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 .quiet-hours-row input{width:100%;min-height:38px;padding:7px 9px;border:1px solid #ffffff24;border-radius:8px;background:#091629;color:#f5f8ff;font:inherit;color-scheme:dark}
 .kids-routine-settings select:disabled,.quiet-hours-row input:disabled{opacity:.5}
 @media(prefers-reduced-motion:reduce){.screen-time-day-fill{transition:none}}
+
+.profile-backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
+.profile-backup-actions small{grid-column:1/-1;font-size:10px;line-height:1.45;color:#91a7bf}
+@media(max-width:420px){.profile-backup-actions{grid-template-columns:1fr}}
