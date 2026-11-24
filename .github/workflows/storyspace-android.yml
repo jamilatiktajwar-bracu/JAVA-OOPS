@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - 'STORYSPACE/**'
+      - 'STORYSPACE/web/**'
+      - 'STORYSPACE/platforms/mobile/**'
+      - 'STORYSPACE/platforms/android-tv/**'
       - '.github/workflows/storyspace-android.yml'
 
 # Let builds finish; the emulator smoke job can take longer on hosted macOS.
