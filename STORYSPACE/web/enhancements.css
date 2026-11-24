@@ -35,3 +35,6 @@
 @media(prefers-reduced-motion:reduce){.mix-card,.mix-poster img,.discovery-shuffle{transition:none}.mix-card:hover,.discovery-shuffle:hover{transform:none}}
 
 .mix-reason{margin:7px 0 0;color:#aab8cd;font-size:9px;line-height:1.45;min-height:26px}
+
+/* Discovery recommendation controls */
+.discovery-restore{margin:0 0 14px;border:1px solid #ffffff24;border-radius:9px;background:#ffffff08;color:#aaf9ed;padding:9px 12px;font-size:10px;font-weight:700}.discovery-restore:hover{background:#8af4e51b;border-color:#8af4e570}.discovery-restore[hidden]{display:none!important}.discovery-dismiss{flex:0 0 auto;max-width:100px;color:#92a3bb;border-color:#ffffff14;background:#ffffff04}.discovery-dismiss:hover{border-color:#ffb4c45c;color:#ffd7e0}@media(max-width:460px){.mix-card-actions{flex-wrap:wrap}.discovery-action{flex:1 1 40%}.discovery-dismiss{flex:1 1 100%;max-width:none}}
