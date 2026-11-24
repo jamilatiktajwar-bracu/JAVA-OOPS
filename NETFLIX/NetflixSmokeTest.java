@@ -93,9 +93,17 @@ public class NetflixSmokeTest {
         PlaybackQueue shuffleQueue = new PlaybackQueue(3);
         shuffleQueue.add(queueA);
         shuffleQueue.add(queueB);
+        shuffleQueue.add(queueC);
         shuffleQueue.setShuffleEnabled(true);
-        check(shuffleQueue.next() != null, "shuffle advances with multiple entries");
-        check(shuffleQueue.getCurrent() != null, "shuffle current remains valid");
+        Movies shuffleFirst = shuffleQueue.getCurrent();
+        Movies shuffleSecond = shuffleQueue.next();
+        Movies shuffleThird = shuffleQueue.next();
+        check(shuffleSecond != null && shuffleThird != null
+                && shuffleFirst != shuffleSecond && shuffleFirst != shuffleThird
+                && shuffleSecond != shuffleThird,
+                "shuffle cycle visits every queue item exactly once");
+        check(shuffleQueue.next() == null && shuffleQueue.getCurrent() == null,
+                "non-repeat shuffle stops after one complete cycle");
         check(!shuffleQueue.setPlaybackSpeed(Double.NaN)
                 && !shuffleQueue.setPlaybackSpeed(Double.POSITIVE_INFINITY),
                 "playback speed rejects non-finite values");
