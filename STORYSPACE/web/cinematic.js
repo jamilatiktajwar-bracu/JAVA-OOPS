@@ -104,7 +104,11 @@
   const refreshHeroItems=()=>{
     try{heroItems=movies.filter(item=>item&&(item.featured||item.original)).slice(0,8);if(!heroItems.length)heroItems=movies.slice(0,8);}
     catch{heroItems=[];}
-    const found=heroItems.findIndex(item=>String(item.title||item.name||"").toLowerCase()===currentTitle());
+    let found=heroItems.findIndex(item=>String(item.title||item.name||"").toLowerCase()===currentTitle());
+    if(found<0){
+      const active=movies.find(item=>String(item?.title||item?.name||"").toLowerCase()===currentTitle());
+      if(active){heroItems=[active,...heroItems.filter(item=>item!==active)].slice(0,8);found=0;}
+    }
     heroIndex=found>=0?found:0;renderHeroDots();
   };
   function renderHeroDots(){
@@ -130,6 +134,11 @@
   heroPrev.addEventListener("click",()=>showHero(heroIndex-1));
   heroNext.addEventListener("click",()=>showHero(heroIndex+1));
   refreshHeroItems();
+  const heroTitleNode=$("#heroTitle");
+  if(heroTitleNode&&"MutationObserver" in window){
+    const heroTitleObserver=new MutationObserver(()=>refreshHeroItems());
+    heroTitleObserver.observe(heroTitleNode,{childList:true,subtree:true,characterData:true});
+  }
 
   function resetHeroTilt(){
     hero.style.setProperty("--hero-tilt-x","0deg");hero.style.setProperty("--hero-tilt-y","0deg");
