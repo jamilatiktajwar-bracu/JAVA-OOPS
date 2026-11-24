@@ -132,3 +132,26 @@ html.tv-mode .movie-card:focus {
 
 .skip-link{position:fixed;z-index:200;top:8px;left:8px;padding:11px 15px;border-radius:9px;background:var(--cyan);color:#07121e;font-weight:700;transform:translateY(-160%);transition:transform .18s ease}
 .skip-link:focus{transform:translateY(0);outline:3px solid #fff;outline-offset:3px}
+
+/* Profiles, advanced browse controls and preview-player UX */
+.universe-controls,.player-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 16px}
+.universe-controls label,.player-tools label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}
+.universe-controls select,.player-tools select,.profile-select{min-height:38px;background:#17243b;border:1px solid #ffffff24;border-radius:8px;color:var(--white);padding:7px 10px;font:inherit}
+#universeCount{margin-left:auto;color:var(--cyan);font-size:11px}
+.filter-reset{border:1px solid #ffffff22;border-radius:8px;background:#ffffff08;color:#b8c8db;padding:9px 12px;font-size:11px}
+.profiles-backdrop{position:fixed;inset:0;z-index:80;background:#030817d9;backdrop-filter:blur(12px);display:grid;place-items:center;padding:20px}
+.profiles-backdrop[hidden]{display:none!important}
+.profiles-panel{position:relative;width:min(480px,100%);background:linear-gradient(145deg,#14233b,#0c1426);border:1px solid #ffffff20;border-radius:18px;padding:32px;box-shadow:0 30px 100px #0009}
+.profiles-panel h2{font-family:var(--display);font-size:30px;margin:10px 0}
+.profiles-panel>label{display:block;color:#dce8f6;font-size:12px;font-weight:700;margin:12px 0 8px}
+.profile-create-row{display:flex;gap:8px;margin:12px 0}
+.profile-create-row input{flex:1;min-width:0;background:#091224;border:1px solid #ffffff20;border-radius:9px;color:#fff;padding:11px}
+.profile-delete{width:100%;justify-content:center;margin-top:8px}
+.profile-manager-note{color:#7488a2;font-size:10px;line-height:1.6;margin-top:14px}
+.player-tools .secondary-button{padding:9px 12px;font-size:11px}
+.player-shortcuts{display:block;color:#7f92ad;font-size:10px;margin:10px 0}
+.player-tools label select{min-width:75px}
+@media(max-width:600px){.profiles-panel{padding:25px 20px}.profile-create-row{flex-direction:column}.universe-controls{gap:7px}.universe-controls label{font-size:10px}.player-tools{gap:6px}.player-tools label{font-size:10px}}
+
+/* Profile manager and advanced search/player controls */
+.universe-controls,.player-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 16px}.universe-controls label,.player-tools label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.universe-controls select,.player-tools select,.profile-select{min-height:38px;background:#17243b;border:1px solid #ffffff24;border-radius:8px;color:var(--white);padding:7px 10px;font:inherit}#universeCount{margin-left:auto;color:var(--cyan);font-size:11px}.filter-reset{border:1px solid #ffffff22;border-radius:8px;background:#ffffff08;color:#b8c8db;padding:9px 12px;font-size:11px}.profiles-backdrop{position:fixed;inset:0;z-index:80;background:#030817d9;backdrop-filter:blur(12px);display:grid;place-items:center;padding:20px}.profiles-backdrop[hidden]{display:none!important}.profiles-panel{position:relative;width:min(480px,100%);background:linear-gradient(145deg,#14233b,#0c1426);border:1px solid #ffffff20;border-radius:18px;padding:32px;box-shadow:0 30px 100px #0009}.profiles-panel h2{font-family:var(--display);font-size:30px;margin:10px 0}.profiles-panel>label{display:block;color:#dce8f6;font-size:12px;font-weight:700;margin:12px 0 8px}.profile-create-row{display:flex;gap:8px;margin:12px 0}.profile-create-row input{flex:1;min-width:0;background:#091224;border:1px solid #ffffff20;border-radius:9px;color:#fff;padding:11px}.profile-delete{width:100%;justify-content:center;margin-top:8px}.profile-manager-note{color:#7488a2;font-size:10px;line-height:1.6;margin-top:14px}.player-tools .secondary-button{padding:9px 12px;font-size:11px}.player-shortcuts{display:block;color:#7f92ad;font-size:10px;margin:10px 0}.player-tools label select{min-width:75px}@media(max-width:600px){.profiles-panel{padding:25px 20px}.profile-create-row{flex-direction:column}.universe-controls{gap:7px}.player-tools{gap:6px}}
