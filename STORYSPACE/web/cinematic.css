@@ -60,3 +60,8 @@
  .cinematic-reveal{opacity:1;transform:none}
  .cinematic-stars{display:none}
 }
+
+/* Keyboard and switch-access users receive the same spatial-card emphasis as pointer users. */
+.cinematic-spatial .movie-card:focus-within{transform:perspective(1200px) rotateY(var(--spatial-yaw)) rotateX(0deg) rotateY(0deg) translateZ(22px) translateY(-4px) scale(1.025);z-index:8;box-shadow:0 24px 54px #0009,0 0 0 2px #a9f8e966}
+.cinematic-spatial .movie-card:focus-within:after{opacity:.5}
+@media(prefers-reduced-motion:reduce){.cinematic-spatial .movie-card:focus-within{transform:none;box-shadow:0 0 0 2px #a9f8e966}}
