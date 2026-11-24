@@ -349,11 +349,11 @@ function persistPlayerProgress(force=false){
   const percent=Math.max(1,Math.min(99,Math.round(currentTime/video.duration*100)));
   title.progress=percent;title.resumePoint=currentTime;
   resumePoints[key]={currentTime,duration:video.duration,updatedAt:Date.now()};
-  persistLocalProfiles();
   const now=Date.now();
   if(force||now-lastProgressPersistAt>=8000){
     lastProgressPersistAt=now;
     storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));
+    persistLocalProfiles();
     refreshContinueRow();
   }
   if(personalized.token&&title.apiId&&state.list.has(title.id)&&
@@ -439,7 +439,7 @@ $("playerFullscreen").onclick=async()=>{try{const panel=$("playerBackdrop");if(d
 $("playerSpeed").value="1";
 document.addEventListener("keydown",event=>{
   if($("playerBackdrop").hidden||!activePlayerTitle||event.ctrlKey||event.metaKey||event.altKey)return;
-  if(event.target.closest("input,textarea,select,button"))return;
+  if(event.target?.closest?.("input,textarea,select,button"))return;
   if(event.key==="ArrowLeft"){event.preventDefault();playerVideo.currentTime=Math.max(0,playerVideo.currentTime-10)}
   else if(event.key==="ArrowRight"){event.preventDefault();playerVideo.currentTime=Math.min(playerVideo.duration||Infinity,playerVideo.currentTime+10)}
   else if(event.key.toLowerCase()==="r"){event.preventDefault();$("playerRestart").click()}
