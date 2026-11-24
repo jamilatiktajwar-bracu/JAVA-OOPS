@@ -45,6 +45,7 @@ if (!webClient.includes("storyspace.resumePoints") || !webClient.includes('playe
 if (!webClient.includes("remoteProgressPercent") || !webClient.includes('api("/library/"+encodeURIComponent(title.apiId)+"/progress"')) throw new Error("Cross-device watch progress sync missing");
 if (!webClient.includes('$("playerRestart").addEventListener("click"')) throw new Error("Player restart control missing");
 if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
+if (!webHtml.includes("mediaServerHealth") || !webClient.includes("async function checkServerHealth") || !webClient.includes("credentials:"omit"") || !webClient.includes("mediaHealthCheck")) throw new Error("Media-host health status and credential-free connection check missing");
 const webHtml = read("web/index.html");
 if (!webHtml.includes('class="skip-link"') || !webHtml.includes('aria-labelledby="playerTitle"')) throw new Error("Skip navigation and player dialog labels missing");
 if (!webClient.includes("beforeinstallprompt") || !webClient.includes("Add to Home Screen")) throw new Error("Cross-browser PWA install guidance missing");
