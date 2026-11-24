@@ -136,16 +136,15 @@ public class Subscription {
         autoRenew = false;
         inTrial = false;
         trialDaysRemaining = 0;
-        if (billingStatus.equals("Trial")) {
-            billingStatus = "Cancelled";
-        }
+        billingStatus = "Cancelled";
     }
 
     public void renew() {
         active = true;
         autoRenew = true;
-        nextBillingTime = System.currentTimeMillis()
-                + 30L * 24L * 60L * 60L * 1000L;
+        paused = false;
+        billingStatus = "Current";
+        nextBillingTime = safeFutureTime(30L * 24L * 60L * 60L * 1000L);
     }
 
     public String getPlanName() {
