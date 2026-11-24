@@ -24,10 +24,12 @@ const storage={
 const readList=()=>{try{const parsed=JSON.parse(storage.get("storyspace.myUniverse")||"[5,9,12]");return new Set(Array.isArray(parsed)?parsed.filter(v=>typeof v==="number"||typeof v==="string"):[5,9,12])}catch{return new Set([5,9,12])}};
 function normalizeResumePoints(raw){
   if(!raw||typeof raw!=="object"||Array.isArray(raw))return {};
+  const now=Date.now(),maxAge=180*24*60*60*1000;
   return Object.fromEntries(Object.entries(raw).slice(0,500).flatMap(([id,value])=>{
     if(!id||id.length>128||!value||typeof value!=="object")return [];
-    const currentTime=Number(value.currentTime),duration=Number(value.duration),updatedAt=Number(value.updatedAt)||0;
+    const currentTime=Number(value.currentTime),duration=Number(value.duration),updatedAt=Math.max(0,Number(value.updatedAt)||0);
     if(!Number.isFinite(currentTime)||!Number.isFinite(duration)||currentTime<0||duration<=0||currentTime>=duration||duration>86400)return [];
+    if(updatedAt>0&&now-updatedAt>maxAge)return [];
     return [[id,{currentTime:Math.min(currentTime,duration),duration,updatedAt}]];
   }));
 }
@@ -162,7 +164,14 @@ function normalizePreferences(raw){
 }
 function normalizeHistory(raw){
   if(!Array.isArray(raw))return [];
-  return raw.filter(x=>x&&typeof x==="object"&&(typeof x.id==="string"||typeof x.id==="number")).slice(0,100).map(x=>({id:x.id,count:Math.max(1,Math.min(1000,Number(x.count)||1)),kind:String(x.kind||"view").slice(0,24),at:Number(x.at)||0}));
+  const merged=new Map();
+  raw.filter(x=>x&&typeof x==="object"&&(typeof x.id==="string"||typeof x.id==="number")).slice(0,500).forEach(x=>{
+    const key=String(x.id),entry={id:x.id,count:Math.max(1,Math.min(1000,Number(x.count)||1)),kind:String(x.kind||"view").slice(0,24),at:Math.max(0,Number(x.at)||0)};
+    const previous=merged.get(key);
+    if(!previous)merged.set(key,entry);
+    else{previous.count=Math.max(previous.count,entry.count);if(entry.at>=previous.at){previous.at=entry.at;previous.kind=entry.kind}}
+  });
+  return [...merged.values()].sort((a,b)=>b.at-a.at).slice(0,100);
 }
 const personalized={preferences:normalizePreferences(readJson("storyspace.preferences",prefDefaults)),token:storage.get("storyspace.token")||"",account:readJson("storyspace.account",null),history:normalizeHistory(readJson("storyspace.history",[])),serverLibrary:[],serverAvailable:false,apiTitles:[],heroCycle:0};
 /* Local profiles isolate device-side state (not server identities). */
@@ -383,6 +392,9 @@ const playerVideo=$("previewVideo");
 playerVideo.addEventListener("timeupdate",()=>{persistPlayerProgress(false);updatePlayerTimeline()});
 playerVideo.addEventListener("durationchange",updatePlayerTimeline);
 playerVideo.addEventListener("seeking",updatePlayerTimeline);
+playerVideo.addEventListener("seeked",()=>{persistPlayerProgress(true);updatePlayerTimeline()});
+playerVideo.addEventListener("pause",()=>persistPlayerProgress(true));
+playerVideo.addEventListener("ended",()=>persistPlayerProgress(true));
 $("playerSeek").addEventListener("input",()=>{
   if(!Number.isFinite(playerVideo.duration)||playerVideo.duration<=0)return;
   const fraction=Math.max(0,Math.min(1,Number($("playerSeek").value)/1000));
