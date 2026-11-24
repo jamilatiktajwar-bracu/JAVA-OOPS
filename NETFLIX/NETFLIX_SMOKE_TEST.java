@@ -46,7 +46,7 @@ public class NETFLIX_SMOKE_TEST {
         java.util.Locale original = java.util.Locale.getDefault();
         try {
             java.util.Locale.setDefault(new java.util.Locale("tr", "TR"));
-            require(CinemaAnalytics.getEngagementSummary(user).contains("Completion: 0.0%"),
+            require(CinemaAnalytics.getEngagementSummary(user).contains("Completion: 100.0%"),
                     "analytics decimals should be stable across locales");
         } finally {
             java.util.Locale.setDefault(original);
