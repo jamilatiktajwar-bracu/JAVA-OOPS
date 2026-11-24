@@ -39,7 +39,7 @@
       case "escape":closeButton.click();setGuide(false);break;
       default:handled=false;
     }
-    if(handled)event.stopPropagation();
+    if(handled){event.stopPropagation();event.stopImmediatePropagation();}
   });
   backdrop.addEventListener("transitionend",()=>{if(backdrop.hidden)setGuide(false);});
   window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide});
