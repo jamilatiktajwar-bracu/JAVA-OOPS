@@ -26,7 +26,7 @@ if (!fs.existsSync(catalogFile)) fs.writeFileSync(catalogFile, "[]\n", { flag: "
 function readCatalog() {
   try {
     const data = JSON.parse(fs.readFileSync(catalogFile, "utf8"));
-    return Array.isArray(data) ? data.filter(x => x && /^[a-f0-9-]{36}$/i.test(x.id) && typeof x.file === "string") : [];
+    return Array.isArray(data) ? data.filter(x => x && /^[a-f0-9-]{36}$/i.test(x.id) && typeof x.fileName === "string") : [];
   } catch { return []; }
 }
 function writeCatalog(items) {
