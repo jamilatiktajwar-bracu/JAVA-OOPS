@@ -42,11 +42,21 @@
     moodBar.setAttribute("role", "group");
     moodBar.setAttribute("aria-label", "Choose a viewing mood");
 
+    const tastePanel=element("div","taste-panel");
+    const tasteHeading=element("div","taste-heading");
+    tasteHeading.append(element("span","taste-label","YOUR TASTE PROFILE"),element("strong","taste-title","Tune your mix"));
+    const balanceGroup=element("div","taste-balance");
+    balanceGroup.setAttribute("role","group");balanceGroup.setAttribute("aria-label","Recommendation balance");
+    const modes=[{id:"comfort",label:"Comfort picks",desc:"More familiar genres and creators"},{id:"balanced",label:"Balanced",desc:"Your taste with a little variety"},{id:"explore",label:"Explore",desc:"More new genres and discoveries"}];
+    const tasteInsight=element("p","taste-insight","Your mix learns from profile preferences and what you explore.");
+    const tasteGenres=element("div","taste-genres");
+    modes.forEach(mode=>{const btn=element("button","taste-mode",mode.label);btn.type="button";btn.dataset.balance=mode.id;btn.setAttribute("aria-label",mode.desc);btn.addEventListener("click",()=>{if(typeof personalized==="undefined")return;personalized.preferences=Object.assign({},personalized.preferences,{balance:mode.id});try{localStorage.setItem("storyspace.preferences",JSON.stringify(personalized.preferences))}catch{}if(typeof persistLocalProfiles==="function")persistLocalProfiles();render(false)});balanceGroup.append(btn)});
+    tastePanel.append(tasteHeading,balanceGroup,tasteInsight,tasteGenres);
     const results = element("div", "discovery-results");
     results.setAttribute("aria-live", "polite");
     results.setAttribute("aria-label", "Recommended stories");
 
-    root.append(top, moodBar, results);
+    root.append(top, moodBar, tastePanel, results);
     const welcome = document.getElementById("welcomeLine");
     if (welcome) welcome.insertAdjacentElement("afterend", root);
     else content.prepend(root);
@@ -205,6 +215,15 @@
     }
 
     function render(shuffleMix) {
+      const taste=userTaste(),mode=taste.balance||"balanced";
+      balanceGroup.querySelectorAll("[data-balance]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.balance===mode)));
+      const topGenres=[...taste.historyGenres.entries()].sort((x,y)=>y[1]-x[1]).slice(0,3).map(x=>x[0]);
+      const profileGenres=taste.genres.slice(0,3);
+      const combined=[...new Set([...profileGenres,...topGenres])].slice(0,4);
+      tasteGenres.replaceChildren();
+      if(combined.length){combined.forEach(g=>tasteGenres.append(element("span","taste-chip",g)));}else tasteGenres.append(element("span","taste-chip","Explore to build your taste"));
+      const count=typeof personalized!=="undefined"&&Array.isArray(personalized.history)?personalized.history.reduce((sum,item)=>sum+(Number(item.count)||1),0):0;
+      tasteInsight.textContent=count?count+" interaction"+(count===1?"":"s")+" learned · "+(combined.length?"Leaning toward "+combined.join(" · "):"Your taste profile is still growing"):"Your profile is new. Pick a balance to shape your first mix.";
       const ranked = rankedPool(shuffleMix);
       const chosen = selectDiverse(ranked, 4).map(item => Object.assign({}, item.movie, { __storyspaceReason: item.reason }));
       results.replaceChildren();
