@@ -376,6 +376,10 @@ public class NETFLIX_SMOKE_TEST {
         require(!party.invite(outsider), "ended party should not accept invitations");
         require(!party.sendChat(host, "after end"), "ended party should reject chat");
         require(!party.muteGuest(guest), "ended party should not allow muting");
+        require(!party.setPlaybackPosition(10), "ended party should reject position changes");
+        require(!party.synchronizeAllGuests(10), "ended party should reject synchronization");
+        party.play();
+        require(!party.isPlaying(), "ended party should not restart playback implicitly");
         party.restartParty();
         require(party.isPartyActive(), "restart should reactivate party");
     }
