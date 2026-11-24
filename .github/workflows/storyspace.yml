@@ -38,6 +38,30 @@ jobs:
       - name: Platform configuration smoke checks
         run: node STORYSPACE/platforms/check-platform-config.js
 
+  windows-media-script-parse:
+    name: Windows media PowerShell syntax
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse Windows media host scripts
+        shell: pwsh
+        run: |
+          $files = @(
+            "STORYSPACE/home-media/Start-Storyspace-Media.ps1",
+            "STORYSPACE/home-media/Upload-Movie.ps1",
+            "STORYSPACE/home-media/Setup-Cloudflare-Tunnel.ps1",
+            "STORYSPACE/home-media/Run-Storyspace-Tunnel.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_ }
+              exit 1
+            }
+          }
+
   postgres-migration-tests:
     name: PostgreSQL migration integration tests
     runs-on: ubuntu-latest
