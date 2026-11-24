@@ -40,6 +40,6 @@ public class AccessibilityAnalytics {
         return "Subtitle coverage: "
                 + String.format(Locale.ROOT, "%.1f", getSubtitleCoveragePercent())
                 + "%, Description coverage: "
-                + String.format("%.1f", getDescriptionCoveragePercent()) + "%";
+                + String.format(Locale.ROOT, "%.1f", getDescriptionCoveragePercent()) + "%";
     }
 }
