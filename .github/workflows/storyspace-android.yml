@@ -1,0 +1,143 @@
+name: Storyspace Android APK
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'STORYSPACE/web/**'
+      - 'STORYSPACE/platforms/mobile/**'
+      - 'STORYSPACE/platforms/android-tv/**'
+      - '.github/workflows/storyspace-android.yml'
+
+# Let builds finish; the emulator smoke job can take longer on hosted macOS.
+concurrency:
+  group: storyspace-android-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  debug-apk:
+    name: Build installable debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      # Runner images already contain Android SDK. Avoid setup-android's obsolete
+      # "tools" package request; install the SDK components needed by Gradle directly.
+      - name: Install Android SDK packages
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "::error::sdkmanager not found under $ANDROID_HOME/cmdline-tools"
+            exit 1
+          fi
+          echo "Using $SDKMANAGER"
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Install Capacitor dependencies
+        working-directory: STORYSPACE/platforms/mobile
+        run: npm install
+      - name: Generate Android project
+        working-directory: STORYSPACE/platforms/mobile
+        run: npx cap add android
+      - name: Configure API endpoint
+        working-directory: STORYSPACE/platforms/mobile
+        env:
+          STORYSPACE_API_ROOT: ${{ vars.STORYSPACE_API_ROOT }}
+        run: node configure-api-root.js
+      - name: Sync web assets and native plugins
+        working-directory: STORYSPACE/platforms/mobile
+        run: npx cap sync android
+      - name: Configure Android TV launcher and banner
+        run: node STORYSPACE/platforms/android-tv/prepare-android-tv.js "$GITHUB_WORKSPACE/STORYSPACE/platforms/mobile/android"
+      - name: Build debug APK
+        working-directory: STORYSPACE/platforms/mobile/android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Verify phone and TV launcher metadata in APK
+        working-directory: STORYSPACE/platforms/mobile/android
+        run: |
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          "$AAPT" dump xmltree app/build/outputs/apk/debug/app-debug.apk AndroidManifest.xml > "$RUNNER_TEMP/storyspace-manifest.txt"
+          grep -q 'android.software.leanback' "$RUNNER_TEMP/storyspace-manifest.txt"
+          grep -q 'android.intent.category.LEANBACK_LAUNCHER' "$RUNNER_TEMP/storyspace-manifest.txt"
+          "$AAPT" dump resources app/build/outputs/apk/debug/app-debug.apk > "$RUNNER_TEMP/storyspace-resources.txt"
+          grep -q 'storyspace_tv_banner' "$RUNNER_TEMP/storyspace-resources.txt"
+      - name: Verify APK signature and archive integrity
+        working-directory: STORYSPACE/platforms/mobile/android
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          unzip -t "$APK"
+          shasum -a 256 "$APK"
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: storyspace-android-debug
+          path: STORYSPACE/platforms/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  emulator-smoke:
+    if: github.event_name == 'workflow_dispatch'
+    name: Android emulator launch and D-pad smoke test
+    needs: debug-apk
+    runs-on: macos-14
+    timeout-minutes: 30
+    # Hosted emulator virtualization may fail independently of the APK build.
+    # Keep this diagnostic job visible but non-blocking for artifact delivery.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: storyspace-android-debug
+          path: storyspace-android-debug
+      - name: Emulator launch and D-pad smoke test
+        id: emulator-smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu auto -no-snapshot -noaudio -no-boot-anim
+          script: bash STORYSPACE/platforms/android-tv/emulator-smoke.sh storyspace-android-debug/app-debug.apk "$RUNNER_TEMP/storyspace-emulator-smoke.png"
+      - name: Capture emulator diagnostics
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/storyspace-emulator-diagnostics"
+          adb devices -l > "$RUNNER_TEMP/storyspace-emulator-diagnostics/adb-devices.txt" 2>&1 || true
+          ps aux | grep -E '[e]mulator|[q]emu' > "$RUNNER_TEMP/storyspace-emulator-diagnostics/processes.txt" || true
+          "$ANDROID_HOME/emulator/emulator" -version > "$RUNNER_TEMP/storyspace-emulator-diagnostics/emulator-version.txt" 2>&1 || true
+          find "$HOME/.android/avd" -maxdepth 3 -type f \( -name '*.log' -o -name 'emulator-user.ini' \) -print -exec tail -n 250 {} \; > "$RUNNER_TEMP/storyspace-emulator-diagnostics/avd-logs.txt" 2>&1 || true
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storyspace-android-emulator-diagnostics
+          path: ${{ runner.temp }}/storyspace-emulator-diagnostics
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload emulator screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storyspace-android-emulator-screenshot
+          path: ${{ runner.temp }}/storyspace-emulator-smoke.png
+          if-no-files-found: ignore
+          retention-days: 7
