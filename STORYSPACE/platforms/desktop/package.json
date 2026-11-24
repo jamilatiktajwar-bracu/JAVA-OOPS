@@ -9,7 +9,7 @@
     "dist": "electron-builder --publish never"
   },
   "devDependencies": {
-    "electron": "^35.0.0",
+    "electron": "^45.4.1",
     "electron-builder": "^26.0.0"
   },
   "build": {
