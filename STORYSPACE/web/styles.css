@@ -194,3 +194,6 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+/* Cinematic detail highlight chips */
+.modal-signals{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0 3px}.modal-signal{padding:6px 10px;border:1px solid #8cebd43b;background:linear-gradient(120deg,#6de2d21b,#91aaff12);border-radius:99px;color:#bcefe7;font-size:10px;font-weight:700;letter-spacing:.04em;box-shadow:inset 0 1px #ffffff0a}.modal-signal:first-child{border-color:#93a9ff45;color:#d3ddff}@media(max-width:760px){.modal-signals{margin:8px 0}.modal-signal{font-size:9px;padding:5px 8px}}
