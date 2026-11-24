@@ -62,8 +62,13 @@ public class OfflineDownloadManager {
             return false;
         }
         int index = findMovie(movie);
-        if (index < 0 || failed[index]) {
+        if (index < 0 || failed[index] || percent < progress[index]) {
             return false;
+        }
+        // Completed downloads are immutable until removed; allowing a lower
+        // percentage would release the completed flag without freeing storage.
+        if (completed[index]) {
+            return percent == 100;
         }
         boolean wasCompleted = completed[index];
         progress[index] = percent;
@@ -244,7 +249,7 @@ public class OfflineDownloadManager {
 
     public boolean markFailed(Movies movie, String reason) {
         int index = findMovie(movie);
-        if (index < 0) {
+        if (index < 0 || completed[index]) {
             return false;
         }
         if (!failed[index]) {
