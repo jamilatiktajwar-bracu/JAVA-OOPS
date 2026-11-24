@@ -29,5 +29,8 @@ jobs:
       - name: Run smoke tests
         working-directory: NETFLIX
         run: java NETFLIX_SMOKE_TEST
+      - name: Run demo smoke
+        working-directory: NETFLIX
+        run: java NETFLIX_DEMO > demo-output.txt && grep -q "===== NETFLIX DEMO =====" demo-output.txt
       - name: Clean compiled files
         run: find NETFLIX -name '*.class' -delete
