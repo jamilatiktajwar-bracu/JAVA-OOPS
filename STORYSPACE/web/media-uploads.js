@@ -17,7 +17,10 @@
   async function removeItem(id){const db=await openDb();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
   function headers(token,extra={}){return {"x-storyspace-upload-token":token,...extra}}
   async function request(root,path,token,options={}){
-    const res=await fetch(root+path,{...options,headers:{...(options.headers||{}),...(token?headers(token):{})}});
+    const requestHeaders={...(options.headers||{})};
+    // Never send the owner-only admin secret in the uploader-token header.
+    if(token&&!requestHeaders["x-storyspace-admin-token"]&&!requestHeaders["x-storyspace-upload-token"]){requestHeaders["x-storyspace-upload-token"]=token}
+    const res=await fetch(root+path,{...options,credentials:"omit",headers:requestHeaders});
     let data={};try{data=await res.json()}catch{}
     if(!res.ok){const e=new Error(data.error||"Media server request failed ("+res.status+")");e.status=res.status;e.data=data;throw e}return data;
   }
