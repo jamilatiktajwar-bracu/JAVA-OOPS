@@ -57,20 +57,71 @@
       if (moods.some(mood => mood.id === savedMood)) activeMood = savedMood;
     } catch {}
 
-    function rankedPool() {
+    const tokens = value => String(value || "").split(/[,|]/).map(v => v.trim().toLowerCase()).filter(Boolean);
+    function userTaste() {
+      const prefs = typeof personalized !== "undefined" ? personalized.preferences || {} : {};
+      const history = typeof personalized !== "undefined" && Array.isArray(personalized.history) ? personalized.history : [];
+      const historyGenres = new Map();
+      history.forEach(entry => {
+        const title = catalog.find(m => String(m.id) === String(entry.id) || String(m.apiId || "") === String(entry.id));
+        if (!title) return;
+        const weight = Math.min(3, Math.max(1, Number(entry.count) || 1));
+        tokens(title.genre || title.genres).forEach(g => historyGenres.set(g, (historyGenres.get(g) || 0) + weight));
+      });
+      return { genres: tokens(prefs.genres), moods: tokens(prefs.moods), languages: tokens(prefs.languages), balance: prefs.balance || "balanced", historyGenres };
+    }
+    function explain(movie, taste, mood) {
+      const genres = tokens(movie.genre || movie.genres);
+      const preferred = taste.genres.find(g => genres.includes(g));
+      if (preferred) return "Because you like " + preferred;
+      const historyMatch = genres.find(g => (taste.historyGenres.get(g) || 0) > 0;
+      if (historyMatch) return "Similar to stories you explored";
+      if (mood.words.some(word => String(movie.description || movie.synopsis || "").toLowerCase().includes(word))) return "Fits your chosen mood";
+      if (taste.balance === "explore") return "A fresh discovery";
+      return "A highly rated story";
+    }
+    function rankedPool(shuffleMix = false) {
       const mood = moods.find(item => item.id === activeMood) || moods[0];
+      const taste = userTaste();
       return catalog.filter(Boolean).map((movie, index) => {
-        const details = [
-          movie.title, movie.name, movie.genre, movie.genres, movie.moods,
-          movie.description, movie.synopsis, movie.type, movie.format
-        ].join(" ").toLowerCase();
-        const hits = mood.words.reduce((sum, word) => sum + (details.includes(word) ? 1 : 0), 0);
+        const details = [movie.title, movie.name, movie.genre, movie.genres, movie.moods, movie.description, movie.synopsis, movie.type, movie.format].join(" ").toLowerCase();
+        const moodHits = mood.words.reduce((sum, word) => sum + (details.includes(word) ? 1 : 0), 0);
+        const genres = tokens(movie.genre || movie.genres), movieMoods = tokens(movie.moods);
+        const preferenceHits = taste.genres.filter(g => genres.includes(g)).length;
+        const preferenceMoodHits = taste.moods.filter(m => movieMoods.includes(m) || details.includes(m)).length;
+        const languageMatch = taste.languages.some(l => String(movie.language || "English").toLowerCase().includes(l));
+        const historyAffinity = genres.reduce((sum, g) => sum + Math.min(2.2, (taste.historyGenres.get(g) || 0) * 0.28), 0);
+        const historyItem = typeof personalized !== "undefined" && personalized.history?.find(h => String(h.id) === String(movie.id));
+        const familiarBoost = taste.balance === "comfort" && historyItem ? 1.1 : 0;
+        const exploreBoost = taste.balance === "explore" && !historyItem && !preferenceHits ? 1.6 : 0;
+        const savedPenalty = typeof state !== "undefined" && state.list?.has(movie.id) ? 0.2 : 0;
         const rating = Number(movie.score || movie.communityScore || 0);
         const yearBoost = Number(movie.year || movie.releaseYear || 0) >= 2025 ? 0.25 : 0;
         const originalBoost = movie.original ? 0.2 : 0;
-        const savedPenalty = typeof state !== "undefined" && state.list && state.list.has(movie.id) ? 0.35 : 0;
-        return { movie, score: hits * 4 + rating + yearBoost + originalBoost - savedPenalty, index };
+        const jitter = shuffleMix ? Math.random() * 1.7 : 0;
+        const score = rating * 0.55 + moodHits * 2.4 + preferenceHits * 4.8 + preferenceMoodHits * 2.2 + (languageMatch ? 1.1 : 0) + historyAffinity + familiarBoost + exploreBoost + yearBoost + originalBoost - savedPenalty + jitter;
+        return { movie, score, index, reason: explain(movie, taste, mood) };
       }).sort((a, b) => b.score - a.score || a.index - b.index);
+    }
+    function selectDiverse(ranked, count = 4) {
+      const selected = [], genreCounts = new Map(), typeCounts = new Map(), remaining = ranked.slice();
+      while (selected.length < count && remaining.length) {
+        let bestIndex = 0, bestValue = -Infinity;
+        remaining.forEach((item, index) => {
+          const genres = tokens(item.movie.genre || item.movie.genres), type = String(item.movie.type || item.movie.format || "other").toLowerCase();
+          const repeatedGenre = genres.reduce((sum, genre) => sum + (genreCounts.get(genre) || 0), 0);
+          const repeatedType = typeCounts.get(type) || 0;
+          const diversityBonus = (genres.length && repeatedGenre === 0 ? 2.5 : 0) - repeatedGenre * 1.25 - repeatedType * 0.3;
+          const value = item.score + diversityBonus;
+          if (value > bestValue) { bestValue = value; bestIndex = index; }
+        });
+        const chosen = remaining.splice(bestIndex, 1)[0];
+        selected.push(chosen);
+        tokens(chosen.movie.genre || chosen.movie.genres).forEach(g => genreCounts.set(g, (genreCounts.get(g) || 0) + 1));
+        const type = String(chosen.movie.type || chosen.movie.format || "other").toLowerCase();
+        typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+      }
+      return selected;
     }
 
     function imageUrl(movie) {
@@ -112,7 +163,7 @@
         element("span", "", "·"),
         element("span", "mix-card-genre", String(movie.genre || movie.genres || "Discover"))
       );
-      body.append(meta);
+      body.append(meta, element("p", "mix-reason", movie.__storyspaceReason || "Picked for your mix"));
 
       const actions = element("div", "mix-card-actions");
       const details = element("button", "discovery-action primary", "Explore");
