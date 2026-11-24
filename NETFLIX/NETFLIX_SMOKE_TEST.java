@@ -1,6 +1,7 @@
 public class NETFLIX_SMOKE_TEST {
     public static void main(String[] args) {
         testPlaybackQueue();
+        testSystemHealthCounterSafety();
         testOfflineDownloads();
         testViewingSession();
         testMovieReview();
@@ -69,6 +70,21 @@ public class NETFLIX_SMOKE_TEST {
         require(session.pauseAt(20), "session should pause at valid progress");
         require(session.resumeAt(30), "session should resume at valid progress");
         require(session.getWatchedMinutes() == 30, "resume progress should be applied");
+        require(session.setBufferingPercent(0), "buffering percent should accept valid zero");
+        require(session.setBandwidthMbps(Integer.MAX_VALUE), "bandwidth should accept nonnegative values");
+        require(session.getEstimatedBufferSeconds() == Integer.MAX_VALUE,
+                "buffer estimate should saturate rather than overflow");
+    }
+
+    private static void testSystemHealthCounterSafety() {
+        SystemHealthMonitor monitor = new SystemHealthMonitor();
+        monitor.addUptimeSeconds(Integer.MAX_VALUE);
+        monitor.addUptimeSeconds(1);
+        require(monitor.getUptimeSeconds() == Integer.MAX_VALUE,
+                "uptime should saturate rather than overflow");
+        monitor.setActiveSessions(Integer.MAX_VALUE);
+        require(monitor.getActiveSessions() == Integer.MAX_VALUE,
+                "maximum active-session count should be retained");
     }
 
     private static void testMovieReview() {
