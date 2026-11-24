@@ -74,6 +74,22 @@ Do not commit local Cloudflare credentials or config files. A named tunnel is op
 
 The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified.
 
+## 5. Verify keys and troubleshoot authorization
+
+The Storyspace Upload connection form checks the media server's `/health` endpoint and verifies the uploader invitation key before saving it. The owner approval panel separately verifies the admin key before loading pending uploads. A healthy tunnel alone does not prove either key is correct.
+
+On the Windows PC, copy the correct key directly to the clipboard without printing it:
+
+```powershell
+# Uploader invitation key
+(Get-Content "$env:LOCALAPPDATA\\Storyspace\\HomeMedia\\media-host.json" -Raw | ConvertFrom-Json).uploadToken | Set-Clipboard
+
+# Owner-only admin key
+(Get-Content "$env:LOCALAPPDATA\\Storyspace\\HomeMedia\\media-host.json" -Raw | ConvertFrom-Json).adminToken | Set-Clipboard
+```
+
+Paste each key only into its matching field. Never interchange the two keys. If you replace either value in `media-host.json`, stop and restart the Storyspace Media Server process: the running Node.js process reads the secrets when it starts and will not automatically reload edited configuration. Keep keys out of screenshots, chat messages, repository files, and public links.
+
 ## Security and operating limits
 
 - The upload invitation key is shared among invited uploaders. It does not provide individual user identity, per-user quotas, or per-user revocation. Do not embed either secret in the public app bundle. A secure registered-user integration needs the production Storyspace account backend and short-lived per-user upload credentials.
