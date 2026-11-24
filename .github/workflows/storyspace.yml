@@ -50,7 +50,8 @@ jobs:
             "STORYSPACE/home-media/Start-Storyspace-Media.ps1",
             "STORYSPACE/home-media/Upload-Movie.ps1",
             "STORYSPACE/home-media/Setup-Cloudflare-Tunnel.ps1",
-            "STORYSPACE/home-media/Run-Storyspace-Tunnel.ps1"
+            "STORYSPACE/home-media/Run-Storyspace-Tunnel.ps1",
+            "STORYSPACE/home-media/Start-Storyspace-Quick-Tunnel.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null
