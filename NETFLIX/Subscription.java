@@ -390,18 +390,7 @@ public class Subscription {
     }
 
     public boolean refundLatestInvoice() {
-        if (invoiceCount == 0) {
-            return false;
-        }
-        int index = invoiceCount - 1;
-        if (!invoiceStatus[index].equalsIgnoreCase("Paid")
-                || !Double.isFinite(refundedAmount + invoiceAmount[index])) {
-            return false;
-        }
-        refundedAmount += invoiceAmount[index];
-        invoiceStatus[index] = "Refunded";
-        billingStatus = "Refunded";
-        return true;
+        return invoiceCount > 0 && refundInvoice(invoiceCount - 1);
     }
 
     public boolean refundInvoice(int index) {
@@ -412,6 +401,7 @@ public class Subscription {
         }
         refundedAmount += invoiceAmount[index];
         invoiceStatus[index] = "Refunded";
+        billingStatus = "Refunded";
         return true;
     }
 

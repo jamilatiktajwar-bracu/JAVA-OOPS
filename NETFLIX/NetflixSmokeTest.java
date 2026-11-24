@@ -233,6 +233,8 @@ public class NetflixSmokeTest {
                 "refund total is not double counted");
         check(Math.abs(billing.getNetPaid()) < 0.001,
                 "net paid correctly subtracts refunds");
+        check("Refunded".equals(billing.getBillingStatus()),
+                "invoice refund synchronizes subscription billing status");
         check(!billing.processPayment(Double.NaN), "payment rejects NaN");
         check(!billing.processPayment(-1.0), "payment rejects negative amount");
         billing.pauseBilling();
