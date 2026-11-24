@@ -233,7 +233,8 @@ public class Movies {
     }
 
     public static boolean addMovie(String title, String genre, int duration, int releaseYear) {
-        if (!addMovie(title, genre, duration)) {
+        if (releaseYear < 1888 || releaseYear > 2200
+                || !addMovie(title, genre, duration)) {
             return false;
         }
         getMovie(movieCount - 1).setReleaseYear(releaseYear);
@@ -266,7 +267,7 @@ public class Movies {
     public static Movies[] searchByTitle(String keyword) {
         Movies[] matches = new Movies[movieCount];
         int count = 0;
-        if (keyword == null) {
+        if (keyword == null || keyword.trim().isEmpty()) {
             return new Movies[0];
         }
         String search = keyword.trim().toLowerCase(java.util.Locale.ROOT);
@@ -851,7 +852,9 @@ public class Movies {
         if (!downloadAvailable) {
             return false;
         }
-        downloadCount++;
+        if (downloadCount < Integer.MAX_VALUE) {
+            downloadCount++;
+        }
         return true;
     }
 
@@ -930,8 +933,9 @@ public class Movies {
         if (keyword == null) {
             return false;
         }
+        String search = keyword.toLowerCase(java.util.Locale.ROOT);
         for (int i = 0; i < keywordCount; i++) {
-            if (keywords[i].toLowerCase().contains(keyword.toLowerCase())) {
+            if (keywords[i].toLowerCase(java.util.Locale.ROOT).contains(search)) {
                 return true;
             }
         }
@@ -984,7 +988,7 @@ public class Movies {
 
     public void setMaturityRating(String maturityRating) {
         if (maturityRating != null && !maturityRating.trim().isEmpty()) {
-            this.maturityRating = maturityRating.trim().toUpperCase();
+            this.maturityRating = maturityRating.trim().toUpperCase(java.util.Locale.ROOT);
         }
     }
 
@@ -1011,7 +1015,8 @@ public class Movies {
     }
 
     public boolean addUserRating(double value) {
-        if (value < 0.0 || value > 10.0) {
+        if (!Double.isFinite(value) || value < 0.0 || value > 10.0
+                || userRatingCount == Integer.MAX_VALUE) {
             return false;
         }
         userRatingCount++;
@@ -1030,10 +1035,13 @@ public class Movies {
 
     public void recordWatchSeconds(int seconds) {
         if (seconds > 0) {
-            totalWatchSeconds += seconds;
+            totalWatchSeconds = seconds > Integer.MAX_VALUE - totalWatchSeconds
+                    ? Integer.MAX_VALUE : totalWatchSeconds + seconds;
         }
-        if (seconds >= duration * 60 && duration > 0) {
-            completionCount++;
+        if (duration > 0 && (long) seconds >= (long) duration * 60L) {
+            if (completionCount < Integer.MAX_VALUE) {
+                completionCount++;
+            }
             markWatched();
         }
     }
