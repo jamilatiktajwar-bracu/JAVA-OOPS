@@ -131,6 +131,8 @@ public class NetflixSmokeTest {
         check(party.setPlaybackPosition(20), "watch party accepts valid position");
         party.play();
         check(!party.syncGuestPosition(-5), "sync rejects invalid guest position");
+        check(!party.syncGuestPosition(45) && party.getPlaybackPosition() == 20,
+                "out-of-sync guest cannot alter host-authoritative playback position");
         party.endParty();
         check(!party.invite(guest), "ended party cannot invite guests");
         party.restartParty();
