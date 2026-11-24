@@ -92,6 +92,16 @@ async function handle(req,res) {
   if(url.pathname==="/health"&&req.method==="GET") return json(res,200,{ok:true,service:"storyspace-home-media",version:2});
   if(url.pathname==="/api/catalog"&&req.method==="GET") return json(res,200,readCatalog().filter(x=>x.published===true).map(publicItem));
 
+  // Explicit, non-mutating credential checks let clients distinguish uploader and owner keys.
+  if(url.pathname==="/api/auth/verify/uploader"&&req.method==="POST"){
+    if(!isUploader(req)) return json(res,401,{error:"Uploader invitation key was rejected"});
+    return json(res,200,{ok:true,role:"uploader"});
+  }
+  if(url.pathname==="/api/auth/verify/admin"&&req.method==="POST"){
+    if(!isAdmin(req)) return json(res,401,{error:"Owner admin key was rejected"});
+    return json(res,200,{ok:true,role:"admin"});
+  }
+
   if(url.pathname==="/api/uploads/init"&&req.method==="POST"){
     if(!isUploader(req)) return json(res,401,{error:"Upload invitation required"});
     const body=await readJson(req);
