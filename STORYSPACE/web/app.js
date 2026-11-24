@@ -404,6 +404,16 @@ function formatPlayerTime(seconds){
   return hours?hours+":"+String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0"):minutes+":"+String(secs).padStart(2,"0");
 }
 const playerVideo=$("previewVideo");
+const playerRecovery=$("playerRecovery"),playerRetry=$("playerRetry");
+function setPlayerRecovery(message,showRetry=false){if(!playerRecovery||!playerRetry)return;playerRecovery.textContent=message;playerRecovery.hidden=!message;playerRetry.hidden=!showRetry}
+playerVideo.addEventListener("waiting",()=>setPlayerRecovery("Buffering…"));
+playerVideo.addEventListener("stalled",()=>setPlayerRecovery("Playback is stalled while waiting for media."));
+playerVideo.addEventListener("playing",()=>setPlayerRecovery(""));
+playerVideo.addEventListener("canplay",()=>setPlayerRecovery(""));
+playerVideo.addEventListener("error",()=>{const code=playerVideo.error?.code;const message=code===2?"A network error interrupted playback.":code===3?"The video could not be decoded.":code===4?"This media format or source is unsupported.":"Playback failed.";setPlayerRecovery(message,true)});
+playerRetry?.addEventListener("click",()=>{if(!playerVideo.src)return;const resumeAt=Number(playerVideo.currentTime)||0;setPlayerRecovery("Retrying playback…");playerRetry.hidden=true;playerVideo.load();playerVideo.addEventListener("loadedmetadata",()=>{if(resumeAt>0&&Number.isFinite(playerVideo.duration))playerVideo.currentTime=Math.min(resumeAt,Math.max(0,playerVideo.duration-1));playerVideo.play().catch(()=>setPlayerRecovery("Retry failed. Check the connection and try again.",true))},{once:true});});
+window.addEventListener("online",()=>{if(playerVideo.error)setPlayerRecovery("Connection restored. You can retry playback.",true)});
+
 playerVideo.addEventListener("timeupdate",()=>{persistPlayerProgress(false);updatePlayerTimeline()});
 playerVideo.addEventListener("durationchange",updatePlayerTimeline);
 playerVideo.addEventListener("seeking",updatePlayerTimeline);
@@ -462,8 +472,8 @@ async function openPlayer(m){
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
   $("playerTitle").textContent=m.title||m.name||"Preview";
   $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
-  const video=$("previewVideo");$("playerRestart").disabled=true;video.pause();
-  video.onerror=()=>{if(request===playerLoadId&&!$("playerBackdrop").hidden)$("playerNotice").textContent="The preview could not be loaded. Check your connection and try again."};
+  const video=$("previewVideo");$("playerRestart").disabled=true;setPlayerRecovery("");video.pause();
+  video.onerror=null;setPlayerRecovery("");
   video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 
   if(m.streamUrl){
@@ -487,7 +497,7 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
+function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;setPlayerRecovery("");v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
