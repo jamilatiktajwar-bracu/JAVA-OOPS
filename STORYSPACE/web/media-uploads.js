@@ -105,11 +105,36 @@
         :error.message;
     }
   }
+
+  function showHealth(state,title,detail,latency){
+    const dot=$("mediaHealthDot"),heading=$("mediaHealthTitle"),note=$("mediaHealthDetail"),panel=$("mediaServerHealth");
+    if(!dot||!heading||!note||!panel)return;
+    dot.className="media-health-dot "+state;heading.textContent=title;note.textContent=detail+(latency!==undefined?" · "+latency+" ms":"");panel.dataset.state=state;
+  }
+  async function checkServerHealth(){
+    const root=cleanRoot($("mediaServerRoot")?.value||readConfig().root),token=$("mediaUploadToken")?.value.trim()||readConfig().uploadToken||"";
+    if(!validRoot(root)){showHealth("offline","Server address missing","Enter a valid HTTPS media server URL.");return false}
+    const button=$("mediaHealthCheck");if(button)button.disabled=true;
+    showHealth("checking","Checking connection","Contacting the media host securely…");
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000),started=performance.now();
+    try{
+      const response=await fetch(root+"/health",{credentials:"omit",cache:"no-store",signal:controller.signal});
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const data=await response.json(),latency=Math.round(performance.now()-started);
+      if(data.ok!==true||data.service!=="storyspace-home-media")throw new Error("URL is not a Storyspace media server");
+      let detail="Host online · version "+String(data.version||"unknown");
+      if(token.length>=32){await request(root,"/api/auth/verify/uploader",token,{method:"POST",headers:headers(token),signal:controller.signal});detail+=" · upload key accepted"}
+      else detail+=" · upload key not configured";
+      showHealth("online","Connected",detail,latency);return true;
+    }catch(error){showHealth("offline","Unavailable",error.name==="AbortError"?"Connection timed out (8 seconds)":error.message||"Could not reach media host");return false}
+    finally{clearTimeout(timeout);if(button)button.disabled=false}
+  }
+  $("mediaHealthCheck")?.addEventListener("click",checkServerHealth);
   function openHub(){
     $("mediaHubBackdrop").hidden=false;document.body.style.overflow="hidden";
     const cfg=readConfig();$("mediaServerRoot").value=cfg.root||"";$("mediaUploadToken").value=cfg.uploadToken||"";
     $("mediaAdminToken").value=sessionStorage.getItem("storyspace.mediaAdmin")||"";
-    renderQueue();refreshCommunityCatalog();
+    renderQueue();refreshCommunityCatalog();checkServerHealth();
   }
   function closeHub(){$("mediaHubBackdrop").hidden=true;document.body.style.overflow=""}
   $("openMediaHub")?.addEventListener("click",openHub);
@@ -121,14 +146,16 @@
     if(uploadToken.length<32){showToast("Paste the uploader invitation key (32+ characters)");return}
     const saveButton=$("mediaConfigForm").querySelector('button[type="submit"]');
     if(saveButton)saveButton.disabled=true;
+    const started=performance.now();
     try{
-      const health=await fetch(root+"/health",{credentials:"omit"});
+      const health=await fetch(root+"/health",{credentials:"omit",cache:"no-store"});
       if(!health.ok)throw new Error("Media server health check failed ("+health.status+")");
       const healthData=await health.json();
       if(healthData.ok!==true||healthData.service!=="storyspace-home-media")throw new Error("This URL is not a Storyspace Home Media server");
       await request(root,"/api/auth/verify/uploader",uploadToken,{method:"POST",headers:headers(uploadToken)});
-      saveConfig({root,uploadToken});showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();resumeAll();
+      saveConfig({root,uploadToken});showHealth("online","Connected","Host online · uploader key accepted",Math.round(performance.now()-started));showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();resumeAll();
     }catch(error){
+      showHealth("offline","Verification failed",error.status===401?"Uploader invitation key rejected":error.message||"Could not reach media host");
       showToast(error.status===401
         ?"Uploader invitation key rejected. Copy uploadToken from this PC's media-host.json; restart the media server if you changed it."
         :"Could not verify media server: "+error.message);
