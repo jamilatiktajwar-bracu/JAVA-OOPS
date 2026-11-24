@@ -2,6 +2,13 @@ name: Storyspace Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'STORYSPACE/web/**'
+      - 'STORYSPACE/platforms/mobile/**'
+      - 'STORYSPACE/platforms/android-tv/**'
+      - '.github/workflows/storyspace-android.yml'
   pull_request:
     paths:
       - 'STORYSPACE/web/**'
