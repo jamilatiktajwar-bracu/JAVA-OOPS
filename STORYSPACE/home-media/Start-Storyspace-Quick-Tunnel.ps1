@@ -1,11 +1,24 @@
 param(
   [string]$MediaUrl = "http://127.0.0.1:8787",
-  [int]$HealthWaitSeconds = 45
+  [int]$HealthWaitSeconds = 60
 )
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ServerScript = Join-Path $Root "Start-Storyspace-Media.ps1"
 $HealthUrl = "$($MediaUrl.TrimEnd('/'))/health"
+
+# Validate the server runtime up front so users don't wait for a tunnel that cannot start.
+$Node = Get-Command node -ErrorAction SilentlyContinue
+if (-not $Node) {
+  throw "Node.js 20+ is required but node was not found. Install Node.js LTS, then close and reopen PowerShell. https://nodejs.org/"
+}
+$NodeVersionText = (& node --version).Trim()
+$NodeMajorText = $NodeVersionText.TrimStart("v").Split(".")[0]
+$NodeMajor = 0
+if (-not [int]::TryParse($NodeMajorText, [ref]$NodeMajor) -or $NodeMajor -lt 20) {
+  throw "Storyspace requires Node.js 20 or newer. Found $NodeVersionText. Upgrade/install Node.js LTS with: winget install --id OpenJS.NodeJS.LTS --exact. Then close every PowerShell window, reopen, verify node --version, and retry."
+}
+Write-Host "Node.js runtime check passed ($NodeVersionText)." -ForegroundColor Green
 
 function Test-MediaServer {
   try {
@@ -18,7 +31,7 @@ $Cloudflared = Get-Command cloudflared -ErrorAction SilentlyContinue
 if (-not $Cloudflared) {
   $Winget = Get-Command winget -ErrorAction SilentlyContinue
   if (-not $Winget) {
-    throw "cloudflared is missing and winget is unavailable. Install Cloudflare cloudflared from https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/ then reopen PowerShell."
+    throw "cloudflared is missing and winget is unavailable. Install Cloudflare cloudflared from https://developers.cloudflare.com/cloudflare-one/connections-connect-networks/downloads/ then reopen PowerShell."
   }
   Write-Host "Installing Cloudflare cloudflared with Windows Package Manager..." -ForegroundColor Cyan
   & winget install --id Cloudflare.cloudflared --exact --source winget --accept-package-agreements --accept-source-agreements
@@ -39,7 +52,7 @@ if (-not (Test-MediaServer)) {
   while ((Get-Date) -lt $Deadline -and -not (Test-MediaServer)) { Start-Sleep -Seconds 2 }
 }
 if (-not (Test-MediaServer)) {
-  throw "Storyspace media server did not become healthy at $HealthUrl. Check the separate server window before retrying."
+  throw "Storyspace media server did not become healthy at $HealthUrl after $HealthWaitSeconds seconds. Check the separate server window for its error (Node.js version, port conflict, or server startup issue) and retry."
 }
 
 Write-Host ""
