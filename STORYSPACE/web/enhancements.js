@@ -43,15 +43,20 @@
     moodBar.setAttribute("aria-label", "Choose a viewing mood");
 
     const results = element("div", "discovery-results");
+    const restore = element("button", "discovery-restore", "↺  Show hidden stories"); restore.type = "button"; restore.hidden = true;
+    restore.setAttribute("aria-label", "Restore stories hidden from recommendations");
     results.setAttribute("aria-live", "polite");
     results.setAttribute("aria-label", "Recommended stories");
 
-    root.append(top, moodBar, results);
+    root.append(top, moodBar, restore, results);
     const welcome = document.getElementById("welcomeLine");
     if (welcome) welcome.insertAdjacentElement("afterend", root);
     else content.prepend(root);
 
     let activeMood = "feel-good";
+    const dismissed = new Set();
+    try { const saved = JSON.parse(localStorage.getItem("storyspace.discoveryDismissed") || "[]"); if (Array.isArray(saved)) saved.slice(0, 300).forEach(id => { if (typeof id === "string" || typeof id === "number") dismissed.add(String(id)); }); } catch {}
+    function persistDismissed(){ try { localStorage.setItem("storyspace.discoveryDismissed", JSON.stringify([...dismissed].slice(0, 300))); } catch {} }
     try {
       const savedMood = localStorage.getItem("storyspace.discoveryMood");
       if (moods.some(mood => mood.id === savedMood)) activeMood = savedMood;
@@ -175,7 +180,8 @@
       save.type = "button";
       save.dataset.mixAction = "save";
       save.setAttribute("aria-label", (saved ? "Remove " : "Save ") + title + (saved ? " from" : " to") + " My Universe");
-      actions.append(details, save);
+      const hide = element("button", "discovery-action discovery-dismiss", "Not for me"); hide.type = "button"; hide.dataset.mixAction = "dismiss"; hide.setAttribute("aria-label", "Hide " + title + " from future recommendations");
+      actions.append(details, save, hide);
       body.append(actions);
       article.append(poster, body);
 
@@ -199,20 +205,23 @@
         } else if (button.dataset.mixAction === "save" && typeof toggleList === "function") {
           toggleList(movie);
           render(false);
+        } else if (button.dataset.mixAction === "dismiss") {
+          dismissed.add(String(movie.apiId || movie.id)); persistDismissed(); render(false);
         }
       });
       return article;
     }
 
     function render(shuffleMix) {
-      const ranked = rankedPool(shuffleMix);
+      const ranked = rankedPool(shuffleMix).filter(item => !dismissed.has(String(item.movie.apiId || item.movie.id)));
       const chosen = selectDiverse(ranked, 4).map(item => Object.assign({}, item.movie, { __storyspaceReason: item.reason }));
       results.replaceChildren();
       if (!chosen.length) {
-        results.append(element("p", "discovery-empty", "No stories match this mood yet. Try another feeling."));
+        results.append(element("p", "discovery-empty", dismissed.size ? "You’ve hidden these stories. Restore them or choose another mood." : "No stories match this mood yet. Try another feeling."));
       } else {
         chosen.forEach(movie => results.append(buildCard(movie)));
       }
+      restore.hidden = dismissed.size === 0;
       moodBar.querySelectorAll(".discovery-mood").forEach(button => {
         button.setAttribute("aria-pressed", String(button.dataset.mood === activeMood));
       });
@@ -232,6 +241,7 @@
     });
 
     shuffle.addEventListener("click", () => render(true));
+    restore.addEventListener("click", () => { dismissed.clear(); persistDismissed(); render(false); });
 
     function syncVisibility() {
       const currentView = typeof state !== "undefined" ? state.view : "home";
