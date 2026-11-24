@@ -90,6 +90,7 @@
     if(!validRoot(root)||!token){target.textContent="Enter a valid media server address and owner admin key.";return}
     target.textContent="Loading pending uploads…";
     try{
+      await request(root,"/api/auth/verify/admin",token,{method:"POST",headers:{"x-storyspace-admin-token":token}});
       const items=await request(root,"/admin/pending",token,{headers:{"x-storyspace-admin-token":token}});
       target.replaceChildren();if(!items.length){target.textContent="No pending uploads.";return}
       items.forEach(item=>{
@@ -98,7 +99,11 @@
         for(const action of ["approve","reject"]){const button=document.createElement("button");button.type="button";button.className=action==="approve"?"primary-button":"secondary-button";button.textContent=action==="approve"?"Approve":"Reject";button.addEventListener("click",async()=>{button.disabled=true;try{await request(root,"/admin/review/"+encodeURIComponent(item.id),token,{method:"POST",headers:{"x-storyspace-admin-token":token,"content-type":"application/json"},body:JSON.stringify({action})});showToast(action==="approve"?"Movie published":"Upload rejected");await loadPending();if(action==="approve")await refreshCommunityCatalog()}catch(error){showToast(error.message);button.disabled=false}});actions.append(button)}
         row.append(info,actions);target.append(row);
       });
-    }catch(error){target.textContent=error.message}
+    }catch(error){
+      target.textContent=error.status===401
+        ?"Owner admin key was rejected by this media server. Copy the adminToken from this PC's media-host.json and restart the media server after any key changes."
+        :error.message;
+    }
   }
   function openHub(){
     $("mediaHubBackdrop").hidden=false;document.body.style.overflow="hidden";
@@ -110,10 +115,24 @@
   $("openMediaHub")?.addEventListener("click",openHub);
   $("mediaHubClose")?.addEventListener("click",closeHub);
   $("mediaHubBackdrop")?.addEventListener("click",e=>{if(e.target===$("mediaHubBackdrop"))closeHub()});
-  $("mediaConfigForm")?.addEventListener("submit",e=>{
+  $("mediaConfigForm")?.addEventListener("submit",async e=>{
     e.preventDefault();const root=cleanRoot($("mediaServerRoot").value),uploadToken=$("mediaUploadToken").value.trim();
     if(!validRoot(root)){showToast("Use a valid HTTPS media server address");return}
-    saveConfig({root,uploadToken});showToast("Media server address saved for this session");refreshCommunityCatalog();
+    if(uploadToken.length<32){showToast("Paste the uploader invitation key (32+ characters)");return}
+    const saveButton=$("mediaConfigForm").querySelector('button[type="submit"]');
+    if(saveButton)saveButton.disabled=true;
+    try{
+      const health=await fetch(root+"/health",{credentials:"omit"});
+      if(!health.ok)throw new Error("Media server health check failed ("+health.status+")");
+      const healthData=await health.json();
+      if(healthData.ok!==true||healthData.service!=="storyspace-home-media")throw new Error("This URL is not a Storyspace Home Media server");
+      await request(root,"/api/auth/verify/uploader",uploadToken,{method:"POST",headers:headers(uploadToken)});
+      saveConfig({root,uploadToken});showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();
+    }catch(error){
+      showToast(error.status===401
+        ?"Uploader invitation key rejected. Copy uploadToken from this PC's media-host.json; restart the media server if you changed it."
+        :"Could not verify media server: "+error.message);
+    }finally{if(saveButton)saveButton.disabled=false}
   });
   $("mediaAdminLoad")?.addEventListener("click",()=>{const token=$("mediaAdminToken").value.trim();if(token.length<32){showToast("Admin key must contain at least 32 characters");return}sessionStorage.setItem("storyspace.mediaAdmin",token);loadPending()});
   $("mediaQueueRefresh")?.addEventListener("click",renderQueue);
