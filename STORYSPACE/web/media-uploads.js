@@ -30,7 +30,7 @@
   }
   async function runUpload(item,file){
     const cfg=readConfig(),root=cleanRoot(cfg.root),token=cfg.uploadToken;
-    if(!validRoot(root)||!token)throw new Error("Save a valid HTTPS media server address and uploader invitation key first.");
+    if(!validRoot(root)||!token||token.length<32)throw new Error("Save a valid HTTPS media server address and uploader invitation key first.");
     if(!item.uploadId){
       const init=await request(root,"/api/uploads/init",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:item.title,filename:item.filename,size:item.size})});
       item.uploadId=init.uploadId;item.offset=0;item.status="uploading";await storeItem(item);
@@ -68,8 +68,19 @@
   async function resumeAll(){
     if(active||!navigator.onLine)return;
     let items=[];try{items=await getItems()}catch{return}
-    const next=items.find(x=>x.status!=="Pending owner approval");
+    const next=items.find(x=>x.status!=="Pending owner approval"&&x.handle);
     if(next)await resumeOne(next.id);
+  }
+  async function refreshCommunityCatalog(){
+    const cfg=readConfig(),root=cleanRoot(cfg.root);if(!validRoot(root))return;
+    try{
+      const res=await fetch(root+"/api/catalog");if(!res.ok)return;const items=await res.json();if(!Array.isArray(items))return;
+      const existing=new Set(movies.map(m=>String(m.mediaId||"")));
+      items.forEach(item=>{if(!item||!item.id||existing.has(String(item.id)))return;const stream=new URL(item.streamUrl||("/media/"+item.id),root).href;movies.push({id:"media-"+item.id,mediaId:item.id,title:String(item.title||"Untitled upload"),type:"movie",year:new Date(item.addedAt||Date.now()).getFullYear(),rating:"NR",duration:"Community upload",genre:"Community",score:0,original:true,description:"Owner-approved community upload.",cast:"Community media",poster:"",progress:0,streamUrl:stream});});
+      let section=$("communitySection");if(!section){section=document.createElement("section");section.className="movie-section";section.id="communitySection";section.innerHTML="<div class=\"section-heading\"><div><span class=\"section-kicker\">COMMUNITY LIBRARY</span><h2>Movies shared with Storyspace</h2></div></div><div class=\"movie-row\" id=\"communityRow\"></div>";document.querySelector(".content-area")?.append(section)}
+      renderRow("communityRow",movies.filter(m=>String(m.id).startsWith("media-")));
+      section.hidden=!movies.some(m=>String(m.id).startsWith("media-"));
+    }catch(error){console.warn("Community catalog unavailable",error)}
   }
   async function loadPending(){
     const root=cleanRoot(readConfig().root),token=$("mediaAdminToken").value.trim(),target=$("mediaPendingList");
@@ -81,7 +92,7 @@
       items.forEach(item=>{
         const row=document.createElement("div");row.className="media-pending-item";const info=document.createElement("div"),title=document.createElement("b"),meta=document.createElement("small");title.textContent=item.title;meta.textContent=fmt(item.size)+" · "+new Date(item.addedAt).toLocaleString();info.append(title,meta);
         const actions=document.createElement("div");actions.className="media-pending-actions";
-        for(const action of ["approve","reject"]){const button=document.createElement("button");button.type="button";button.className=action==="approve"?"primary-button":"secondary-button";button.textContent=action==="approve"?"Approve":"Reject";button.addEventListener("click",async()=>{button.disabled=true;try{await request(root,"/admin/review/"+encodeURIComponent(item.id),token,{method:"POST",headers:{"x-storyspace-admin-token":token,"content-type":"application/json"},body:JSON.stringify({action})});showToast(action==="approve"?"Movie published":"Upload rejected");await loadPending()}catch(error){showToast(error.message);button.disabled=false}});actions.append(button)}
+        for(const action of ["approve","reject"]){const button=document.createElement("button");button.type="button";button.className=action==="approve"?"primary-button":"secondary-button";button.textContent=action==="approve"?"Approve":"Reject";button.addEventListener("click",async()=>{button.disabled=true;try{await request(root,"/admin/review/"+encodeURIComponent(item.id),token,{method:"POST",headers:{"x-storyspace-admin-token":token,"content-type":"application/json"},body:JSON.stringify({action})});showToast(action==="approve"?"Movie published":"Upload rejected");await loadPending();if(action==="approve")await refreshCommunityCatalog()}catch(error){showToast(error.message);button.disabled=false}});actions.append(button)}
         row.append(info,actions);target.append(row);
       });
     }catch(error){target.textContent=error.message}
@@ -90,7 +101,7 @@
     $("mediaHubBackdrop").hidden=false;document.body.style.overflow="hidden";
     const cfg=readConfig();$("mediaServerRoot").value=cfg.root||"";$("mediaUploadToken").value=cfg.uploadToken||"";
     $("mediaAdminToken").value=sessionStorage.getItem("storyspace.mediaAdmin")||"";
-    renderQueue();
+    renderQueue();refreshCommunityCatalog();
   }
   function closeHub(){$("mediaHubBackdrop").hidden=true;document.body.style.overflow=""}
   $("openMediaHub")?.addEventListener("click",openHub);
@@ -98,8 +109,8 @@
   $("mediaHubBackdrop")?.addEventListener("click",e=>{if(e.target===$("mediaHubBackdrop"))closeHub()});
   $("mediaConfigForm")?.addEventListener("submit",e=>{
     e.preventDefault();const root=cleanRoot($("mediaServerRoot").value),uploadToken=$("mediaUploadToken").value.trim();
-    if(!validRoot(root)||uploadToken.length<32){showToast("Use an HTTPS address and an invitation key of at least 32 characters");return}
-    saveConfig({root,uploadToken});showToast("Media connection saved for this session");
+    if(!validRoot(root)){showToast("Use a valid HTTPS media server address");return}
+    saveConfig({root,uploadToken});showToast("Media server address saved for this session");refreshCommunityCatalog();
   });
   $("mediaAdminLoad")?.addEventListener("click",()=>{const token=$("mediaAdminToken").value.trim();if(token.length<32){showToast("Admin key must contain at least 32 characters");return}sessionStorage.setItem("storyspace.mediaAdmin",token);loadPending()});
   $("mediaQueueRefresh")?.addEventListener("click",renderQueue);
@@ -107,7 +118,7 @@
   $("mediaUploadStart")?.addEventListener("click",async()=>{
     const title=$("mediaMovieTitle").value.trim();let file=selectedFile,handle=null;
     if(!title){showToast("Enter a movie title");return}
-    if(window.showOpenFilePicker){
+    if(!file&&window.showOpenFilePicker){
       try{[handle]=await window.showOpenFilePicker({multiple:false,types:[{description:"Movie video",accept:{"video/mp4":[".mp4",".m4v"],"video/webm":[".webm"],"video/quicktime":[".mov"]}}]});file=await handle.getFile();selectedFile=file;selectedHandle=handle}
       catch(error){if(error.name==="AbortError")return}
     }
@@ -124,5 +135,5 @@
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)resumeAll()});
   window.setInterval(resumeAll,30000);
   document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("mediaHubBackdrop").hidden)closeHub()});
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",renderQueue,{once:true});else renderQueue();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{renderQueue();refreshCommunityCatalog()},{once:true});else{renderQueue();refreshCommunityCatalog()}
 })();
