@@ -670,7 +670,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   }
   document.addEventListener("keydown",event=>{
     if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key))return;
-    if(!tvMode&&isNativeAndroid){window.StoryspaceTV.enable();tvMode=true}
+    if(!tvMode&&isNativeAndroid){window.StoryspaceTV.enable();tvMode=true;}
     if(!tvMode)return;
     const target=event.target,tag=target?.tagName;
     if(["INPUT","TEXTAREA","SELECT"].includes(tag)||target?.isContentEditable||target?.closest?.("[contenteditable='true']")||(tag==="BUTTON"&&target.type==="range"))return;
