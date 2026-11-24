@@ -164,7 +164,7 @@ async function handleKidsModeToggle(enabled){
  if(!enabled&&activeLocalProfile.kidsMode&&activeLocalProfile.parentPin&&!(await verifyParentPin())){
   $("kidsModeToggle").checked=true;return;
  }
- activeLocalProfile.kidsMode=!!enabled;persistLocalProfiles();refreshProfileOptions();
+ activeLocalProfile.kidsMode=!!enabled;activeLocalProfile.screenTime=normalizeScreenTime(activeLocalProfile.screenTime,!!enabled);persistLocalProfiles();refreshProfileOptions();renderScreenTimeDashboard();
  renderHome();setHero(chooseHero());showView(state.view);renderKidsHub();
  showToast(enabled?"Kids Mode on · family-friendly discovery enabled":"Kids Mode off");
 }
@@ -245,7 +245,7 @@ $("profileButton").addEventListener("click",()=> $("profileMenu").classList.togg
 $("openProfileManager").onclick=()=>{$("profileMenu").classList.remove("open");openProfileManager()};
 $("profilesClose").onclick=closeProfileManager;
 $("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
-$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
+$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("dailyScreenLimit").onchange=e=>handleDailyScreenLimitChange(e.target.value);$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
 $("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
 $("deleteProfile").onclick=async()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}if(activeLocalProfile.parentPin&&!(await verifyParentPin()))return;const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);showView(state.view);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
@@ -289,19 +289,68 @@ function normalizeHistory(raw){
 const personalized={preferences:normalizePreferences(readJson("storyspace.preferences",prefDefaults)),token:storage.get("storyspace.token")||"",account:readJson("storyspace.account",null),history:normalizeHistory(readJson("storyspace.history",[])),serverLibrary:[],serverAvailable:false,apiTitles:[],heroCycle:0};
 /* Local profiles isolate device-side state (not server identities). */
 const PROFILE_STORE="storyspace.localProfiles",PROFILE_ACTIVE="storyspace.activeProfile";
+const SCREEN_TIME_LIMITS=[0,30,45,60,90,120,180];
+function localDayStamp(date=new Date()){
+ return [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+}
+function normalizeScreenTime(raw,kidsMode=false){
+ const value=raw&&typeof raw==="object"?raw:{};
+ const today=localDayStamp(),configured=Number(value.limitMinutes);
+ const hasConfigured=value.configured===true&&SCREEN_TIME_LIMITS.includes(configured);
+ const limit=hasConfigured?configured:(kidsMode?60:0);
+ const seconds=value.day===today?Math.max(0,Math.min(86400,Math.floor(Number(value.seconds)||0))):0;
+ return {day:today,seconds,limitMinutes:limit,configured:hasConfigured};
+}
+function profileScreenTime(profile=activeLocalProfile){
+ if(!profile)return normalizeScreenTime(null,false);
+ const usage=normalizeScreenTime(profile.screenTime,!!profile.kidsMode);
+ profile.screenTime=usage;
+ return usage;
+}
+function formatScreenMinutes(seconds){
+ const minutes=Math.max(0,Math.floor((Number(seconds)||0)/60));
+ const hours=Math.floor(minutes/60),rest=minutes%60;
+ return hours?hours+"h "+rest+"m":rest+"m";
+}
+function screenTimeLimitReached(profile=activeLocalProfile){
+ const usage=profileScreenTime(profile);
+ return usage.limitMinutes>0&&usage.seconds>=usage.limitMinutes*60;
+}
+function renderScreenTimeDashboard(){
+ const usage=profileScreenTime();
+ const summary=$("screenTimeSummary"),bar=$("screenTimeProgress"),fill=$("screenTimeProgressFill"),limit=$("dailyScreenLimit"),hint=$("screenTimeHint");
+ const remaining=usage.limitMinutes>0?Math.max(0,usage.limitMinutes*60-usage.seconds):0;
+ if(summary)summary.textContent=usage.limitMinutes>0?formatScreenMinutes(usage.seconds)+" used · "+formatScreenMinutes(remaining)+" left":"Today: "+formatScreenMinutes(usage.seconds)+" used · no daily limit";
+ if(bar)bar.setAttribute("aria-valuenow",String(usage.limitMinutes>0?Math.min(100,Math.round(usage.seconds/(usage.limitMinutes*60)*100)):0));
+ if(fill)fill.style.width=(usage.limitMinutes>0?Math.min(100,usage.seconds/(usage.limitMinutes*60)*100):0)+"%";
+ if(limit){limit.value=String(usage.limitMinutes);limit.disabled=!activeLocalProfile?.kidsMode}
+ if(hint)hint.textContent=usage.limitMinutes>0?(remaining>0?"Playback pauses automatically when this daily limit is reached.":"Daily limit reached. Playback is locked until the next local day or a parent changes the limit."):"Usage is tracked, but playback is not limited.";
+ const list=$("familyUsageList");
+ if(list){
+  list.replaceChildren();
+  localProfiles.forEach(profile=>{
+   const record=profileScreenTime(profile),item=document.createElement("div");
+   item.className="family-usage-item";
+   const name=document.createElement("b"),detail=document.createElement("small");
+   name.textContent=profile.name+(profile.kidsMode?" · Kids":"");
+   detail.textContent=formatScreenMinutes(record.seconds)+" used"+(record.limitMinutes>0?" / "+record.limitMinutes+" min":" · unlimited");
+   item.append(name,detail);list.append(item);
+  });
+ }
+}
 const profileCleanName=value=>String(value||"").trim().slice(0,32)||"Explorer";
 const profileCleanId=value=>String(value||"").slice(0,48);
 function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),kidsMode:false,kidsAgeBand:"8-12",kidsCategory:"all",parentPin:null,watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
-function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,kidsAgeBand:Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,p.kidsAgeBand)?p.kidsAgeBand:"8-12",kidsCategory:KIDS_CATEGORIES.includes(p.kidsCategory)?p.kidsCategory:"all",parentPin:p.parentPin&&/^[a-f0-9]{32}$/i.test(p.parentPin.salt||"")&&/^[a-f0-9]{64}$/i.test(p.parentPin.hash||"")?{salt:p.parentPin.salt.toLowerCase(),hash:p.parentPin.hash.toLowerCase(),iterations:Math.max(100000,Math.min(250000,Number(p.parentPin.iterations)||PARENT_PIN_ITERATIONS))}:null,watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
+function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,kidsAgeBand:Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,p.kidsAgeBand)?p.kidsAgeBand:"8-12",kidsCategory:KIDS_CATEGORIES.includes(p.kidsCategory)?p.kidsCategory:"all",parentPin:p.parentPin&&/^[a-f0-9]{32}$/i.test(p.parentPin.salt||"")&&/^[a-f0-9]{64}$/i.test(p.parentPin.hash||"")?{salt:p.parentPin.salt.toLowerCase(),hash:p.parentPin.hash.toLowerCase(),iterations:Math.max(100000,Math.min(250000,Number(p.parentPin.iterations)||PARENT_PIN_ITERATIONS))}:null,screenTime:normalizeScreenTime(p.screenTime,!!p.kidsMode),watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
 let localProfiles=(()=>{const stored=readJson(PROFILE_STORE,null);if(Array.isArray(stored)&&stored.length)return stored.slice(0,8).map(profileSanitize).filter(p=>p.id);return[createLocalProfile("Explorer","local-default")]})();
 let activeProfileId=storage.get(PROFILE_ACTIVE)||localProfiles[0].id;
 let activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];
 function profileCapture(p=activeLocalProfile){if(!p)return;p.watchlist=[...state.list].slice(0,500);p.preferences=normalizePreferences(personalized.preferences);p.history=normalizeHistory(personalized.history);p.resumePoints=normalizeResumePoints(resumePoints);p.savedAt={...savedAt}}
 function persistLocalProfiles(){if(!activeLocalProfile||!Array.isArray(localProfiles))return;profileCapture();storage.set(PROFILE_STORE,JSON.stringify(localProfiles.slice(0,8)));storage.set(PROFILE_ACTIVE,activeLocalProfile.id)}
-function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});movies.forEach(m=>{m.progress=defaultProgress[String(m.id)]||0;delete m.resumePoint});movies.forEach(applyResumePoint);storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
+function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;profileScreenTime(p);state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});movies.forEach(m=>{m.progress=defaultProgress[String(m.id)]||0;delete m.resumePoint});movies.forEach(applyResumePoint);storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
 async function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;if(activeLocalProfile.parentPin&&!(await verifyParentPin())){refreshProfileOptions();return}document.documentElement.classList.add("profile-switching");persistLocalProfiles();applyLocalProfile(target);showView(state.view);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name);window.setTimeout(()=>document.documentElement.classList.remove("profile-switching"),520)}
-function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin}
-function openProfileManager(){refreshProfileOptions();$("profilesBackdrop").hidden=false;document.body.style.overflow="hidden";$("newProfileName").focus()}
+function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;renderScreenTimeDashboard();select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin}
+function openProfileManager(){refreshProfileOptions();renderScreenTimeDashboard();$("profilesBackdrop").hidden=false;document.body.style.overflow="hidden";$("newProfileName").focus()}
 function closeProfileManager(){if($("profilesBackdrop").hidden)return;$("profilesBackdrop").hidden=true;document.body.style.overflow=""}
 function initializeLocalProfiles(){if(!storage.get(PROFILE_STORE)){const starter=localProfiles[0];starter.watchlist=[...state.list];starter.preferences=normalizePreferences(personalized.preferences);starter.history=normalizeHistory(personalized.history);starter.resumePoints=normalizeResumePoints(resumePoints);starter.savedAt={...savedAt};localProfiles=[starter];activeLocalProfile=starter;activeProfileId=starter.id}activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];applyLocalProfile(activeLocalProfile);persistLocalProfiles()}
 initializeLocalProfiles();
@@ -517,11 +566,58 @@ function formatPlayerTime(seconds){
   return hours?hours+":"+String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0"):minutes+":"+String(secs).padStart(2,"0");
 }
 const playerVideo=$("previewVideo");
+let screenTimeTicker=null,screenTimeLastTickAt=0;
+function notifyScreenTimeLock(){
+ $("playerNotice").textContent="Daily screen-time limit reached. Ask a parent to review the limit in profile settings.";
+ showToast("Daily screen-time limit reached");
+}
+function stopScreenTimeTicker(accrue=true){
+ if(accrue)accrueScreenTime(true);
+ if(screenTimeTicker!==null){window.clearInterval(screenTimeTicker);screenTimeTicker=null}
+ screenTimeLastTickAt=0;
+}
+function accrueScreenTime(force=false){
+ if(!screenTimeLastTickAt)return;
+ const now=Date.now(),elapsed=Math.max(0,Math.min(30000,now-screenTimeLastTickAt));
+ screenTimeLastTickAt=now;
+ if((!force&&(playerVideo.paused||playerVideo.ended))||!activePlayerTitle||elapsed<1000)return;
+ const usage=profileScreenTime();
+ usage.seconds=Math.min(86400,usage.seconds+Math.max(1,Math.floor(elapsed/1000)));
+ activeLocalProfile.screenTime=usage;
+ persistLocalProfiles();
+ renderScreenTimeDashboard();
+ if(screenTimeLimitReached()){
+  if(!playerVideo.paused)playerVideo.pause();
+  stopScreenTimeTicker(false);
+  notifyScreenTimeLock();
+ }
+}
+function startScreenTimeTicker(){
+ if(screenTimeLimitReached()){notifyScreenTimeLock();playerVideo.pause();return}
+ if(screenTimeTicker!==null)return;
+ screenTimeLastTickAt=Date.now();
+ screenTimeTicker=window.setInterval(()=>accrueScreenTime(),5000);
+}
+async function handleDailyScreenLimitChange(rawValue){
+ const value=Number(rawValue);
+ if(!SCREEN_TIME_LIMITS.includes(value)){renderScreenTimeDashboard();return}
+ if(!activeLocalProfile?.kidsMode){renderScreenTimeDashboard();showToast("Turn on Kids Mode to set a daily screen-time limit");return}
+ if(activeLocalProfile.parentPin&&!(await verifyParentPin())){renderScreenTimeDashboard();return}
+ const usage=profileScreenTime();
+ usage.limitMinutes=value;usage.configured=true;
+ activeLocalProfile.screenTime=usage;
+ persistLocalProfiles();
+ renderScreenTimeDashboard();
+ if(screenTimeLimitReached()&&!playerVideo.paused){playerVideo.pause();notifyScreenTimeLock()}
+ showToast(value?"Daily screen-time limit set to "+value+" minutes":"Daily screen-time limit removed");
+}
 const playerRecovery=$("playerRecovery"),playerRetry=$("playerRetry");
 function setPlayerRecovery(message,showRetry=false){if(!playerRecovery||!playerRetry)return;playerRecovery.textContent=message;playerRecovery.hidden=!message;playerRetry.hidden=!showRetry}
 playerVideo.addEventListener("waiting",()=>setPlayerRecovery("Buffering…"));
 playerVideo.addEventListener("stalled",()=>setPlayerRecovery("Playback is stalled while waiting for media."));
-playerVideo.addEventListener("playing",()=>setPlayerRecovery(""));
+playerVideo.addEventListener("playing",()=>{setPlayerRecovery("");startScreenTimeTicker()});
+playerVideo.addEventListener("play",()=>{if(screenTimeLimitReached()){playerVideo.pause();notifyScreenTimeLock()}});
+playerVideo.addEventListener("waiting",()=>stopScreenTimeTicker(false));
 playerVideo.addEventListener("canplay",()=>setPlayerRecovery(""));
 playerVideo.addEventListener("error",()=>{const code=playerVideo.error?.code;const message=code===2?"A network error interrupted playback.":code===3?"The video could not be decoded.":code===4?"This media format or source is unsupported.":"Playback failed.";setPlayerRecovery(message,true)});
 playerRetry?.addEventListener("click",()=>{if(!playerVideo.src)return;const resumeAt=Number(playerVideo.currentTime)||0;setPlayerRecovery("Retrying playback…");playerRetry.hidden=true;playerVideo.load();playerVideo.addEventListener("loadedmetadata",()=>{if(resumeAt>0&&Number.isFinite(playerVideo.duration))playerVideo.currentTime=Math.min(resumeAt,Math.max(0,playerVideo.duration-1));playerVideo.play().catch(()=>setPlayerRecovery("Retry failed. Check the connection and try again.",true))},{once:true});});
@@ -531,8 +627,8 @@ playerVideo.addEventListener("timeupdate",()=>{persistPlayerProgress(false);upda
 playerVideo.addEventListener("durationchange",updatePlayerTimeline);
 playerVideo.addEventListener("seeking",updatePlayerTimeline);
 playerVideo.addEventListener("seeked",()=>{persistPlayerProgress(true);updatePlayerTimeline()});
-playerVideo.addEventListener("pause",()=>persistPlayerProgress(true));
-playerVideo.addEventListener("ended",()=>persistPlayerProgress(true));
+playerVideo.addEventListener("pause",()=>{stopScreenTimeTicker();persistPlayerProgress(true)});
+playerVideo.addEventListener("ended",()=>{stopScreenTimeTicker();persistPlayerProgress(true)});
 $("playerSeek").addEventListener("input",()=>{
   if(!Number.isFinite(playerVideo.duration)||playerVideo.duration<=0)return;
   const fraction=Math.max(0,Math.min(1,Number($("playerSeek").value)/1000));
@@ -546,8 +642,8 @@ $("playerSeek").addEventListener("change",()=>{
   persistPlayerProgress(true);
   updatePlayerTimeline();
 });
-document.addEventListener("visibilitychange",()=>{if(document.hidden)persistPlayerProgress(true)});
-window.addEventListener("pagehide",()=>persistPlayerProgress(true));
+document.addEventListener("visibilitychange",()=>{if(document.hidden){accrueScreenTime();persistPlayerProgress(true)}});
+window.addEventListener("pagehide",()=>{stopScreenTimeTicker();persistPlayerProgress(true)});
 playerVideo.addEventListener("loadedmetadata",()=>{
   updatePlayerTimeline();
   $("playerRestart").disabled=false;
@@ -610,7 +706,7 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;setPlayerRecovery("");v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
+function closePlayer(){stopScreenTimeTicker();persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;setPlayerRecovery("");v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){if(!kidsSafe(m)){showToast("This title is hidden by the Kids Mode age guide");return}recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
