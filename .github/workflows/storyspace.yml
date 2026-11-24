@@ -31,7 +31,6 @@ jobs:
           node --check STORYSPACE/web/native-bridge.js
           node --check STORYSPACE/web/sw.js
           node STORYSPACE/web/upgrade-smoke.js
-          node --check STORYSPACE/web/sw.js
       - name: Platform configuration smoke checks
         run: node STORYSPACE/platforms/check-platform-config.js
 
