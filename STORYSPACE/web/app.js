@@ -404,6 +404,16 @@ function formatPlayerTime(seconds){
   return hours?hours+":"+String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0"):minutes+":"+String(secs).padStart(2,"0");
 }
 const playerVideo=$("previewVideo");
+const playerRecovery=$("playerRecovery"),playerRetry=$("playerRetry");
+function setPlayerRecovery(message,showRetry=false){if(!playerRecovery||!playerRetry)return;playerRecovery.textContent=message;playerRecovery.hidden=!message;playerRetry.hidden=!showRetry}
+playerVideo.addEventListener("waiting",()=>setPlayerRecovery("Buffering…"));
+playerVideo.addEventListener("stalled",()=>setPlayerRecovery("Playback is stalled while waiting for media."));
+playerVideo.addEventListener("playing",()=>setPlayerRecovery(""));
+playerVideo.addEventListener("canplay",()=>setPlayerRecovery(""));
+playerVideo.addEventListener("error",()=>{const code=playerVideo.error?.code;const message=code===2?"A network error interrupted playback.":code===3?"The video could not be decoded.":code===4?"This media format or source is unsupported.":"Playback failed.";setPlayerRecovery(message,true)});
+playerRetry?.addEventListener("click",()=>{if(!playerVideo.src)return;const resumeAt=Number(playerVideo.currentTime)||0;setPlayerRecovery("Retrying playback…");playerRetry.hidden=true;playerVideo.load();playerVideo.addEventListener("loadedmetadata",()=>{if(resumeAt>0&&Number.isFinite(playerVideo.duration))playerVideo.currentTime=Math.min(resumeAt,Math.max(0,playerVideo.duration-1));playerVideo.play().catch(()=>setPlayerRecovery("Retry failed. Check the connection and try again.",true))},{once:true});});
+window.addEventListener("online",()=>{if(playerVideo.error)setPlayerRecovery("Connection restored. You can retry playback.",true)});
+
 playerVideo.addEventListener("timeupdate",()=>{persistPlayerProgress(false);updatePlayerTimeline()});
 playerVideo.addEventListener("durationchange",updatePlayerTimeline);
 playerVideo.addEventListener("seeking",updatePlayerTimeline);
@@ -462,8 +472,8 @@ async function openPlayer(m){
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
   $("playerTitle").textContent=m.title||m.name||"Preview";
   $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
-  const video=$("previewVideo");$("playerRestart").disabled=true;video.pause();
-  video.onerror=()=>{if(request===playerLoadId&&!$("playerBackdrop").hidden)$("playerNotice").textContent="The preview could not be loaded. Check your connection and try again."};
+  const video=$("previewVideo");$("playerRestart").disabled=true;setPlayerRecovery("");video.pause();
+  video.onerror=null;setPlayerRecovery("");
   video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 
   if(m.streamUrl){
@@ -487,7 +497,7 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
+function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;setPlayerRecovery("");v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
@@ -657,36 +667,25 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   let tvMode = new URLSearchParams(location.search).get("tv") === "1";
   window.StoryspaceTV = { enable: () => { tvMode = true; document.documentElement.classList.add("tv-mode"); }, isEnabled: () => tvMode };
   if (tvMode) document.documentElement.classList.add("tv-mode");
-  const isFocusable = el => el && el.matches("button,a,input,select,textarea,[tabindex]") && !el.disabled && el.tabIndex >= 0 && !el.closest("[hidden]") && el.getClientRects().length;
-  const candidates = () => [...document.querySelectorAll("button,a,input,select,textarea,[tabindex]")].filter(isFocusable);
-  function moveFocus(key) {
-    const list = candidates(); if (!list.length) return;
-    const current = document.activeElement;
-    if (!list.includes(current)) { (list.find(el => el.closest(".main-nav")) || list[0]).focus(); return; }
-    const a = current.getBoundingClientRect(), ax = a.left+a.width/2, ay=a.top+a.height/2;
-    const vectors = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
-    const [dx,dy]=vectors[key]; let best=null, bestScore=Infinity;
-    for (const el of list) {
-      if(el===current) continue; const r=el.getBoundingClientRect(), x=r.left+r.width/2, y=r.top+r.height/2, vx=x-ax, vy=y-ay;
-      const primary=vx*dx+vy*dy, cross=Math.abs(vx*dy-vy*dx);
-      if(primary<=8) continue;
-      const score=primary+cross*2.2+(cross>primary?cross*2:0);
-      if(score<bestScore){bestScore=score;best=el}
-    }
-    if(best) { best.focus(); best.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); }
+  const focusSelector="button,a,input,select,textarea,[tabindex]";
+  const isFocusable=el=>el&&el.matches(focusSelector)&&!el.disabled&&el.tabIndex>=0&&!el.closest("[hidden],[inert],[aria-hidden='true']")&&el.getClientRects().length&&getComputedStyle(el).visibility!=="hidden";
+  const activeOverlay=()=>document.querySelector("#playerBackdrop:not([hidden]),#mediaHubBackdrop:not([hidden]),#profilesBackdrop:not([hidden]),#modalBackdrop:not([hidden]),#activityPanel:not([hidden])");
+  const candidates=()=>{const overlay=activeOverlay();return [...(overlay||document).querySelectorAll(focusSelector)].filter(isFocusable)};
+  function moveFocus(key){
+    const list=candidates();if(!list.length)return;const current=document.activeElement;
+    if(!list.includes(current)){const first=list.find(el=>el.closest(".main-nav"))||list.find(el=>el.matches("button,a"))||list[0];first.focus();return}
+    const a=current.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;const vectors={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};const [dx,dy]=vectors[key];let best=null,bestScore=Infinity;
+    for(const el of list){if(el===current)continue;const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,vx=x-ax,vy=y-ay,primary=vx*dx+vy*dy,cross=Math.abs(vx*dy-vy*dx);if(primary<=8)continue;const score=primary+cross*2.2+(cross>primary?cross*2:0);if(score<bestScore){bestScore=score;best=el}}
+    if(best){best.focus();best.scrollIntoView({block:"nearest",inline:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
   }
-  document.addEventListener("keydown", event => {
-    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) return;
-    // On native Android, the first remote arrow enables TV mode and must
-    // still be processed instead of being swallowed during mode activation.
-    if(!tvMode && isNativeAndroid) {
-      window.StoryspaceTV.enable();
-      tvMode = true;
-    }
-    if(!tvMode) return;
-    const tag=document.activeElement?.tagName;
-    if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
-    event.preventDefault(); moveFocus(event.key);
+  document.addEventListener("keydown",event=>{
+    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key))return;
+    if(!tvMode&&isNativeAndroid){window.StoryspaceTV.enable();tvMode=true;}
+    if(!tvMode)return;
+    const target=event.target,tag=target?.tagName;
+    if(["INPUT","TEXTAREA","SELECT"].includes(tag)||target?.isContentEditable||target?.closest?.("[contenteditable='true']")||(tag==="BUTTON"&&target.type==="range"))return;
+    if(document.querySelector("#playerBackdrop:not([hidden])"))return;
+    event.preventDefault();moveFocus(event.key);
   });
   if(tvMode) setTimeout(()=>{(document.querySelector(".nav-link.active")||document.querySelector("button,a")).focus()},350);
   document.addEventListener("click", event => {
