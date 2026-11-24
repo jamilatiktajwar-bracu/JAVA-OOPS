@@ -447,6 +447,16 @@ public class NetflixSmokeTest {
         cursorPlaylist.sortByReleaseYear(true);
         check(cursorPlaylist.getNextMovie() == queueA,
                 "release-year sort preserves the next-up movie");
+        check(cursorPlaylist.getPreviousMovie() == queueC,
+                "previous navigation wraps from the first item to the last");
+        check(cursorPlaylist.getNextMovie() == queueA,
+                "next navigation resumes correctly after previous wraparound");
+        cursorPlaylist.resetPosition();
+        check(cursorPlaylist.getNextMovie() == queueC
+                && cursorPlaylist.getNextMovie() == queueB
+                && cursorPlaylist.getNextMovie() == queueA
+                && cursorPlaylist.getNextMovie() == queueC,
+                "playlist next navigation wraps after reaching the end");
 
         PaymentMethod sanitizedCard = new PaymentMethod("Card", "AB12-34 5678 9XYZ", "Test");
         check(sanitizedCard.getMaskedNumber().endsWith("6789"),
