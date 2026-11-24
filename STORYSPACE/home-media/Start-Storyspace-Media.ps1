@@ -14,11 +14,17 @@ if (-not (Test-Path $ConfigFile)) {
   $Rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
   try { $Rng.GetBytes($Bytes) } finally { $Rng.Dispose() }
   $Token = [Convert]::ToBase64String($Bytes).Replace("+","-").Replace("/","_").TrimEnd("=")
-  @{ adminToken = $Token; createdAt = (Get-Date).ToString("o") } | ConvertTo-Json | Set-Content -Encoding UTF8 $ConfigFile
+  $UploadBytes = New-Object byte[] 48
+  $Rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+  try { $Rng.GetBytes($UploadBytes) } finally { $Rng.Dispose() }
+  $UploadToken = [Convert]::ToBase64String($UploadBytes).Replace("+","-").Replace("/","_").TrimEnd("=")
+  @{ adminToken = $Token; uploadToken = $UploadToken; createdAt = (Get-Date).ToString("o") } | ConvertTo-Json | Set-Content -Encoding UTF8 $ConfigFile
+  Write-Host "Private uploader invitation token is stored in $ConfigFile. Share only the uploadToken value with trusted users." -ForegroundColor Yellow
   Write-Host "Created a private upload token at $ConfigFile" -ForegroundColor Green
 }
 $Config = Get-Content -Raw $ConfigFile | ConvertFrom-Json
 $env:STORYSPACE_MEDIA_ADMIN_TOKEN = [string]$Config.adminToken
+$env:STORYSPACE_MEDIA_UPLOAD_TOKEN = [string]$Config.uploadToken
 $env:STORYSPACE_MEDIA_DIR = Join-Path $Root "media"
 $env:STORYSPACE_MEDIA_HOST = "127.0.0.1"
 $env:STORYSPACE_MEDIA_PORT = "8787"
