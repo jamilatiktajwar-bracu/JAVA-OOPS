@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="player-gestures.css">
   <link rel="stylesheet" href="player-shortcuts.css">
   <link rel="stylesheet" href="player-settings.css">
-</head>
+<link rel="stylesheet" href="resume-hub.css">\n</head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to content</a>
   <div class="app-shell">
@@ -61,7 +61,7 @@
       <section class="content-area">
         <div class="welcome-line" id="welcomeLine"><span>Stories for your state of mind.</span><small>Choose a feeling. Find a world.</small></div>
         <section class="mood-section" id="moodSection"><div class="mood-heading"><span class="eyebrow-mark">✧</span><span>WHAT ARE YOU IN THE MOOD FOR?</span></div><div class="mood-pills"><button class="mood-pill" data-mood="Sci-Fi">Beyond reality</button><button class="mood-pill" data-mood="Adventure">A little adventure</button><button class="mood-pill" data-mood="Drama">Feel something</button><button class="mood-pill" data-mood="Thriller">Keep me guessing</button><button class="mood-pill" data-mood="Romance">Soft &amp; lovely</button><button class="mood-pill" data-mood="Family">Together time</button></div></section>
-        <section class="movie-section" id="continueSection"><div class="section-heading"><h2>Pick up your journey</h2><button class="see-all" data-view="continue">View all <span>↗</span></button></div><div class="movie-row" id="continueRow"></div></section>
+        <section class="resume-hub" id="resumeHub" hidden><div class="resume-hub-heading"><div><span class="section-kicker">YOUR JOURNEY</span><h2>Continue watching</h2><p>Resume from where you paused.</p></div><button type="button" id="resumeHubClose" class="resume-hub-close" aria-label="Close continue watching">×</button></div><div class="resume-hub-list" id="resumeHubList"></div></section>\n        <section class="movie-section" id="continueSection"><div class="section-heading"><h2>Pick up your journey</h2><button class="see-all" data-view="continue">View all <span>↗</span></button></div><div class="movie-row" id="continueRow"></div></section>
         <section class="movie-section" id="trendingSection"><div class="section-heading"><div><span class="section-kicker">IN THE ORBIT</span><h2>Stories people are exploring</h2></div><button class="see-all" data-view="trending">Explore <span>↗</span></button></div><div class="movie-row" id="trendingRow"></div></section>
         <section class="movie-section" id="originalsSection"><div class="section-heading"><div><span class="section-kicker">MADE FOR THIS SPACE</span><h2>Storyspace premieres</h2></div><button class="see-all" data-view="originals">Explore <span>↗</span></button></div><div class="movie-row" id="originalsRow"></div></section>
         <section class="movie-section" id="topSection"><div class="section-heading"><div><span class="section-kicker">YOUR SIGNALS</span><h2>Curated for you</h2></div><button class="see-all" data-view="top">Explore <span>↗</span></button></div><div class="movie-row" id="topRow"></div></section>
@@ -103,5 +103,5 @@
   <script src="player-settings.js"></script>
   <script src="media-uploads.js"></script>
   <script>if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(() => {});</script>
-</body>
+<script src="resume-hub.js" defer></script>\n</body>
 </html>
