@@ -245,7 +245,7 @@ $("profileButton").addEventListener("click",()=> $("profileMenu").classList.togg
 $("openProfileManager").onclick=()=>{$("profileMenu").classList.remove("open");openProfileManager()};
 $("profilesClose").onclick=closeProfileManager;
 $("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
-$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("dailyScreenLimit").onchange=e=>handleDailyScreenLimitChange(e.target.value);$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
+$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("dailyScreenLimit").onchange=e=>handleDailyScreenLimitChange(e.target.value);$("breakReminderMinutes").onchange=e=>handleBreakReminderChange(e.target.value);$("quietHoursStart").onchange=handleQuietHoursChange;$("quietHoursEnd").onchange=handleQuietHoursChange;$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
 $("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
 $("deleteProfile").onclick=async()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}if(activeLocalProfile.parentPin&&!(await verifyParentPin()))return;const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);showView(state.view);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
@@ -293,14 +293,26 @@ const SCREEN_TIME_LIMITS=[0,30,45,60,90,120,180];
 function localDayStamp(date=new Date()){
  return [date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
 }
+const BREAK_REMINDER_INTERVALS=[0,15,20,30,45,60];
+function recentScreenTimeDays(reference=new Date()){return Array.from({length:7},(_,index)=>{const date=new Date(reference.getFullYear(),reference.getMonth(),reference.getDate()-index);return localDayStamp(date)}).reverse()}
 function normalizeScreenTime(raw,kidsMode=false){
- const value=raw&&typeof raw==="object"?raw:{};
- const today=localDayStamp(),configured=Number(value.limitMinutes);
- const hasConfigured=value.configured===true&&SCREEN_TIME_LIMITS.includes(configured);
- const limit=hasConfigured?configured:(kidsMode?60:0);
+ const value=raw&&typeof raw==="object"?raw:{},today=localDayStamp(),configured=Number(value.limitMinutes);
+ const hasConfigured=value.configured===true&&SCREEN_TIME_LIMITS.includes(configured),limit=hasConfigured?configured:(kidsMode?60:0);
  const seconds=value.day===today?Math.max(0,Math.min(86400,Math.floor(Number(value.seconds)||0))):0;
- return {day:today,seconds,limitMinutes:limit,configured:hasConfigured};
+ const allowedDays=new Set(recentScreenTimeDays());
+ const history=Array.isArray(value.history)?value.history.filter(x=>x&&allowedDays.has(x.day)&&x.day!==today&&Number.isFinite(Number(x.seconds))).map(x=>({day:x.day,seconds:Math.max(0,Math.min(86400,Math.floor(Number(x.seconds)||0)))})):[];
+ if(value.day&&value.day!==today&&allowedDays.has(value.day)&&Number(value.seconds)>0)history.push({day:value.day,seconds:Math.max(0,Math.min(86400,Math.floor(Number(value.seconds)||0)))});
+ const byDay=new Map();history.forEach(x=>byDay.set(x.day,x.seconds));
+ return {day:today,seconds,limitMinutes:limit,configured:hasConfigured,history:[...byDay].map(([day,seconds])=>({day,seconds})).sort((x,y)=>x.day.localeCompare(y.day))};
 }
+function normalizeQuietTime(value){return typeof value==="string"&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)?value:""}
+function quietHoursConfigured(profile=activeLocalProfile){return !!profile?.kidsMode&&!!normalizeQuietTime(profile.quietHoursStart)&&!!normalizeQuietTime(profile.quietHoursEnd)&&profile.quietHoursStart!==profile.quietHoursEnd}
+function isWithinQuietHours(profile=activeLocalProfile,now=new Date()){
+ if(!quietHoursConfigured(profile))return false;
+ const minutes=now.getHours()*60+now.getMinutes(),[sh,sm]=profile.quietHoursStart.split(":").map(Number),[eh,em]=profile.quietHoursEnd.split(":").map(Number),start=sh*60+sm,end=eh*60+em;
+ return start<end?minutes>=start&&minutes<end:minutes>=start||minutes<end;
+}
+function quietHoursResumeLabel(profile=activeLocalProfile){return normalizeQuietTime(profile?.quietHoursEnd)||"the end of quiet hours"}
 function profileScreenTime(profile=activeLocalProfile){
  if(!profile)return normalizeScreenTime(null,false);
  const usage=normalizeScreenTime(profile.screenTime,!!profile.kidsMode);
@@ -316,32 +328,44 @@ function screenTimeLimitReached(profile=activeLocalProfile){
  const usage=profileScreenTime(profile);
  return usage.limitMinutes>0&&usage.seconds>=usage.limitMinutes*60;
 }
+function weeklyScreenTimeRows(usage=profileScreenTime()){
+ const history=new Map((usage.history||[]).map(entry=>[entry.day,entry.seconds]));
+ return recentScreenTimeDays().map(day=>({day,seconds:day===usage.day?usage.seconds:(history.get(day)||0)}));
+}
 function renderScreenTimeDashboard(){
- const usage=profileScreenTime();
- const summary=$("screenTimeSummary"),bar=$("screenTimeProgress"),fill=$("screenTimeProgressFill"),limit=$("dailyScreenLimit"),hint=$("screenTimeHint");
+ const usage=profileScreenTime(),summary=$("screenTimeSummary"),bar=$("screenTimeProgress"),fill=$("screenTimeProgressFill"),limit=$("dailyScreenLimit"),hint=$("screenTimeHint");
  const remaining=usage.limitMinutes>0?Math.max(0,usage.limitMinutes*60-usage.seconds):0;
  if(summary)summary.textContent=usage.limitMinutes>0?formatScreenMinutes(usage.seconds)+" used · "+formatScreenMinutes(remaining)+" left":"Today: "+formatScreenMinutes(usage.seconds)+" used · no daily limit";
  if(bar)bar.setAttribute("aria-valuenow",String(usage.limitMinutes>0?Math.min(100,Math.round(usage.seconds/(usage.limitMinutes*60)*100)):0));
  if(fill)fill.style.width=(usage.limitMinutes>0?Math.min(100,usage.seconds/(usage.limitMinutes*60)*100):0)+"%";
  if(limit){limit.value=String(usage.limitMinutes);limit.disabled=!activeLocalProfile?.kidsMode}
  if(hint)hint.textContent=usage.limitMinutes>0?(remaining>0?"Playback pauses automatically when this daily limit is reached.":"Daily limit reached. Playback is locked until the next local day or a parent changes the limit."):"Usage is tracked, but playback is not limited.";
+ const days=weeklyScreenTimeRows(usage),weeklyTotal=days.reduce((sum,item)=>sum+item.seconds,0),weeklySummary=$("screenTimeWeekSummary"),weekly=$("screenTimeWeek");
+ if(weeklySummary)weeklySummary.textContent=formatScreenMinutes(weeklyTotal)+" watched this week";
+ if(weekly){weekly.replaceChildren();days.forEach(entry=>{
+  const date=new Date(entry.day+"T12:00:00"),day=document.createElement("div"),track=document.createElement("div"),fillBar=document.createElement("span"),label=document.createElement("small");
+  day.className="screen-time-day";track.className="screen-time-day-track";fillBar.className="screen-time-day-fill";
+  fillBar.style.height=Math.max(entry.seconds?5:0,Math.min(100,entry.seconds/(usage.limitMinutes>0?usage.limitMinutes*60:3600)*100))+"%";
+  track.setAttribute("aria-label",date.toLocaleDateString(undefined,{weekday:"long"})+": "+formatScreenMinutes(entry.seconds));
+  track.append(fillBar);label.textContent=date.toLocaleDateString(undefined,{weekday:"short"}).slice(0,2);day.append(track,label);weekly.append(day);
+ })}
  const list=$("familyUsageList");
- if(list){
-  list.replaceChildren();
-  localProfiles.forEach(profile=>{
-   const record=profileScreenTime(profile),item=document.createElement("div");
-   item.className="family-usage-item";
-   const name=document.createElement("b"),detail=document.createElement("small");
-   name.textContent=profile.name+(profile.kidsMode?" · Kids":"");
-   detail.textContent=formatScreenMinutes(record.seconds)+" used"+(record.limitMinutes>0?" / "+record.limitMinutes+" min":" · unlimited");
-   item.append(name,detail);list.append(item);
-  });
- }
+ if(list){list.replaceChildren();localProfiles.forEach(profile=>{
+  const record=profileScreenTime(profile),item=document.createElement("div"),name=document.createElement("b"),detail=document.createElement("small");
+  const week=weeklyScreenTimeRows(record).reduce((sum,row)=>sum+row.seconds,0);
+  item.className="family-usage-item";name.textContent=profile.name+(profile.kidsMode?" · Kids":"");
+  detail.textContent=formatScreenMinutes(record.seconds)+" today · "+formatScreenMinutes(week)+" this week"+(record.limitMinutes>0?" / "+record.limitMinutes+" min daily":"");
+  item.append(name,detail);list.append(item);
+ })}
+ const start=$("quietHoursStart"),end=$("quietHoursEnd"),breaks=$("breakReminderMinutes");
+ if(start){start.value=normalizeQuietTime(activeLocalProfile?.quietHoursStart);start.disabled=!activeLocalProfile?.kidsMode}
+ if(end){end.value=normalizeQuietTime(activeLocalProfile?.quietHoursEnd);end.disabled=!activeLocalProfile?.kidsMode}
+ if(breaks){breaks.value=String(activeLocalProfile?.breakReminderMinutes||0);breaks.disabled=!activeLocalProfile?.kidsMode}
 }
 const profileCleanName=value=>String(value||"").trim().slice(0,32)||"Explorer";
 const profileCleanId=value=>String(value||"").slice(0,48);
-function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),kidsMode:false,kidsAgeBand:"8-12",kidsCategory:"all",parentPin:null,watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
-function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,kidsAgeBand:Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,p.kidsAgeBand)?p.kidsAgeBand:"8-12",kidsCategory:KIDS_CATEGORIES.includes(p.kidsCategory)?p.kidsCategory:"all",parentPin:p.parentPin&&/^[a-f0-9]{32}$/i.test(p.parentPin.salt||"")&&/^[a-f0-9]{64}$/i.test(p.parentPin.hash||"")?{salt:p.parentPin.salt.toLowerCase(),hash:p.parentPin.hash.toLowerCase(),iterations:Math.max(100000,Math.min(250000,Number(p.parentPin.iterations)||PARENT_PIN_ITERATIONS))}:null,screenTime:normalizeScreenTime(p.screenTime,!!p.kidsMode),watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
+function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),kidsMode:false,kidsAgeBand:"8-12",kidsCategory:"all",parentPin:null,quietHoursStart:"",quietHoursEnd:"",breakReminderMinutes:0,watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
+function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,kidsAgeBand:Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,p.kidsAgeBand)?p.kidsAgeBand:"8-12",kidsCategory:KIDS_CATEGORIES.includes(p.kidsCategory)?p.kidsCategory:"all",parentPin:p.parentPin&&/^[a-f0-9]{32}$/i.test(p.parentPin.salt||"")&&/^[a-f0-9]{64}$/i.test(p.parentPin.hash||"")?{salt:p.parentPin.salt.toLowerCase(),hash:p.parentPin.hash.toLowerCase(),iterations:Math.max(100000,Math.min(250000,Number(p.parentPin.iterations)||PARENT_PIN_ITERATIONS))}:null,screenTime:normalizeScreenTime(p.screenTime,!!p.kidsMode),quietHoursStart:normalizeQuietTime(p.quietHoursStart),quietHoursEnd:normalizeQuietTime(p.quietHoursEnd),breakReminderMinutes:BREAK_REMINDER_INTERVALS.includes(Number(p.breakReminderMinutes))?Number(p.breakReminderMinutes):(p.kidsMode?30:0),watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
 let localProfiles=(()=>{const stored=readJson(PROFILE_STORE,null);if(Array.isArray(stored)&&stored.length)return stored.slice(0,8).map(profileSanitize).filter(p=>p.id);return[createLocalProfile("Explorer","local-default")]})();
 let activeProfileId=storage.get(PROFILE_ACTIVE)||localProfiles[0].id;
 let activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];
@@ -349,7 +373,7 @@ function profileCapture(p=activeLocalProfile){if(!p)return;p.watchlist=[...state
 function persistLocalProfiles(){if(!activeLocalProfile||!Array.isArray(localProfiles))return;profileCapture();storage.set(PROFILE_STORE,JSON.stringify(localProfiles.slice(0,8)));storage.set(PROFILE_ACTIVE,activeLocalProfile.id)}
 function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;profileScreenTime(p);state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});movies.forEach(m=>{m.progress=defaultProgress[String(m.id)]||0;delete m.resumePoint});movies.forEach(applyResumePoint);storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
 async function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;if(activeLocalProfile.parentPin&&!(await verifyParentPin())){refreshProfileOptions();return}document.documentElement.classList.add("profile-switching");persistLocalProfiles();applyLocalProfile(target);showView(state.view);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name);window.setTimeout(()=>document.documentElement.classList.remove("profile-switching"),520)}
-function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;renderScreenTimeDashboard();select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin}
+function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;renderScreenTimeDashboard();select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin;const start=$("quietHoursStart"),end=$("quietHoursEnd"),breaks=$("breakReminderMinutes");if(start){start.value=normalizeQuietTime(activeLocalProfile?.quietHoursStart);start.disabled=!activeLocalProfile?.kidsMode}if(end){end.value=normalizeQuietTime(activeLocalProfile?.quietHoursEnd);end.disabled=!activeLocalProfile?.kidsMode}if(breaks){breaks.value=String(activeLocalProfile?.breakReminderMinutes||0);breaks.disabled=!activeLocalProfile?.kidsMode}}
 function openProfileManager(){refreshProfileOptions();renderScreenTimeDashboard();$("profilesBackdrop").hidden=false;document.body.style.overflow="hidden";$("newProfileName").focus()}
 function closeProfileManager(){if($("profilesBackdrop").hidden)return;$("profilesBackdrop").hidden=true;document.body.style.overflow=""}
 function initializeLocalProfiles(){if(!storage.get(PROFILE_STORE)){const starter=localProfiles[0];starter.watchlist=[...state.list];starter.preferences=normalizePreferences(personalized.preferences);starter.history=normalizeHistory(personalized.history);starter.resumePoints=normalizeResumePoints(resumePoints);starter.savedAt={...savedAt};localProfiles=[starter];activeLocalProfile=starter;activeProfileId=starter.id}activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];applyLocalProfile(activeLocalProfile);persistLocalProfiles()}
@@ -566,26 +590,49 @@ function formatPlayerTime(seconds){
   return hours?hours+":"+String(minutes).padStart(2,"0")+":"+String(secs).padStart(2,"0"):minutes+":"+String(secs).padStart(2,"0");
 }
 const playerVideo=$("previewVideo");
-let screenTimeTicker=null,screenTimeLastTickAt=0;
+let screenTimeTicker=null,screenTimeLastTickAt=0,activeBreakSeconds=0;
 function notifyScreenTimeLock(){
  $("playerNotice").textContent="Daily screen-time limit reached. Ask a parent to review the limit in profile settings.";
  showToast("Daily screen-time limit reached");
 }
+function notifyQuietHoursLock(){const message="Quiet hours are active until "+quietHoursResumeLabel()+". Playback has been paused.";$("playerNotice").textContent=message;showToast("Quiet hours are active")}
 function stopScreenTimeTicker(accrue=true){
  if(accrue)accrueScreenTime(true);
  if(screenTimeTicker!==null){window.clearInterval(screenTimeTicker);screenTimeTicker=null}
  screenTimeLastTickAt=0;
+}
+async function handleQuietHoursChange(){
+ const start=normalizeQuietTime($("quietHoursStart").value),end=normalizeQuietTime($("quietHoursEnd").value);
+ if((start&&!end)||(!start&&end)){showToast("Set both quiet-hours times, or clear both");renderScreenTimeDashboard();return}
+ if(start&&end&&start===end){showToast("Start and end times must be different");renderScreenTimeDashboard();return}
+ if(!activeLocalProfile?.kidsMode){renderScreenTimeDashboard();return}
+ if(activeLocalProfile.parentPin&&!(await verifyParentPin())){renderScreenTimeDashboard();return}
+ activeLocalProfile.quietHoursStart=start;activeLocalProfile.quietHoursEnd=end;persistLocalProfiles();renderScreenTimeDashboard();
+ if(isWithinQuietHours()&&!playerVideo.paused){playerVideo.pause();stopScreenTimeTicker(false);notifyQuietHoursLock()}
+ showToast(start?"Quiet hours set: "+start+"–"+end:"Quiet hours turned off");
+}
+async function handleBreakReminderChange(rawValue){
+ const value=Number(rawValue);
+ if(!BREAK_REMINDER_INTERVALS.includes(value)){renderScreenTimeDashboard();return}
+ if(!activeLocalProfile?.kidsMode){renderScreenTimeDashboard();return}
+ if(activeLocalProfile.parentPin&&!(await verifyParentPin())){renderScreenTimeDashboard();return}
+ activeLocalProfile.breakReminderMinutes=value;persistLocalProfiles();renderScreenTimeDashboard();
+ showToast(value?"Break reminder every "+value+" minutes":"Break reminders turned off");
 }
 function accrueScreenTime(force=false){
  if(!screenTimeLastTickAt)return;
  const now=Date.now(),elapsed=Math.max(0,Math.min(30000,now-screenTimeLastTickAt));
  screenTimeLastTickAt=now;
  if((!force&&(playerVideo.paused||playerVideo.ended))||!activePlayerTitle||elapsed<1000)return;
+ if(isWithinQuietHours()){if(!playerVideo.paused)playerVideo.pause();stopScreenTimeTicker(false);notifyQuietHoursLock();return}
  const usage=profileScreenTime();
  usage.seconds=Math.min(86400,usage.seconds+Math.max(1,Math.floor(elapsed/1000)));
  activeLocalProfile.screenTime=usage;
+ activeBreakSeconds+=Math.max(1,Math.floor(elapsed/1000));
  persistLocalProfiles();
  renderScreenTimeDashboard();
+ const breakInterval=Number(activeLocalProfile?.breakReminderMinutes)||0;
+ if(breakInterval>0&&activeBreakSeconds>=breakInterval*60){activeBreakSeconds=0;showToast("Time for a quick break — rest your eyes and stretch a little.")}
  if(screenTimeLimitReached()){
   if(!playerVideo.paused)playerVideo.pause();
   stopScreenTimeTicker(false);
@@ -593,6 +640,7 @@ function accrueScreenTime(force=false){
  }
 }
 function startScreenTimeTicker(){
+ if(isWithinQuietHours()){notifyQuietHoursLock();playerVideo.pause();return}
  if(screenTimeLimitReached()){notifyScreenTimeLock();playerVideo.pause();return}
  if(screenTimeTicker!==null)return;
  screenTimeLastTickAt=Date.now();
@@ -616,7 +664,7 @@ function setPlayerRecovery(message,showRetry=false){if(!playerRecovery||!playerR
 playerVideo.addEventListener("waiting",()=>setPlayerRecovery("Buffering…"));
 playerVideo.addEventListener("stalled",()=>setPlayerRecovery("Playback is stalled while waiting for media."));
 playerVideo.addEventListener("playing",()=>{setPlayerRecovery("");startScreenTimeTicker()});
-playerVideo.addEventListener("play",()=>{if(screenTimeLimitReached()){playerVideo.pause();notifyScreenTimeLock()}});
+playerVideo.addEventListener("play",()=>{if(isWithinQuietHours()){playerVideo.pause();notifyQuietHoursLock();return}if(screenTimeLimitReached()){playerVideo.pause();notifyScreenTimeLock()}});
 playerVideo.addEventListener("waiting",()=>stopScreenTimeTicker(false));
 playerVideo.addEventListener("canplay",()=>setPlayerRecovery(""));
 playerVideo.addEventListener("error",()=>{const code=playerVideo.error?.code;const message=code===2?"A network error interrupted playback.":code===3?"The video could not be decoded.":code===4?"This media format or source is unsupported.":"Playback failed.";setPlayerRecovery(message,true)});
@@ -676,6 +724,9 @@ playerVideo.addEventListener("ended",()=>{
   $("playerNotice").textContent="Preview finished. Your continue-watching progress has been cleared.";
 });
 async function openPlayer(m){
+  if(isWithinQuietHours()){notifyQuietHoursLock();return}
+  if(screenTimeLimitReached()){notifyScreenTimeLock();return}
+  activeBreakSeconds=0;
   const request=++playerLoadId;
   activePlayerTitle=m;lastProgressPersistAt=0;lastProgressSyncAt=0;lastRemoteProgress=Number(m.progress)||0;
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
