@@ -127,6 +127,7 @@ public class RecommendationEngine {
                 result[count++] = movie;
             }
         }
+        sortByScore(result, count);
         int size = Math.min(limit, count);
         Movies[] recommendations = new Movies[size];
         System.arraycopy(result, 0, recommendations, 0, size);
@@ -437,9 +438,14 @@ public class RecommendationEngine {
                 result[count++] = movie;
             }
         }
+        sortByScore(result, count);
+        if (diversityEnabled) {
+            applyDiversity(result, count);
+        }
         int size = Math.min(limit, count);
         Movies[] recommendations = new Movies[size];
         System.arraycopy(result, 0, recommendations, 0, size);
+        rememberRecommendations(recommendations);
         return recommendations;
     }
 
