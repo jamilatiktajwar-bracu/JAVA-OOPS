@@ -32,6 +32,7 @@ function normalizeResumePoints(raw){
   }));
 }
 const resumePoints=(()=>{try{return normalizeResumePoints(JSON.parse(storage.get("storyspace.resumePoints")||"{}"))}catch{return {}}})();
+const savedAt=(()=>{try{const raw=JSON.parse(storage.get("storyspace.savedAt")||"{}");return raw&&typeof raw==="object"?raw:{}}catch{return {}}})();
 function applyResumePoint(title){
   const key=String(title.apiId||title.id),point=resumePoints[key];
   if(point&&point.currentTime<point.duration-3){
@@ -47,7 +48,7 @@ const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","
 function safeAssetUrl(value){try{const u=new URL(String(value||""),location.href);if(u.protocol==="https:"||u.origin===location.origin||(u.protocol==="http:"&&["localhost","127.0.0.1"].includes(u.hostname)))return u.href}catch{}return ""}
 const art=m=>safeAssetUrl(m.poster||m.posterUrl);
 function safeMediaUrl(value){try{const url=new URL(String(value||""),location.href);if(url.protocol==="https:"||url.origin===location.origin)return url.href}catch{}return ""}
-function persistList(){storage.set("storyspace.myUniverse",JSON.stringify([...state.list]))}
+function persistList(){storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));persistLocalProfiles()}
 function showToast(message){const t=$("toast");t.textContent=message;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),2300)}
 function card(m){const title=String(m.title||m.name||"Untitled story");const c=document.createElement("article");c.className="movie-card";c.tabIndex=0;c.setAttribute("role","button");c.setAttribute("aria-label",`Open details for ${title}`);
 const poster=document.createElement("div");poster.className="movie-poster";if(art(m))poster.style.backgroundImage=`url("${art(m)}")`;
@@ -68,20 +69,21 @@ function setHero(m){$("heroTitle").innerHTML=m.title.toUpperCase().replace(/\s+/
 function openDetails(m){state.selected=m;$("modalArt").style.backgroundImage=`url('${m.poster}')`;$("modalArtTitle").textContent=m.title.toUpperCase();$("modalYear").textContent=m.year;$("modalMaturity").textContent=m.rating;$("modalDuration").textContent=m.duration;$("modalDescription").textContent=m.description;$("modalCast").textContent=m.cast;$("modalGenres").textContent=m.genre;$("modalPlay").onclick=()=>playMovie(m);$("modalBackdrop").hidden=false;document.body.style.overflow="hidden";$("modalClose").focus()}
 function closeDetails(){$("modalBackdrop").hidden=true;document.body.style.overflow="";state.selected=null}
 function playMovie(m){closeDetails();showToast(`Preview mode · ${m.title}`)}
-function toggleList(m){if(state.list.has(m.id)){state.list.delete(m.id);showToast(`Removed ${m.title} from My Universe`)}else{state.list.add(m.id);showToast(`Saved ${m.title} to My Universe`)}persistList();renderHome();if(state.view==="mylist")showView("mylist")}
+function toggleList(m){if(state.list.has(m.id)){state.list.delete(m.id);delete savedAt[String(m.id)];showToast(`Removed ${m.title} from My Universe`)}else{state.list.add(m.id);savedAt[String(m.id)]=Date.now();showToast(`Saved ${m.title} to My Universe`)}storage.set("storyspace.savedAt",JSON.stringify(savedAt));persistList();renderHome();if(state.view==="mylist")showView("mylist")}
 function legacyShowView(view){state.view=view;document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".mood-pill").forEach(b=>b.classList.remove("active"));$("welcomeLine").hidden=view!=="home";$("moodSection").hidden=view!=="home";const homeSections=["continueSection","trendingSection","originalsSection","topSection","mylistSection"];homeSections.forEach(id=>$(id).hidden=view!=="home");$("searchResultsSection").hidden=true;const label={home:"",series:"Series",movies:"Films",new:"Fresh Stories",mylist:"My Universe",continue:"Pick up your journey",trending:"In the Orbit of Glass",originals:"Storyspace Premieres",top:"Curated for you"};if(view==="home"){homeSections.forEach(id=>$(id).hidden=id==="mylistSection"&&state.list.size===0);$("hero").hidden=false;return}$("hero").hidden=view==="mylist"||view==="continue";$("searchResultsSection").hidden=false;$("searchHeading").textContent=label[view]||"Explore";let filtered=movies;if(view==="series")filtered=movies.filter(m=>m.type==="series");if(view==="movies")filtered=movies.filter(m=>m.type==="movie");if(view==="new")filtered=movies.filter(m=>m.year>=2025);if(view==="mylist")filtered=movies.filter(m=>state.list.has(m.id));if(view==="continue")filtered=movies.filter(m=>m.progress>0);if(view==="trending")filtered=[movies[2],movies[3],movies[8],movies[9],movies[6],movies[12],movies[10],movies[1]];if(view==="originals")filtered=movies.filter(m=>m.original);if(view==="top")filtered=[...movies].sort((a,b)=>b.score-a.score);renderGrid(filtered);window.scrollTo({top:350,behavior:"smooth"})}
 let browseSourceItems=[];
 function renderGrid(items){
   browseSourceItems=Array.isArray(items)?items.slice():[];
-  const genreControl=$("browseGenre"),sortControl=$("browseSort");
-  const previousGenre=genreControl?.value||"all";
+  const genreControl=$("browseGenre"),sortControl=$("browseSort"),typeControl=$("browseType"),ratingControl=$("browseRating"),yearControl=$("browseYear");
+  const previousGenre=genreControl?.value||"all",previousYear=yearControl?.value||"all";
   if(genreControl){
     const available=[...new Set(browseSourceItems.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort();
     const options=[["all","All genres"],...available.map(g=>[g,g.replace(/\b\w/g,c=>c.toUpperCase())])];
     genreControl.replaceChildren(...options.map(([value,label])=>{const o=document.createElement("option");o.value=value;o.textContent=label;return o}));
     genreControl.value=options.some(([v])=>v===previousGenre)?previousGenre:"all";
   }
-  let visible=browseSourceItems.filter(m=>!genreControl||genreControl.value==="all"||titleTokens(m.genre||m.genres).includes(genreControl.value));
+  if(yearControl){const years=[...new Set(browseSourceItems.map(m=>Number(m.year||m.releaseYear)).filter(y=>y>0))].sort((a,b)=>b-a);const options=[["all","Any year"],...years.map(y=>[String(y),String(y)])];yearControl.replaceChildren(...options.map(([value,label])=>{const o=document.createElement("option");o.value=value;o.textContent=label;return o}));yearControl.value=options.some(([v])=>v===previousYear)?previousYear:"all"}
+  let visible=browseSourceItems.filter(m=>(!genreControl||genreControl.value==="all"||titleTokens(m.genre||m.genres).includes(genreControl.value))&&(!typeControl||typeControl.value==="all"||String(m.type||m.format||"").toLowerCase().includes(typeControl.value))&&(!ratingControl||ratingControl.value==="all"||String(m.rating||m.ageRating||"").toLowerCase()===ratingControl.value.toLowerCase())&&(!yearControl||yearControl.value==="all"||String(m.year||m.releaseYear||"")===yearControl.value));
   const sort=sortControl?.value||"recommended";
   if(sort==="rating")visible.sort((a,b)=>Number(b.score||b.communityScore||0)-Number(a.score||a.communityScore||0));
   else if(sort==="newest")visible.sort((a,b)=>Number(b.year||b.releaseYear||0)-Number(a.year||a.releaseYear||0));
@@ -124,6 +126,15 @@ $("searchInput").addEventListener("keydown",e=>{if(e.key==="Escape"){e.target.va
 $("clearSearch").addEventListener("click",()=>{$("searchInput").value="";$("searchBox").classList.remove("has-value");showView("home");$("searchInput").focus()});
 document.querySelectorAll(".mood-pill").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".mood-pill").forEach(x=>x.classList.toggle("active",x===b));state.view="mood";$("hero").hidden=true;$("welcomeLine").hidden=true;$("moodSection").hidden=false;["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);$("searchResultsSection").hidden=false;$("searchHeading").textContent=`Stories for: ${b.textContent}`;renderGrid(movies.filter(m=>m.genre===b.dataset.mood))}));
 $("profileButton").addEventListener("click",()=> $("profileMenu").classList.toggle("open"));
+$("openProfileManager").onclick=()=>{$("profileMenu").classList.remove("open");openProfileManager()};
+$("profilesClose").onclick=closeProfileManager;
+$("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
+$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);
+$("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
+$("deleteProfile").onclick=()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
+
+$("universeSort")?.addEventListener("change",renderHome);$("universeGenre")?.addEventListener("change",renderHome);
 document.addEventListener("click",e=>{if(!e.target.closest(".profile-wrap"))$("profileMenu").classList.remove("open")});
 $("profileMenu").querySelectorAll("[data-profile]").forEach(b=>b.addEventListener("click",()=>{
   const action=b.dataset.profile;
@@ -153,14 +164,33 @@ function normalizeHistory(raw){
   return raw.filter(x=>x&&typeof x==="object"&&(typeof x.id==="string"||typeof x.id==="number")).slice(0,100).map(x=>({id:x.id,count:Math.max(1,Math.min(1000,Number(x.count)||1)),kind:String(x.kind||"view").slice(0,24),at:Number(x.at)||0}));
 }
 const personalized={preferences:normalizePreferences(readJson("storyspace.preferences",prefDefaults)),token:storage.get("storyspace.token")||"",account:readJson("storyspace.account",null),history:normalizeHistory(readJson("storyspace.history",[])),serverLibrary:[],serverAvailable:false,apiTitles:[],heroCycle:0};
-function savePrefs(){storage.set("storyspace.preferences",JSON.stringify(personalized.preferences))}
+/* Local profiles isolate device-side state (not server identities). */
+const PROFILE_STORE="storyspace.localProfiles",PROFILE_ACTIVE="storyspace.activeProfile";
+const profileCleanName=value=>String(value||"").trim().slice(0,32)||"Explorer";
+const profileCleanId=value=>String(value||"").slice(0,48);
+function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
+function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
+let localProfiles=(()=>{const stored=readJson(PROFILE_STORE,null);if(Array.isArray(stored)&&stored.length)return stored.slice(0,8).map(profileSanitize).filter(p=>p.id);return[createLocalProfile("Explorer","local-default")]})();
+let activeProfileId=storage.get(PROFILE_ACTIVE)||localProfiles[0].id;
+let activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];
+function profileCapture(p=activeLocalProfile){if(!p)return;p.watchlist=[...state.list].slice(0,500);p.preferences=normalizePreferences(personalized.preferences);p.history=normalizeHistory(personalized.history);p.resumePoints=normalizeResumePoints(resumePoints);p.savedAt={...savedAt}}
+function persistLocalProfiles(){if(!activeLocalProfile||!Array.isArray(localProfiles))return;profileCapture();storage.set(PROFILE_STORE,JSON.stringify(localProfiles.slice(0,8)));storage.set(PROFILE_ACTIVE,activeLocalProfile.id)}
+function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
+function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;persistLocalProfiles();applyLocalProfile(target);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name)}
+function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name;return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1}
+function openProfileManager(){refreshProfileOptions();$("profilesBackdrop").hidden=false;document.body.style.overflow="hidden";$("newProfileName").focus()}
+function closeProfileManager(){if($("profilesBackdrop").hidden)return;$("profilesBackdrop").hidden=true;document.body.style.overflow=""}
+function initializeLocalProfiles(){if(!storage.get(PROFILE_STORE)){const starter=localProfiles[0];starter.watchlist=[...state.list];starter.preferences=normalizePreferences(personalized.preferences);starter.history=normalizeHistory(personalized.history);starter.resumePoints=normalizeResumePoints(resumePoints);starter.savedAt={...savedAt};localProfiles=[starter];activeLocalProfile=starter;activeProfileId=starter.id}activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];applyLocalProfile(activeLocalProfile);persistLocalProfiles()}
+initializeLocalProfiles();
+
+function savePrefs(){storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));persistLocalProfiles()}
 function titleTokens(s){return String(s||"").split(/[,|]/).map(x=>x.trim().toLowerCase()).filter(Boolean)}
 function currentDaypart(){const hour=new Date().getHours();if(hour>=5&&hour<11)return{label:"morning",moods:["Hopeful","Curious","Feel-good"]};if(hour>=11&&hour<17)return{label:"daytime",moods:["Adventure","Bold","Curious"]};if(hour>=17&&hour<22)return{label:"evening",moods:["Comforting","Emotional","Soft"]};return{label:"late-night",moods:["Tense","Mystery","Sci-Fi"]}}
 function scoreTitle(m){const p=personalized.preferences;let score=(m.score||7)*.45;const gs=titleTokens(m.genre||m.genres),ms=titleTokens(m.moods);p.genres.forEach(g=>{if(gs.includes(g.toLowerCase()))score+=4});p.moods.forEach(x=>{if(ms.includes(x.toLowerCase()))score+=3.2});p.languages.forEach(l=>{if(String(m.language||"English").toLowerCase().includes(l.toLowerCase()))score+=1.5});currentDaypart().moods.forEach(x=>{if(ms.includes(x.toLowerCase()))score+=.65});const h=personalized.history.find(x=>String(x.id)===String(m.id));if(h)score+=Math.min(2.8,h.count*.35);if(m.original)score+=.35;if(p.balance==="comfort"&&h)score+=2;if(p.balance==="explore"&&!h)score+=2.3;const day=Math.floor(Date.now()/86400000);score+=((Number(m.id)||String(m.id).split("").reduce((a,c)=>a+c.charCodeAt(0),0)+day)%11)/50;return score}
 function ranked(items=movies){return [...items].sort((a,b)=>scoreTitle(b)-scoreTitle(a))}
-function recordInterest(m,kind){let entry=personalized.history.find(x=>String(x.id)===String(m.id));if(entry){entry.count++;entry.kind=kind;entry.at=Date.now()}else personalized.history.unshift({id:m.id,count:1,kind,at:Date.now()});personalized.history=personalized.history.slice(0,100);storage.set("storyspace.history",JSON.stringify(personalized.history));}
+function recordInterest(m,kind){let entry=personalized.history.find(x=>String(x.id)===String(m.id));if(entry){entry.count++;entry.kind=kind;entry.at=Date.now()}else personalized.history.unshift({id:m.id,count:1,kind,at:Date.now()});personalized.history=personalized.history.slice(0,100);storage.set("storyspace.history",JSON.stringify(personalized.history));persistLocalProfiles()}
 const baseRenderHome=renderHome;
-function renderHome(){const ordered=ranked(movies);const cont=movies.filter(m=>m.progress>0);$("continueSection").hidden=cont.length===0;renderRow("continueRow",cont);renderRow("trendingRow",ordered.slice(0,9));renderRow("originalsRow",ranked(movies.filter(m=>m.original)).slice(0,8));renderRow("topRow",ordered.slice(0,10));renderRow("mylistRow",movies.filter(m=>state.list.has(m.id)));$("mylistSection").hidden=state.view==="home"&&state.list.size===0;const s=document.getElementById("personalSection");if(s){renderRow("personalRow",ordered.filter(m=>!cont.includes(m)).slice(0,8));s.hidden=false;const h=document.getElementById("personalHeading");h.textContent=personalized.preferences.genres.length? "Picked around "+personalized.preferences.genres.slice(0,2).join(" & "):"Your evolving picks";const note=document.getElementById("personalNote");note.textContent=(personalized.preferences.moods.length?"Mood signals: "+personalized.preferences.moods.slice(0,3).join(", "):"Based on what you explore, save, and choose.")+" · "+currentDaypart().label+" mix";const welcome=$("welcomeLine").querySelector("span");if(welcome)welcome.textContent="Good "+currentDaypart().label+" — stories for your state of mind."}}
+function renderHome(){const ordered=ranked(movies);const cont=movies.filter(m=>m.progress>0);$("continueSection").hidden=cont.length===0;renderRow("continueRow",cont);renderRow("trendingRow",ordered.slice(0,9));renderRow("originalsRow",ranked(movies.filter(m=>m.original)).slice(0,8));renderRow("topRow",ordered.slice(0,10));const ug=$("universeGenre"),us=$("universeSort");const savedMovies=movies.filter(m=>state.list.has(m.id));if(ug){const genres=[...new Set(savedMovies.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort(),prev=ug.value;ug.replaceChildren(...[["all","All genres"],...genres.map(g=>[g,g])].map(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o}));ug.value=genres.includes(prev)?prev:"all"}let universeItems=savedMovies.filter(m=>!ug||ug.value==="all"||titleTokens(m.genre||m.genres).includes(ug.value));const order=us?.value||"saved";if(order==="title")universeItems.sort((a,b)=>String(a.title||a.name).localeCompare(String(b.title||b.name)));else if(order==="rating")universeItems.sort((a,b)=>Number(b.score||b.communityScore)-Number(a.score||a.communityScore));else if(order==="year")universeItems.sort((a,b)=>Number(b.year||b.releaseYear)-Number(a.year||a.releaseYear));else universeItems.sort((a,b)=>Number(savedAt[String(b.id)]||0)-Number(savedAt[String(a.id)]||0));renderRow("mylistRow",universeItems);const uc=$("universeCount");if(uc)uc.textContent=universeItems.length+" saved";$("mylistSection").hidden=state.view==="home"&&state.list.size===0;const s=document.getElementById("personalSection");if(s){renderRow("personalRow",ordered.filter(m=>!cont.includes(m)).slice(0,8));s.hidden=false;const h=document.getElementById("personalHeading");h.textContent=personalized.preferences.genres.length? "Picked around "+personalized.preferences.genres.slice(0,2).join(" & "):"Your evolving picks";const note=document.getElementById("personalNote");note.textContent=(personalized.preferences.moods.length?"Mood signals: "+personalized.preferences.moods.slice(0,3).join(", "):"Based on what you explore, save, and choose.")+" · "+currentDaypart().label+" mix";const welcome=$("welcomeLine").querySelector("span");if(welcome)welcome.textContent="Good "+currentDaypart().label+" — stories for your state of mind."}}
 function setHero(m){if(!m)return;const title=String(m.title||m.name||"Explore a new story").toUpperCase();const titleEl=$("heroTitle");titleEl.replaceChildren();title.split(/\s+/).forEach((word,index)=>{if(index)titleEl.append(document.createElement("br"));titleEl.append(document.createTextNode(word))});$("heroDescription").textContent=m.description||m.synopsis||"";const image=art(m);$("heroArt").style.backgroundImage=image?`url("${image}")`:"";const meta=$("hero").querySelector(".hero-meta");meta.replaceChildren();const addMeta=(text,className="")=>{const span=document.createElement("span");span.className=className;span.textContent=String(text??"");meta.append(span)};addMeta("FOR YOU","top10");addMeta(m.year||m.releaseYear||"");addMeta(m.rating||m.ageRating||"13+","maturity");addMeta(m.duration||m.format||"");addMeta("HD","quality");$("heroPlay").onclick=()=>playMovie(m);$("heroInfo").onclick=()=>openDetails(m);const score=document.querySelector(".hero-rating b");if(score)score.textContent=Number(m.score||m.communityScore||8.5).toFixed(1);const genre=document.querySelector(".hero-rating small");if(genre)genre.textContent=" / "+String(m.genre||m.genres?.[0]||"Story");}
 function chooseHero(){const pool=ranked(movies).filter(m=>!personalized.history.slice(0,8).some(h=>String(h.id)===String(m.id)));return pool[personalized.heroCycle%Math.max(1,pool.length)]||movies[0]}
 function nextHero(){personalized.heroCycle++;setHero(chooseHero());const p=document.querySelector(".hero-progress span");if(p){p.style.width=(25+(personalized.heroCycle%4)*18)+"%"}}
@@ -318,6 +348,7 @@ function persistPlayerProgress(force=false){
   const percent=Math.max(1,Math.min(99,Math.round(currentTime/video.duration*100)));
   title.progress=percent;title.resumePoint=currentTime;
   resumePoints[key]={currentTime,duration:video.duration,updatedAt:Date.now()};
+  persistLocalProfiles();
   const now=Date.now();
   if(force||now-lastProgressPersistAt>=8000){
     lastProgressPersistAt=now;
@@ -341,6 +372,8 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)persistPlay
 window.addEventListener("pagehide",()=>persistPlayerProgress(true));
 playerVideo.addEventListener("loadedmetadata",()=>{
   $("playerRestart").disabled=false;
+  ["skipBack","skipForward"].forEach(id=>{const control=$(id);if(control)control.disabled=false});
+  $("playerPip").disabled=!playerVideo.requestPictureInPicture;
   if(!activePlayerTitle)return;
   const point=resumePoints[String(activePlayerTitle.apiId||activePlayerTitle.id)];
   const localTime=point&&point.currentTime>5?point.currentTime:0;
@@ -356,7 +389,7 @@ $("playerRestart").addEventListener("click",()=>{
   const title=activePlayerTitle,key=String(title.apiId||title.id);
   playerVideo.currentTime=0;
   delete resumePoints[key];title.progress=0;delete title.resumePoint;
-  storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));refreshContinueRow();
+  storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));persistLocalProfiles();refreshContinueRow();
   $("playerNotice").textContent="Preview restarted from the beginning. CC0 sample footage only.";
   playerVideo.play().catch(()=>{});
 });
@@ -364,7 +397,7 @@ playerVideo.addEventListener("ended",()=>{
   if(!activePlayerTitle)return;
   const title=activePlayerTitle,key=String(title.apiId||title.id);
   delete resumePoints[key];title.progress=0;delete title.resumePoint;
-  storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));refreshContinueRow();
+  storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));persistLocalProfiles();refreshContinueRow();
   $("playerNotice").textContent="Preview finished. Your continue-watching progress has been cleared.";
 });
 async function openPlayer(m){
@@ -392,19 +425,25 @@ async function openPlayer(m){
   video.load();
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
-function closePlayer(){persistPlayerProgress(true);playerLoadId++;$("playerRestart").disabled=true;const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
+function closePlayer(){persistPlayerProgress(true);playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
 $("playerClose").onclick=closePlayer;$("playerBackdrop").onclick=e=>{if(e.target===$("playerBackdrop"))closePlayer()};
+$("skipBack").onclick=()=>{if(playerVideo.readyState>=1)playerVideo.currentTime=Math.max(0,playerVideo.currentTime-10)};
+$("skipForward").onclick=()=>{if(playerVideo.readyState>=1)playerVideo.currentTime=Math.min(playerVideo.duration||Infinity,playerVideo.currentTime+10)};
+$("playerSpeed").onchange=()=>{playerVideo.playbackRate=Number($("playerSpeed").value)||1};
+$("playerPip").onclick=async()=>{try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else if(playerVideo.requestPictureInPicture)await playerVideo.requestPictureInPicture();else showToast("Picture-in-picture isn't supported on this device")}catch{showToast("Picture-in-picture couldn't start")}};
+$("playerFullscreen").onclick=async()=>{try{const panel=$("playerBackdrop");if(document.fullscreenElement)await document.exitFullscreen();else if(panel.requestFullscreen)await panel.requestFullscreen();else if(playerVideo.webkitEnterFullscreen)playerVideo.webkitEnterFullscreen();else showToast("Fullscreen isn't supported")}catch{showToast("Fullscreen couldn't start")}};
+$("playerSpeed").value="1";
 $("adminTitleForm").onsubmit=async e=>{e.preventDefault();const f=e.currentTarget;const d=new FormData(f);const body={slug:d.get("slug"),name:d.get("name"),synopsis:d.get("synopsis"),genres:d.get("genres"),moods:d.get("moods"),language:d.get("language"),releaseYear:Number(d.get("releaseYear")),ageRating:d.get("ageRating"),format:d.get("format"),score:Number(d.get("score")),posterUrl:d.get("posterUrl"),backdropUrl:d.get("backdropUrl"),featured:d.get("featured")==="on",original:d.get("original")==="on"};$("adminStatus").textContent="Publishing…";try{const created=await api("/admin/catalog",{method:"POST",body});const m=apiTitle(created);movies.unshift(m);renderHome();$("adminStatus").textContent="Added "+m.title;f.reset();showToast("Catalog title added")}catch(err){$("adminStatus").textContent=err.message}};
-function updateAccountUI(){const acc=personalized.account;const label=acc?String(acc.displayName||"U").slice(0,1).toUpperCase():"V";const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=label;const row=document.querySelector(".profile-row");if(row){row.replaceChildren();const icon=document.createElement("span");icon.className="avatar";icon.textContent=label;const details=document.createElement("div");const name=document.createElement("b");name.textContent=acc?acc.displayName:"Explorer";const sub=document.createElement("small");sub.textContent=acc?acc.email:"Guest · saved on this device";details.append(name,sub);row.append(icon,details)}const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";const admin=$("adminAction");if(admin)admin.hidden=acc?.role!=="ADMIN";const membership=$("subscriptionAction");if(membership)membership.textContent=acc?"Membership & plans":"Sign in for membership";}
+function updateAccountUI(){const acc=personalized.account;const localName=activeLocalProfile?.name||"Explorer";const label=String(localName).slice(0,1).toUpperCase();const avatar=document.querySelector(".profile-button .avatar");if(avatar)avatar.textContent=label;const row=document.querySelector(".profile-row");if(row){row.replaceChildren();const icon=document.createElement("span");icon.className="avatar";icon.textContent=label;const details=document.createElement("div");const name=document.createElement("b");name.textContent=localName;const sub=document.createElement("small");sub.textContent=acc?acc.email+" · local profile":"Local profile · saved on this device";details.append(name,sub);row.append(icon,details)}const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";const admin=$("adminAction");if(admin)admin.hidden=acc?.role!=="ADMIN";const membership=$("subscriptionAction");if(membership)membership.textContent=acc?"Membership & plans":"Sign in for membership";}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdrop").hidden)closePlayer();if(!$("subscriptionBackdrop").hidden)closeMembership();if(!$("adminBackdrop").hidden)closeAdmin();if(!$("authBackdrop").hidden)closeAuth();if(!$("preferencesBackdrop").hidden)closePreferences()}});
 
 
 // Modal keyboard accessibility: keep keyboard focus inside the topmost open dialog.
 (() => {
-  const overlayIds=["playerBackdrop","adminBackdrop","subscriptionBackdrop","authBackdrop","preferencesBackdrop","modalBackdrop"];
+  const overlayIds=["playerBackdrop","adminBackdrop","subscriptionBackdrop","authBackdrop","profilesBackdrop","preferencesBackdrop","modalBackdrop"];
   const selector='button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   document.addEventListener("keydown",event=>{
     if(event.key!=="Tab")return;
@@ -517,9 +556,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   $el("importDataAction")?.addEventListener("click",()=>{$el("profileMenu")?.classList.remove("open");$el("importDataFile")?.click()});
   $el("importDataFile")?.addEventListener("change",event=>{importData(event.target.files?.[0]);event.target.value=""});
 
-  const genre=$el("browseGenre"),sort=$el("browseSort");
-  genre?.addEventListener("change",()=>renderGrid(browseSourceItems));
-  sort?.addEventListener("change",()=>renderGrid(browseSourceItems));
+  const genre=$el("browseGenre"),sort=$el("browseSort"),type=$el("browseType"),rating=$el("browseRating"),year=$el("browseYear");
+  [genre,sort,type,rating,year].forEach(control=>control?.addEventListener("change",()=>renderGrid(browseSourceItems)));
+  $el("resetBrowseFilters")?.addEventListener("click",()=>{[genre,type,rating,year].forEach(control=>{if(control)control.value="all"});if(sort)sort.value="recommended";renderGrid(browseSourceItems)});
 
   // Keyboard-first desktop navigation; never steal keystrokes from forms or dialogs.
   const isEditing=target=>target instanceof HTMLElement&&(
