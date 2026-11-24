@@ -339,6 +339,14 @@ public class NetflixSmokeTest {
         check(!session.isPlaybackActive(), "completed session cannot restart accidentally");
         check(session.getTotalSeconds() == 5400 && session.getRemainingSeconds() == 0,
                 "session time values are correct");
+        check(!session.setPlaybackSpeed(Double.NaN)
+                && !session.setPlaybackSpeed(Double.POSITIVE_INFINITY)
+                && session.setPlaybackSpeed(1.5),
+                "viewing session playback speed rejects non-finite values");
+        check(session.setBandwidthMbps(Integer.MAX_VALUE)
+                && session.setBufferingPercent(0)
+                && session.getEstimatedBufferSeconds() == Integer.MAX_VALUE,
+                "buffer estimate clamps large bandwidth without integer overflow");
 
         // Playlist cursor remains valid after removals and reordering.
         NetflixPlaylist playlist = new NetflixPlaylist("Cursor Test", 3);
