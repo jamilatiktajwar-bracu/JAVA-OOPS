@@ -263,6 +263,8 @@
     });
     document.getElementById("searchInput")?.addEventListener("input", syncVisibility);
     document.getElementById("clearSearch")?.addEventListener("click", () => queueMicrotask(syncVisibility));
+    document.addEventListener("storyspace:interest-updated",()=>render(false));
+    document.addEventListener("storyspace:profile-updated",()=>render(false));
     render(false);
     syncVisibility();
   }
