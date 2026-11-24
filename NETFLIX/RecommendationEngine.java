@@ -38,16 +38,7 @@ public class RecommendationEngine {
             return new Movies[0];
         }
         if (coldStartEnabled && isColdStartUser()) {
-            Movies[] coldStart = getColdStartRecommendations(limit);
-            Movies[] filtered = new Movies[coldStart.length];
-            int filteredCount = 0;
-            for (Movies movie : coldStart) {
-                if (isCandidate(movie)) {
-                    filtered[filteredCount++] = movie;
-                }
-            }
-            Movies[] result = new Movies[filteredCount];
-            System.arraycopy(filtered, 0, result, 0, filteredCount);
+            Movies[] result = getColdStartRecommendations(limit);
             rememberRecommendations(result);
             return result;
         }
@@ -389,8 +380,9 @@ public class RecommendationEngine {
                 }
             }
         }
-        Movies[] ranked = new Movies[count];
-        System.arraycopy(candidates, 0, ranked, 0, count);
+        int size = Math.min(limit, count);
+        Movies[] ranked = new Movies[size];
+        System.arraycopy(candidates, 0, ranked, 0, size);
         return ranked;
     }
 
