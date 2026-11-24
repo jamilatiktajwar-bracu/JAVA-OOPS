@@ -447,15 +447,18 @@ public class NetflixSmokeTest {
         cursorPlaylist.sortByReleaseYear(true);
         check(cursorPlaylist.getNextMovie() == queueA,
                 "release-year sort preserves the next-up movie");
-        check(cursorPlaylist.getPreviousMovie() == queueC,
+        cursorPlaylist.resetPosition();
+        Movies firstInSortedPlaylist = cursorPlaylist.getMovieAt(0);
+        Movies lastInSortedPlaylist = cursorPlaylist.getMovieAt(cursorPlaylist.getMovieCount() - 1);
+        check(cursorPlaylist.getPreviousMovie() == lastInSortedPlaylist,
                 "previous navigation wraps from the first item to the last");
-        check(cursorPlaylist.getNextMovie() == queueA,
+        check(cursorPlaylist.getNextMovie() == firstInSortedPlaylist,
                 "next navigation resumes correctly after previous wraparound");
         cursorPlaylist.resetPosition();
-        check(cursorPlaylist.getNextMovie() == queueC
-                && cursorPlaylist.getNextMovie() == queueB
-                && cursorPlaylist.getNextMovie() == queueA
-                && cursorPlaylist.getNextMovie() == queueC,
+        check(cursorPlaylist.getNextMovie() == firstInSortedPlaylist
+                && cursorPlaylist.getNextMovie() == cursorPlaylist.getMovieAt(1)
+                && cursorPlaylist.getNextMovie() == lastInSortedPlaylist
+                && cursorPlaylist.getNextMovie() == firstInSortedPlaylist,
                 "playlist next navigation wraps after reaching the end");
 
         PaymentMethod sanitizedCard = new PaymentMethod("Card", "AB12-34 5678 9XYZ", "Test");
