@@ -1,49 +1,65 @@
 # Storyspace Home Media (Windows PC host)
 
-This optional service streams media from your Windows PC using HTTP byte ranges. It binds to **127.0.0.1 only**; never expose port 8787 directly through your router. Publish it through a reviewed HTTPS tunnel after configuring that tunnel yourself.
+This optional service streams owner-approved media from your Windows PC using HTTP byte ranges. It binds to **127.0.0.1 only**; never expose port 8787 directly through your router. A Cloudflare named tunnel can publish it through HTTPS without router port forwarding.
 
 ## Requirements
 
 - Windows 10/11 and Node.js 20 LTS or newer
+- Cloudflared installed on the PC
+- A Cloudflare account and a domain/hostname managed in that account for a stable public address
 - A powered-on PC, reliable Internet connection, and sufficient upload bandwidth
-- For a permanent public address, a domain and a configured Cloudflare named tunnel
 - Only upload media you own or are authorized to distribute to all users
 
-## Start the local server
+## 1. Start the local media server
 
 1. Open PowerShell in this folder.
-2. Run \`Set-ExecutionPolicy -Scope Process Bypass\` if needed.
+2. If script execution is blocked, run \`Set-ExecutionPolicy -Scope Process Bypass\` in that window.
 3. Run \`./Start-Storyspace-Media.ps1\`.
-4. Keep the window open. Check \`http://127.0.0.1:8787/health\`.
+4. Keep the window open. Confirm the health endpoint reports \`ok: true\`: \`http://127.0.0.1:8787/health\`.
 
 The first run creates \`%LOCALAPPDATA%\\Storyspace\\HomeMedia\\media-host.json\` with two separate secrets:
-- \`adminToken\`: private owner-only approval/admin access. Never share it.
+
+- \`adminToken\`: private owner-only approval/admin access. Never share it or paste it into a public issue, repository, or screenshot.
 - \`uploadToken\`: uploader invitation key. Share only with people you trust to submit media. It is a shared invitation key, not per-user accounts; rotate it by changing the value and restarting the service if it leaks.
 
-The startup script also upgrades older config files by generating a missing upload invitation key.
+The startup script upgrades older config files by generating a missing upload invitation key. Keep the config file private.
 
-## Upload and approval API
+## 2. Configure a stable HTTPS address (one-time setup)
 
-Uploads use persistent chunks (default 8 MiB) and can resume from the server's last accepted byte offset after a network interruption or server restart.
+Install Cloudflared on Windows and ensure \`cloudflared --version\` works in a new PowerShell window. Then, from this folder, run:
 
-1. Uploader calls \`POST /api/uploads/init\` with JSON \`{ "title": "Movie title", "filename": "movie.mp4", "size": 123456 }\` and header \`x-storyspace-upload-token\`.
-2. Uploader sends chunks to \`PUT /api/uploads/{uploadId}/chunk\`, with \`x-upload-offset\` set to the exact current byte offset.
-3. On reconnect, call \`GET /api/uploads/{uploadId}\` to retrieve the accepted offset, then continue from there.
-4. Call \`POST /api/uploads/{uploadId}/complete\` when all bytes are sent. The item enters the private pending queue.
-5. Owner reviews \`GET /admin/pending\` using \`x-storyspace-admin-token\`. Approve/reject with \`POST /admin/review/{id}\` and JSON \`{ "action": "approve" }\` or \`{ "action": "reject" }\`.
+\`\`\`powershell
+./Setup-Cloudflare-Tunnel.ps1 -TunnelName storyspace-home-media -Hostname media.yourdomain.com
+\`\`\`
 
-Only approved items appear in \`GET /api/catalog\` or stream through \`/media/{id}\`. Pending uploads are not publicly playable. The older \`POST /admin/upload\` endpoint is retained for owner uploads, but its result also requires approval.
+Replace \`media.yourdomain.com\` with a hostname in a domain/zone already managed by your Cloudflare account. The script opens Cloudflare login if this PC has not been authorized, creates a named tunnel, creates the DNS route, and saves a local config under \`%USERPROFILE%\\.cloudflared\\storyspace-home-media.yml\`. Cloudflare login and domain authorization require your action; this repository cannot do them for you.
 
-The upload invitation key is currently shared across invited uploaders. It does not provide individual user identity, per-user quotas, or per-user revocation. Do not embed either secret in the public app bundle. A secure registered-user integration requires the production Storyspace account backend and short-lived per-user upload credentials.
+For an existing named tunnel created on this same PC, pass its UUID with \`-TunnelId\` to skip tunnel creation. Do not commit the local Cloudflare credentials or config files.
 
-## Public HTTPS tunnel
+For each session, keep the media server window running, then open a second PowerShell window and run:
 
-For a permanent public hostname, configure a Cloudflare named tunnel to \`http://127.0.0.1:8787\`. A temporary Quick Tunnel URL changes when restarted and is not suitable as a permanent app endpoint. Do not configure router port forwarding or bind this service to \`0.0.0.0\`.
+\`\`\`powershell
+./Run-Storyspace-Tunnel.ps1
+\`\`\`
 
-## Important limits
+The tunnel forwards HTTPS requests to \`http://127.0.0.1:8787\`. Do not configure router port forwarding, bind the media server to \`0.0.0.0\`, or expose port 8787 directly. Both the PC and both processes must remain running for uploads and playback. A Quick Tunnel is temporary and is not a substitute for this named tunnel.
 
-- If the PC is off, no remote upload can reach it. The uploader must keep the original file and its client queue must retry when the PC becomes reachable.
-- This backend persists accepted chunks on the PC, but the current Storyspace UI does not yet include an uploader, IndexedDB queue, admin approval screen, or endpoint discovery. API support alone does not make the workflow visible in the app.
-- A closed app/device cannot be promised to retry uploads on every platform. Reliable background transfers need platform-specific native work and OS permission.
-- The PC must stay awake with this service and tunnel running for streaming. Home upload bandwidth limits concurrent viewers. This is a prototype origin, not a CDN or reliable global streaming service.
-- Media URLs are unlisted, not DRM or copy protection. Anyone with a published URL can share it.
+## 3. Connect Storyspace and upload
+
+1. Open the Storyspace app and choose **Upload**.
+2. Enter the public HTTPS address from the tunnel setup (for example, \`https://media.yourdomain.com\`).
+3. Enter the \`uploadToken\` value from the private \`media-host.json\` file and save the connection.
+4. Enter a title, select an MP4/M4V/WebM/MOV file, and start the upload. The server accepts files up to 15 GB in 8 MiB resumable chunks.
+5. Open the owner approval section in Upload, enter the private \`adminToken\`, load pending uploads, then approve or reject each item.
+6. Approved items appear in the Community Library and stream through the HTTPS tunnel.
+
+The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified.
+
+## Security and operating limits
+
+- The upload invitation key is currently shared among invited uploaders. It does not provide individual user identity, per-user quotas, or per-user revocation. Do not embed either secret in the public app bundle. A secure registered-user integration needs the production Storyspace account backend and short-lived per-user upload credentials.
+- Owner admin requests use a separate admin header. The web client omits ambient browser credentials and does not send the admin key as the uploader key.
+- If the PC is off, asleep, offline, or either process stops, remote upload and playback stop. Configure Windows power settings so the PC does not sleep during hosting.
+- Home upload bandwidth limits concurrent viewers. This is a prototype origin, not a CDN or reliable global streaming service. Large files may use substantial upstream bandwidth and data allowance.
+- Media URLs are unlisted, not DRM or copy protection. Anyone with a published URL can share it. Do not upload content you lack rights to distribute.
+- A successful CI build does not prove a 5–10 GB upload or playback from another country. Test with a small authorized file first, then a large file, and verify from a separate network before inviting viewers.
