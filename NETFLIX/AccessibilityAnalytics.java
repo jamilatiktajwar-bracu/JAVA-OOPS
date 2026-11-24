@@ -1,3 +1,5 @@
+import java.util.Locale;
+
 public class AccessibilityAnalytics {
     public static int countMoviesWithSubtitles() {
         int count = 0;
@@ -13,7 +15,7 @@ public class AccessibilityAnalytics {
         int count = 0;
         for (Movies movie : Movies.getAllMovies()) {
             if (movie.getDescription() != null
-                    && !movie.getDescription().isEmpty()) {
+                    && !movie.getDescription().trim().isEmpty()) {
                 count++;
             }
         }
@@ -36,7 +38,7 @@ public class AccessibilityAnalytics {
 
     public static String getSummary() {
         return "Subtitle coverage: "
-                + String.format("%.1f", getSubtitleCoveragePercent())
+                + String.format(Locale.ROOT, "%.1f", getSubtitleCoveragePercent())
                 + "%, Description coverage: "
                 + String.format("%.1f", getDescriptionCoveragePercent()) + "%";
     }
