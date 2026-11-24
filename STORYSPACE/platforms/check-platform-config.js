@@ -45,6 +45,8 @@ if (!webClient.includes("storyspace.resumePoints") || !webClient.includes('playe
 if (!webClient.includes("remoteProgressPercent") || !webClient.includes('api("/library/"+encodeURIComponent(title.apiId)+"/progress"')) throw new Error("Cross-device watch progress sync missing");
 if (!webClient.includes('$("playerRestart").addEventListener("click"')) throw new Error("Player restart control missing");
 if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
+const mediaClient = read("web/media-uploads.js");
+if (!html.includes("mediaServerHealth") || !mediaClient.includes("async function checkServerHealth") || !mediaClient.includes("credentials:") || !mediaClient.includes("omit") || !mediaClient.includes("mediaHealthCheck")) throw new Error("Media-host health status and credential-free connection check missing");
 const webHtml = read("web/index.html");
 if (!webHtml.includes('class="skip-link"') || !webHtml.includes('aria-labelledby="playerTitle"')) throw new Error("Skip navigation and player dialog labels missing");
 if (!webClient.includes("beforeinstallprompt") || !webClient.includes("Add to Home Screen")) throw new Error("Cross-browser PWA install guidance missing");
@@ -55,7 +57,7 @@ execFileSync(process.execPath, ["--check", path.join(root, "web", "sw.js")], { s
 if (!serviceWorker.includes('key.startsWith(CACHE_PREFIX)')) throw new Error("Service worker must not delete unrelated app caches");
 if (!serviceWorker.includes('url.pathname.includes("/api/")')) throw new Error("Authenticated API responses must not enter the offline cache");
 if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) throw new Error("Native Android TV mode must preserve the first D-pad key");
-if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
+if (!webClient.includes("document.addEventListener(\"keydown\",event=>{") || !webClient.includes("event.preventDefault();moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
 if (!androidWorkflow.includes("debug-apk:") || !androidWorkflow.includes("runs-on: ubuntu-latest") || !androidWorkflow.includes("emulator-smoke:") || !androidWorkflow.includes("if: github.event_name == 'workflow_dispatch'") || !androidWorkflow.includes("runs-on: macos-14") || !androidWorkflow.includes("continue-on-error: true")) throw new Error("APK build must be required while hosted emulator smoke is manual and non-blocking");
