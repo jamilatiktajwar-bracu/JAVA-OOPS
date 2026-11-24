@@ -23,6 +23,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
   mvc.perform(get("/api/catalog/for-you").header("Authorization",bearer)).andExpect(status().isOk());
   mvc.perform(put("/api/library/"+titleId).header("Authorization",bearer)).andExpect(status().isOk());
   mvc.perform(get("/api/library").header("Authorization",bearer)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
+  mvc.perform(patch("/api/library/"+titleId+"/progress").header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("progressPercent",40,"currentTime",480.0,"duration",1200.0))))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("IN_PROGRESS")).andExpect(jsonPath("$.progressPercent").value(40))
+   .andExpect(jsonPath("$.resumePositionSeconds").value(480.0)).andExpect(jsonPath("$.durationSeconds").value(1200.0)).andExpect(jsonPath("$.lastPlayedAt").isNotEmpty());
+  mvc.perform(get("/api/library").header("Authorization",bearer)).andExpect(status().isOk())
+   .andExpect(jsonPath("$[0].resumePositionSeconds").value(480.0)).andExpect(jsonPath("$[0].durationSeconds").value(1200.0));
+  mvc.perform(patch("/api/library/"+titleId+"/progress").header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("progressPercent",100,"currentTime",1198.0,"duration",1200.0))))
+   .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("COMPLETED")).andExpect(jsonPath("$.progressPercent").value(100))
+   .andExpect(jsonPath("$.resumePositionSeconds").value(0.0));
+  MvcResult secondRegister=mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("email","other-"+System.nanoTime()+"@example.test","password","strong-password-456","displayName","Other Explorer")))).andExpect(status().isOk()).andReturn();
+  String secondBearer="Bearer "+mapper.readTree(secondRegister.getResponse().getContentAsString()).get("token").asText();
+  mvc.perform(get("/api/library").header("Authorization",secondBearer)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
   mvc.perform(post("/api/subscriptions/activate").header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content("{\"plan\":\"PLUS\"}")).andExpect(status().isOk()).andExpect(jsonPath("$.plan").value("PLUS"));
   mvc.perform(get("/api/subscriptions/me").header("Authorization",bearer)).andExpect(status().isOk()).andExpect(jsonPath("$.plan").value("PLUS"));
   mvc.perform(get("/api/admin/metrics").header("Authorization",bearer)).andExpect(status().isForbidden());
