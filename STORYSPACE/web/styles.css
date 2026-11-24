@@ -177,3 +177,9 @@ html.tv-mode .movie-card:focus {
 .media-progress p{font-size:11px;color:#a9bbd2}.media-pending-actions{display:flex;gap:7px}
 .media-hub-footnote{margin:18px 0 0}
 @media(max-width:600px){.media-hub-panel{padding:24px 17px}.media-hub-backdrop{padding:8px}.media-queue-item,.media-pending-item{grid-template-columns:1fr}.media-pending-actions{justify-content:flex-start}}
+
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+html.tv-mode :where(button,a,input,select,textarea,[tabindex]):focus-visible{outline-width:4px;outline-offset:5px;box-shadow:0 0 0 3px #07111f,0 0 24px #8af4e54d}
+html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
+@media(prefers-reduced-motion:reduce){html.tv-mode :where(button,a,input,select,textarea,[tabindex]):focus-visible{scroll-behavior:auto}}
+.player-recovery{margin:10px 0;padding:9px 12px;border-radius:9px;background:#432b192e;border:1px solid #ffb35c40;color:#ffd39b;font-size:12px}.player-recovery[hidden],.player-retry[hidden]{display:none}.player-retry{margin:4px 0 10px}
