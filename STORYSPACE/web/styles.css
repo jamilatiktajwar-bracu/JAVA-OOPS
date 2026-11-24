@@ -194,3 +194,11 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+/* Lazy poster image loading with shimmer/fallback */
+.movie-poster.poster-loading{background:linear-gradient(110deg,#14213a 8%,#223553 18%,#14213a 33%);background-size:200% 100%;animation:poster-shimmer 1.25s linear infinite}
+.movie-poster-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease}
+.movie-poster:not(.poster-loading) .movie-poster-image{opacity:1}
+.movie-poster.poster-failed{background:linear-gradient(135deg,#14213a,#243d5b)}
+@keyframes poster-shimmer{to{background-position-x:-200%}}
+@media(prefers-reduced-motion:reduce){.movie-poster.poster-loading{animation:none;background:#17243b}.movie-poster-image{transition:none}}
