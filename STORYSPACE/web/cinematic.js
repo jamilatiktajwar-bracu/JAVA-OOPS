@@ -32,6 +32,11 @@
   actions.append(spatialToggle, motionToggle);
   const welcome = $(".welcome-line", content);
   if (welcome) welcome.insertAdjacentElement("afterend", toolbar); else content.prepend(toolbar);
+  if(welcome){
+    toolbar.hidden=welcome.hidden;
+    const viewObserver=new MutationObserver(()=>{toolbar.hidden=welcome.hidden;});
+    viewObserver.observe(welcome,{attributes:true,attributeFilter:["hidden"]});
+  }
 
   const setSpatial = enabled => {
     spatialEnabled = !!enabled; styleRoot.classList.toggle("cinematic-spatial", spatialEnabled);
@@ -231,11 +236,11 @@
     cards[next].scrollIntoView({block:"nearest",inline:"center",behavior:effectsEnabled?"smooth":"auto"});
   });
 
-  function updateSpatialRow(row){
+  function updateSpatialContainer(row){
     if(!spatialEnabled||!row.isConnected)return;
     const bounds=row.getBoundingClientRect();if(bounds.bottom<0||bounds.top>window.innerHeight)return;
     const center=bounds.left+bounds.width/2;
-    for(const card of $$(".movie-card",row)){
+    for(const card of $(".movie-card",row)){
       const rect=card.getBoundingClientRect(),relative=(rect.left+rect.width/2-center)/Math.max(1,bounds.width/2);
       const clamped=Math.max(-1.35,Math.min(1.35,relative));
       card.style.setProperty("--spatial-yaw",(clamped*-12).toFixed(2)+"deg");
@@ -251,7 +256,7 @@
         $$(".movie-card").forEach(card=>["--spatial-yaw","--spatial-z","--spatial-scale"].forEach(key=>card.style.removeProperty(key)));
         return;
       }
-      $$(".movie-row").forEach(updateSpatialRow);
+      $(".movie-row,.movie-grid").forEach(updateSpatialContainer);
     });
   }
   document.addEventListener("scroll",scheduleSpatialUpdate,{passive:true,capture:true});
