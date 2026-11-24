@@ -1,0 +1,6 @@
+.player-shortcut-help-toggle{margin-top:10px}
+.player-shortcut-guide{margin:12px 0 4px;padding:13px 15px;border:1px solid #8af4e52e;border-radius:12px;background:#07121f;color:#a9bfd5;font-size:11px;line-height:1.65}
+.player-shortcut-guide p{margin:4px 0}
+.player-shortcut-guide kbd{display:inline-block;min-width:20px;padding:2px 5px;margin:0 2px;border:1px solid #ffffff24;border-bottom-width:2px;border-radius:5px;background:#14253b;color:#e6f8ff;font:600 10px ui-monospace,monospace;text-align:center}
+.player-shortcut-guide[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.player-shortcut-guide{scroll-behavior:auto}}
