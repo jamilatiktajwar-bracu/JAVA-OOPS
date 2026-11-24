@@ -110,7 +110,6 @@ function renderKidsHub(){
  if(row&&!picks.length){const empty=document.createElement("p");empty.className="kids-empty";empty.textContent=category==="all"?"No age-approved family stories are in this catalogue yet.":"No stories in this category for the selected age guide yet.";row.replaceChildren(empty)}
  const count=$("kidsPicksCount");
  if(count)count.textContent=picks.length+" stories";
- const hero=$("hero");
  if(hero&&enabled&&!visibleCatalog(movies).length)hero.hidden=true;
 }
 const PARENT_PIN_ITERATIONS=120000;
