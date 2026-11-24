@@ -657,36 +657,25 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   let tvMode = new URLSearchParams(location.search).get("tv") === "1";
   window.StoryspaceTV = { enable: () => { tvMode = true; document.documentElement.classList.add("tv-mode"); }, isEnabled: () => tvMode };
   if (tvMode) document.documentElement.classList.add("tv-mode");
-  const isFocusable = el => el && el.matches("button,a,input,select,textarea,[tabindex]") && !el.disabled && el.tabIndex >= 0 && !el.closest("[hidden]") && el.getClientRects().length;
-  const candidates = () => [...document.querySelectorAll("button,a,input,select,textarea,[tabindex]")].filter(isFocusable);
-  function moveFocus(key) {
-    const list = candidates(); if (!list.length) return;
-    const current = document.activeElement;
-    if (!list.includes(current)) { (list.find(el => el.closest(".main-nav")) || list[0]).focus(); return; }
-    const a = current.getBoundingClientRect(), ax = a.left+a.width/2, ay=a.top+a.height/2;
-    const vectors = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
-    const [dx,dy]=vectors[key]; let best=null, bestScore=Infinity;
-    for (const el of list) {
-      if(el===current) continue; const r=el.getBoundingClientRect(), x=r.left+r.width/2, y=r.top+r.height/2, vx=x-ax, vy=y-ay;
-      const primary=vx*dx+vy*dy, cross=Math.abs(vx*dy-vy*dx);
-      if(primary<=8) continue;
-      const score=primary+cross*2.2+(cross>primary?cross*2:0);
-      if(score<bestScore){bestScore=score;best=el}
-    }
-    if(best) { best.focus(); best.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); }
+  const focusSelector="button,a,input,select,textarea,[tabindex]";
+  const isFocusable=el=>el&&el.matches(focusSelector)&&!el.disabled&&el.tabIndex>=0&&!el.closest("[hidden],[inert],[aria-hidden='true']")&&el.getClientRects().length&&getComputedStyle(el).visibility!=="hidden";
+  const activeOverlay=()=>document.querySelector("#playerBackdrop:not([hidden]),#mediaHubBackdrop:not([hidden]),#profilesBackdrop:not([hidden]),#modalBackdrop:not([hidden]),#activityPanel:not([hidden])");
+  const candidates=()=>{const overlay=activeOverlay();return [...(overlay||document).querySelectorAll(focusSelector)].filter(isFocusable)};
+  function moveFocus(key){
+    const list=candidates();if(!list.length)return;const current=document.activeElement;
+    if(!list.includes(current)){const first=list.find(el=>el.closest(".main-nav"))||list.find(el=>el.matches("button,a"))||list[0];first.focus();return}
+    const a=current.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;const vectors={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};const [dx,dy]=vectors[key];let best=null,bestScore=Infinity;
+    for(const el of list){if(el===current)continue;const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,vx=x-ax,vy=y-ay,primary=vx*dx+vy*dy,cross=Math.abs(vx*dy-vy*dx);if(primary<=8)continue;const score=primary+cross*2.2+(cross>primary?cross*2:0);if(score<bestScore){bestScore=score;best=el}}
+    if(best){best.focus();best.scrollIntoView({block:"nearest",inline:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
   }
-  document.addEventListener("keydown", event => {
-    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) return;
-    // On native Android, the first remote arrow enables TV mode and must
-    // still be processed instead of being swallowed during mode activation.
-    if(!tvMode && isNativeAndroid) {
-      window.StoryspaceTV.enable();
-      tvMode = true;
-    }
-    if(!tvMode) return;
-    const tag=document.activeElement?.tagName;
-    if(["INPUT","TEXTAREA","SELECT"].includes(tag)) return;
-    event.preventDefault(); moveFocus(event.key);
+  document.addEventListener("keydown",event=>{
+    if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key))return;
+    if(!tvMode&&isNativeAndroid){window.StoryspaceTV.enable();tvMode=true}
+    if(!tvMode)return;
+    const target=event.target,tag=target?.tagName;
+    if(["INPUT","TEXTAREA","SELECT"].includes(tag)||target?.isContentEditable||target?.closest?.("[contenteditable='true']")||(tag==="BUTTON"&&target.type==="range"))return;
+    if(document.querySelector("#playerBackdrop:not([hidden])"))return;
+    event.preventDefault();moveFocus(event.key);
   });
   if(tvMode) setTimeout(()=>{(document.querySelector(".nav-link.active")||document.querySelector("button,a")).focus()},350);
   document.addEventListener("click", event => {
