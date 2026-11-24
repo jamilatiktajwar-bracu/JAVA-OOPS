@@ -72,12 +72,14 @@ const KIDS_AGE_RATINGS={
 "16-17":["G","TV-Y","TV-G","U","ALL","0+","7+","PG","TV-PG","TV-Y7","10+","12+","PG-13","TV-14","13+","14+","16+","TV-16"]
 };
 const KIDS_CATEGORIES=["all","family","adventure","animation","fantasy","nature","learning","music","comedy"];
+const KIDS_FRIENDLY_GENRES=["family","adventure","animation","fantasy","nature","documentary","educational","education","comedy","music","musical","children","kids"];
 function kidsModeEnabled(){return !!activeLocalProfile?.kidsMode}
 function kidsSafe(m){
  if(!kidsModeEnabled())return true;
  const band=KIDS_AGE_RATINGS[activeLocalProfile?.kidsAgeBand]||KIDS_AGE_RATINGS["8-12"];
  const rating=String(m?.rating||m?.ageRating||"").replace(/\s+/g,"").toUpperCase();
- return !!rating&&band.includes(rating);
+ const genreTokens=titleTokens(m?.genre||m?.genres);
+ return !!rating&&band.includes(rating)&&genreTokens.some(genre=>KIDS_FRIENDLY_GENRES.includes(genre));
 }
 function visibleCatalog(items){return (items||[]).filter(kidsSafe)}
 function kidsCategoryMatches(m,category){
@@ -103,8 +105,12 @@ function renderKidsHub(){
  });
  const picks=ranked(visibleCatalog(movies).filter(m=>kidsCategoryMatches(m,category)));
  renderRow("kidsPicksRow",picks.slice(0,12));
+ const row=$("kidsPicksRow");
+ if(row&&!picks.length){const empty=document.createElement("p");empty.className="kids-empty";empty.textContent=category==="all"?"No age-approved family stories are in this catalogue yet.":"No stories in this category for the selected age guide yet.";row.replaceChildren(empty)}
  const count=$("kidsPicksCount");
  if(count)count.textContent=picks.length+" stories";
+ const hero=$("hero");
+ if(hero&&enabled&&!visibleCatalog(movies).length)hero.hidden=true;
 }
 const PARENT_PIN_ITERATIONS=120000;
 function bytesToHex(bytes){return Array.from(bytes).map(value=>value.toString(16).padStart(2,"0")).join("")}
@@ -159,7 +165,7 @@ async function handleKidsModeToggle(enabled){
   $("kidsModeToggle").checked=true;return;
  }
  activeLocalProfile.kidsMode=!!enabled;persistLocalProfiles();refreshProfileOptions();
- renderHome();setHero(chooseHero());showView(state.view);
+ renderHome();setHero(chooseHero());showView(state.view);renderKidsHub();
  showToast(enabled?"Kids Mode on · family-friendly discovery enabled":"Kids Mode off");
 }
 async function handleKidsAgeBandChange(value){
@@ -241,7 +247,7 @@ $("profilesClose").onclick=closeProfileManager;
 $("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
 $("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
 $("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
-$("deleteProfile").onclick=()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
+$("deleteProfile").onclick=async()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}if(activeLocalProfile.parentPin&&!(await verifyParentPin()))return;const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
 
 $("universeSort")?.addEventListener("change",renderHome);$("universeGenre")?.addEventListener("change",renderHome);
@@ -293,7 +299,7 @@ let activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfi
 function profileCapture(p=activeLocalProfile){if(!p)return;p.watchlist=[...state.list].slice(0,500);p.preferences=normalizePreferences(personalized.preferences);p.history=normalizeHistory(personalized.history);p.resumePoints=normalizeResumePoints(resumePoints);p.savedAt={...savedAt}}
 function persistLocalProfiles(){if(!activeLocalProfile||!Array.isArray(localProfiles))return;profileCapture();storage.set(PROFILE_STORE,JSON.stringify(localProfiles.slice(0,8)));storage.set(PROFILE_ACTIVE,activeLocalProfile.id)}
 function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});movies.forEach(m=>{m.progress=defaultProgress[String(m.id)]||0;delete m.resumePoint});movies.forEach(applyResumePoint);storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
-function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;document.documentElement.classList.add("profile-switching");persistLocalProfiles();applyLocalProfile(target);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name);window.setTimeout(()=>document.documentElement.classList.remove("profile-switching"),520)}
+async function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;if(activeLocalProfile.parentPin&&!(await verifyParentPin())){refreshProfileOptions();return}document.documentElement.classList.add("profile-switching");persistLocalProfiles();applyLocalProfile(target);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name);window.setTimeout(()=>document.documentElement.classList.remove("profile-switching"),520)}
 function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin}
 function openProfileManager(){refreshProfileOptions();$("profilesBackdrop").hidden=false;document.body.style.overflow="hidden";$("newProfileName").focus()}
 function closeProfileManager(){if($("profilesBackdrop").hidden)return;$("profilesBackdrop").hidden=true;document.body.style.overflow=""}
@@ -309,7 +315,7 @@ function recordInterest(m,kind){let entry=personalized.history.find(x=>String(x.
 const baseRenderHome=renderHome;
 function renderHome(){const ordered=ranked(movies);const cont=movies.filter(m=>m.progress>0);$("continueSection").hidden=cont.length===0;renderRow("continueRow",cont);renderRow("trendingRow",ordered.slice(0,9));renderRow("originalsRow",ranked(movies.filter(m=>m.original)).slice(0,8));renderRow("topRow",ordered.slice(0,10));const ug=$("universeGenre"),us=$("universeSort");const savedMovies=movies.filter(m=>state.list.has(m.id));if(ug){const genres=[...new Set(savedMovies.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort(),prev=ug.value;ug.replaceChildren(...[["all","All genres"],...genres.map(g=>[g,g])].map(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o}));ug.value=genres.includes(prev)?prev:"all"}let universeItems=savedMovies.filter(m=>!ug||ug.value==="all"||titleTokens(m.genre||m.genres).includes(ug.value));const order=us?.value||"saved";if(order==="title")universeItems.sort((a,b)=>String(a.title||a.name).localeCompare(String(b.title||b.name)));else if(order==="rating")universeItems.sort((a,b)=>Number(b.score||b.communityScore)-Number(a.score||a.communityScore));else if(order==="year")universeItems.sort((a,b)=>Number(b.year||b.releaseYear)-Number(a.year||a.releaseYear));else universeItems.sort((a,b)=>Number(savedAt[String(b.id)]||0)-Number(savedAt[String(a.id)]||0));renderRow("mylistRow",universeItems);const uc=$("universeCount");if(uc)uc.textContent=universeItems.length+" saved";$("mylistSection").hidden=state.view==="home"&&state.list.size===0;const s=document.getElementById("personalSection");if(s){renderRow("personalRow",ordered.filter(m=>!cont.includes(m)).slice(0,8));s.hidden=false;const h=document.getElementById("personalHeading");h.textContent=personalized.preferences.genres.length? "Picked around "+personalized.preferences.genres.slice(0,2).join(" & "):"Your evolving picks";const note=document.getElementById("personalNote");note.textContent=(personalized.preferences.moods.length?"Mood signals: "+personalized.preferences.moods.slice(0,3).join(", "):"Based on what you explore, save, and choose.")+" · "+currentDaypart().label+" mix";const welcome=$("welcomeLine").querySelector("span");if(welcome)welcome.textContent="Good "+currentDaypart().label+" — stories for your state of mind."}renderKidsHub()}
 function setHero(m){if(!m)return;const title=String(m.title||m.name||"Explore a new story").toUpperCase();const titleEl=$("heroTitle");titleEl.replaceChildren();title.split(/\s+/).forEach((word,index)=>{if(index)titleEl.append(document.createElement("br"));titleEl.append(document.createTextNode(word))});$("heroDescription").textContent=m.description||m.synopsis||"";const image=art(m);$("heroArt").style.backgroundImage=image?`url("${image}")`:"";const meta=$("hero").querySelector(".hero-meta");meta.replaceChildren();const addMeta=(text,className="")=>{const span=document.createElement("span");span.className=className;span.textContent=String(text??"");meta.append(span)};addMeta("FOR YOU","top10");addMeta(m.year||m.releaseYear||"");addMeta(m.rating||m.ageRating||"13+","maturity");addMeta(m.duration||m.format||"");addMeta("HD","quality");$("heroPlay").onclick=()=>playMovie(m);$("heroInfo").onclick=()=>openDetails(m);const score=document.querySelector(".hero-rating b");if(score)score.textContent=Number(m.score||m.communityScore||8.5).toFixed(1);const genre=document.querySelector(".hero-rating small");if(genre)genre.textContent=" / "+String(m.genre||m.genres?.[0]||"Story");}
-function chooseHero(){const pool=ranked(visibleCatalog(movies)).filter(m=>!personalized.history.slice(0,8).some(h=>String(h.id)===String(m.id)));return pool[personalized.heroCycle%Math.max(1,pool.length)]||visibleCatalog(movies)[0]||movies[0]}
+function chooseHero(){const available=visibleCatalog(movies);const pool=ranked(available).filter(m=>!personalized.history.slice(0,8).some(h=>String(h.id)===String(m.id)));return pool[personalized.heroCycle%Math.max(1,pool.length)]||available[0]||null}
 function nextHero(){personalized.heroCycle++;setHero(chooseHero());const p=document.querySelector(".hero-progress span");if(p){p.style.width=(25+(personalized.heroCycle%4)*18)+"%"}}
 function openPreferences(){const back=$("preferencesBackdrop");if(!back)return;drawPreferences();back.hidden=false;document.body.style.overflow="hidden"}
 function closePreferences(){if($("preferencesBackdrop").hidden)return;$("preferencesBackdrop").hidden=true;document.body.style.overflow=""}
