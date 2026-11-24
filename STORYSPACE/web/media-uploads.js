@@ -71,7 +71,7 @@
   async function resumeAll(){
     if(active||!navigator.onLine)return;
     let items=[];try{items=await getItems()}catch{return}
-    const next=items.find(x=>x.status!=="Pending owner approval"&&x.handle);
+    const next=items.find(x=>x.status!=="Pending owner approval"&&(x.handle||(selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size)));
     if(next)await resumeOne(next.id);
   }
   async function refreshCommunityCatalog(){
@@ -127,7 +127,7 @@
       const healthData=await health.json();
       if(healthData.ok!==true||healthData.service!=="storyspace-home-media")throw new Error("This URL is not a Storyspace Home Media server");
       await request(root,"/api/auth/verify/uploader",uploadToken,{method:"POST",headers:headers(uploadToken)});
-      saveConfig({root,uploadToken});showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();
+      saveConfig({root,uploadToken});showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();resumeAll();
     }catch(error){
       showToast(error.status===401
         ?"Uploader invitation key rejected. Copy uploadToken from this PC's media-host.json; restart the media server if you changed it."
