@@ -50,6 +50,21 @@ public class NetflixSmokeTest {
                 "null-user similarity returns safe zero");
         check(engine.getCollaborativeRecommendations(user, 3).length == 0,
                 "collaborative recommendations require valid requester");
+        Movies collabShared = new Movies("Collab Shared", "Drama", 90);
+        Movies collabPick = new Movies("Collab Pick", "Comedy", 95);
+        Movies collabExtra = new Movies("Collab Extra", "Action", 100);
+        NETFLIX_USER collabRequester = new NETFLIX_USER("collab-requester");
+        NETFLIX_USER collabDonor = new NETFLIX_USER("collab-donor");
+        collabRequester.addFavouriteMovie(collabShared);
+        collabDonor.addFavouriteMovie(collabShared);
+        collabDonor.addFavouriteMovie(collabPick);
+        collabDonor.addFavouriteMovie(collabExtra);
+        RecommendationEngine collabEngine = new RecommendationEngine(collabRequester);
+        check(Math.abs(collabEngine.calculateSimilarity(collabDonor) - (1.0 / 3.0)) < 0.0001,
+                "collaborative similarity uses unique favourite sets");
+        Movies[] collaborative = collabEngine.getCollaborativeRecommendations(collabDonor, 5);
+        check(collaborative.length == 2 && collabEngine.getCollaborativeRecommendations(collabRequester, 5).length == 0,
+                "collaborative recommendations exclude requester favourites and self-user");
 
 
 
