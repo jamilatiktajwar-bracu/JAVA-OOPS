@@ -45,6 +45,7 @@
             "subscriptionBackdrop",
             "adminBackdrop",
             "authBackdrop",
+            "profilesBackdrop",
             "preferencesBackdrop",
             "modalBackdrop"
           ];
