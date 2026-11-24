@@ -30,7 +30,8 @@ jobs:
           node --check STORYSPACE/web/media-uploads.js
           node --check STORYSPACE/web/enhancements.js
           node --check STORYSPACE/web/cinematic.js
-          node --check STORYSPACE/web/player-gestures.js\n          node --check STORYSPACE/web/player-shortcuts.js
+          node --check STORYSPACE/web/player-gestures.js
+          node --check STORYSPACE/web/player-shortcuts.js
           node --check STORYSPACE/web/native-bridge.js
           node --check STORYSPACE/web/sw.js
           node --check STORYSPACE/home-media/server.mjs
