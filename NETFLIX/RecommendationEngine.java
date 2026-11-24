@@ -311,7 +311,7 @@ public class RecommendationEngine {
     }
 
     public boolean setRatingWeight(double weight) {
-        if (weight < 0.0 || weight > 5.0) {
+        if (!Double.isFinite(weight) || weight < 0.0 || weight > 5.0) {
             return false;
         }
         ratingWeight = weight;
@@ -319,7 +319,7 @@ public class RecommendationEngine {
     }
 
     public boolean setGenreWeight(double weight) {
-        if (weight < 0.0 || weight > 5.0) {
+        if (!Double.isFinite(weight) || weight < 0.0 || weight > 5.0) {
             return false;
         }
         genreWeight = weight;
@@ -327,7 +327,7 @@ public class RecommendationEngine {
     }
 
     public boolean setRecencyWeight(double weight) {
-        if (weight < 0.0 || weight > 5.0) {
+        if (!Double.isFinite(weight) || weight < 0.0 || weight > 5.0) {
             return false;
         }
         recencyWeight = weight;
