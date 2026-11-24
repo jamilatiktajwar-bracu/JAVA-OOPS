@@ -194,3 +194,10 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+/* Native-feeling horizontal browse rails */
+.movie-row{scroll-snap-type:x mandatory;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.movie-row>.movie-card{scroll-snap-align:start;scroll-snap-stop:normal}
+.movie-row:focus-within{scroll-behavior:smooth}
+@media(max-width:700px){.movie-row{gap:12px;padding-inline:2px;scroll-padding-inline:8px}.movie-row>.movie-card{flex-basis:min(72vw,270px)}}
+@media(prefers-reduced-motion:reduce){.movie-row:focus-within{scroll-behavior:auto}}
