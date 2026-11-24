@@ -27,3 +27,12 @@ If the backend is running, the app can register/sign in, sync account preference
 
 ## Configure the API endpoint
 The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set by an approved external bootstrap script), the storyspace-api-root meta tag in index.html, then the development default. Leave the meta tag empty for local web development. Set it to /api for a same-origin deployment, or to the absolute HTTPS API base URL for a separately hosted backend/Capacitor app. Do not put API secrets in client-side configuration.
+
+
+## Upgrade batch: local profiles, advanced filters, player UX
+
+- Local profiles (up to 8) keep independent watchlists, discovery preferences, recent activity and preview resume state on this device.
+- My Universe: genre filter and sort by recently saved, title, rating or year.
+- Search: filter by genre, format, maturity rating and year; reset filters and result counts are available.
+- Preview player: ±10-second skips, playback speed, PiP (where supported), fullscreen and shortcut hints.
+- Local profiles are not backend accounts and do not sync across devices. Preview media remains sample content only.
