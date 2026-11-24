@@ -57,7 +57,7 @@ if (!/window\.StoryspaceTV\.enable\(\);\s*tvMode\s*=\s*true;/.test(webClient)) t
 if (!webClient.includes("event.preventDefault(); moveFocus(event.key);")) throw new Error("TV D-pad navigation handler missing");
 if (!webClient.includes('new URLSearchParams(location.search).get("tv") === "1')) throw new Error("TV browser override missing");
 const androidWorkflow = read("../.github/workflows/storyspace-android.yml");
-if (!androidWorkflow.includes("debug-apk:") || !androidWorkflow.includes("runs-on: ubuntu-latest") || !androidWorkflow.includes("emulator-smoke:") || !androidWorkflow.includes("runs-on: macos-14") || !androidWorkflow.includes("continue-on-error: true")) throw new Error("APK build must be required while emulator smoke is isolated and non-blocking");
+if (!androidWorkflow.includes("debug-apk:") || !androidWorkflow.includes("runs-on: ubuntu-latest") || !androidWorkflow.includes("emulator-smoke:") || !androidWorkflow.includes("if: github.event_name == 'workflow_dispatch'") || !androidWorkflow.includes("runs-on: macos-14") || !androidWorkflow.includes("continue-on-error: true")) throw new Error("APK build must be required while hosted emulator smoke is manual and non-blocking");
 if (!androidWorkflow.includes("cancel-in-progress: false")) throw new Error("Android APK and emulator jobs must not be cancelled mid-build");
 if (!androidWorkflow.includes("Capture emulator diagnostics")) throw new Error("Android emulator failure diagnostics step missing");
 if (!androidWorkflow.includes('dump resources app/build/outputs/apk/debug/app-debug.apk')) throw new Error("Android TV banner must be verified through the APK resource table");
