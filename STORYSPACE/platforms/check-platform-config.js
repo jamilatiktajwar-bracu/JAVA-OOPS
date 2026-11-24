@@ -32,7 +32,7 @@ const corsSource = read("backend/src/main/java/io/storyspace/config/CorsConfig.j
 const backendConfig = read("backend/src/main/resources/application.yml");
 const backendPom = read("backend/pom.xml");
 if (!backendPom.includes("<artifactId>postgresql</artifactId>")) throw new Error("PostgreSQL runtime driver missing");
-if (!backendConfig.includes("DATABASE_DRIVER") || !backendConfig.includes("JPA_DDL_AUTO") || !backendConfig.includes("DB_POOL_SIZE")) throw new Error("Deployment database settings must be environment configurable");
+if (!backendConfig.includes("DATABASE_URL") || backendConfig.includes("driver-class-name:") || !backendConfig.includes("JPA_DDL_AUTO") || !backendConfig.includes("DB_POOL_SIZE")) throw new Error("Database URL and pool settings must be environment configurable with URL-based driver detection");
 const tokenService = read("backend/src/main/java/io/storyspace/security/TokenService.java");
 if (corsSource.includes('List.of("*")') || corsSource.includes('setAllowedOriginPatterns')) throw new Error("CORS must use explicit origins, not wildcard patterns");
 if (!backendConfig.includes("CORS_ALLOWED_ORIGINS")) throw new Error("CORS origin configuration must be environment-driven");
