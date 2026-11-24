@@ -1,3 +1,5 @@
+import java.util.Locale;
+
 public class CinemaAnalytics {
     public static double getAveragePersonalRating(NETFLIX_USER user) {
         if (user == null) {
@@ -98,12 +100,19 @@ public class CinemaAnalytics {
         if (user == null || user.getWatchHistoryCount() == 0) {
             return 0.0;
         }
-        return ((double) getFavouriteCount(user) / user.getWatchHistoryCount()) * 100.0;
+        Movies[] history = user.getWatchHistory();
+        int favouritesInHistory = 0;
+        for (Movies movie : history) {
+            if (user.isFavourite(movie)) {
+                favouritesInHistory++;
+            }
+        }
+        return ((double) favouritesInHistory / history.length) * 100.0;
     }
 
     public static String getAnalyticsSummary(NETFLIX_USER user) {
         return getEngagementSummary(user)
-                + ", Average rating: " + String.format("%.1f",
+                + ", Average rating: " + String.format(Locale.ROOT, "%.1f",
                         getAveragePersonalRating(user))
                 + ", Top genre: " + getMostWatchedGenre(user)
                 + ", Level: " + getEngagementLevel(user);
