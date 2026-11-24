@@ -71,6 +71,13 @@ jobs:
           # XML dump resolves the banner to a resource ID; verify the resource table separately.
           "$AAPT" dump resources app/build/outputs/apk/debug/app-debug.apk > "$RUNNER_TEMP/storyspace-resources.txt"
           grep -q 'storyspace_tv_banner' "$RUNNER_TEMP/storyspace-resources.txt"
+      - name: Verify APK signature and archive integrity
+        working-directory: STORYSPACE/platforms/mobile/android
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          unzip -t "$APK"
+          shasum -a 256 "$APK"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
