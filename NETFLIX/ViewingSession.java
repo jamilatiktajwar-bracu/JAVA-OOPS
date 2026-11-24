@@ -298,7 +298,8 @@ public class ViewingSession {
         if (bandwidthMbps == 0) {
             return 0;
         }
-        return (100 - bufferingPercent) * bandwidthMbps;
+        long estimatedSeconds = (long) (100 - bufferingPercent) * bandwidthMbps;
+        return (int) Math.min(Integer.MAX_VALUE, estimatedSeconds);
     }
 
     public boolean isQualityAvailable(String qualityName) {
@@ -465,7 +466,9 @@ public class ViewingSession {
     }
 
     public void sendHeartbeat() {
-        heartbeatCount++;
+        if (heartbeatCount < Integer.MAX_VALUE) {
+            heartbeatCount++;
+        }
         lastHeartbeatAt = System.currentTimeMillis();
         addEvent("HEARTBEAT");
     }
