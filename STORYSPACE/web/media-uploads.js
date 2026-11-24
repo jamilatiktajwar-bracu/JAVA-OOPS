@@ -155,6 +155,7 @@
       await request(root,"/api/auth/verify/uploader",uploadToken,{method:"POST",headers:headers(uploadToken)});
       saveConfig({root,uploadToken});showHealth("online","Connected","Host online · uploader key accepted",Math.round(performance.now()-started));showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();resumeAll();
     }catch(error){
+      showHealth("offline","Verification failed",error.status===401?"Uploader invitation key rejected":error.message||"Could not reach media host");
       showToast(error.status===401
         ?"Uploader invitation key rejected. Copy uploadToken from this PC's media-host.json; restart the media server if you changed it."
         :"Could not verify media server: "+error.message);
