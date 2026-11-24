@@ -246,7 +246,7 @@ $("openProfileManager").onclick=()=>{$("profileMenu").classList.remove("open");o
 $("profilesClose").onclick=closeProfileManager;
 $("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
 $("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("dailyScreenLimit").onchange=e=>handleDailyScreenLimitChange(e.target.value);$("breakReminderMinutes").onchange=e=>handleBreakReminderChange(e.target.value);$("quietHoursStart").onchange=handleQuietHoursChange;$("quietHoursEnd").onchange=handleQuietHoursChange;$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
-$("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
+$("exportProfiles").onclick=exportProfileBackup;$("importProfiles").onclick=()=>$("profileBackupFile").click();$("profileBackupFile").onchange=e=>{importProfileBackup(e.target.files?.[0]);e.target.value=""};$("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
 $("deleteProfile").onclick=async()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}if(activeLocalProfile.parentPin&&!(await verifyParentPin()))return;const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);showView(state.view);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
 
@@ -364,6 +364,39 @@ function renderScreenTimeDashboard(){
 }
 const profileCleanName=value=>String(value||"").trim().slice(0,32)||"Explorer";
 const profileCleanId=value=>String(value||"").slice(0,48);
+function exportProfileBackup(){
+ persistLocalProfiles();
+ const payload={format:"storyspace-profile-backup",version:1,exportedAt:new Date().toISOString(),activeProfileId:activeLocalProfile?.id||null,profiles:localProfiles.map(profile=>({...profile,screenTime:profile.screenTime&&{...profile.screenTime,history:[...(profile.screenTime.history||[])]}}))};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
+ link.href=url;link.download="storyspace-profiles-backup.json";document.body.append(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+ showToast("Profile backup downloaded · keep the file private");
+}
+function importProfileBackup(file){
+ if(!file)return;
+ if(file.size>1024*1024){showToast("Backup file must be 1 MB or smaller");return}
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const data=JSON.parse(String(reader.result||""));
+   if(data?.format!=="storyspace-profile-backup"||data.version!==1||!Array.isArray(data.profiles)||!data.profiles.length||data.profiles.length>8)throw new Error("Invalid profile backup format");
+   if(localProfiles.length+data.profiles.length>8){showToast("Not enough profile slots. Remove a profile before restoring.");return}
+   if(!window.confirm("Restore "+data.profiles.length+" profile(s) by adding them to this device? Existing profiles will not be replaced."))return;
+   const imported=data.profiles.map(profileSanitize),existingNames=new Set(localProfiles.map(p=>p.name.toLowerCase())),ids=new Set(localProfiles.map(p=>p.id));
+   imported.forEach((profile,index)=>{
+    const baseName=profile.name;let name=baseName,suffix=2;
+    while(existingNames.has(name.toLowerCase()))name=profileCleanName(baseName+" ("+suffix+++")");
+    profile.name=name;existingNames.add(name.toLowerCase());
+    if(ids.has(profile.id))profile.id=profileCleanId("restore-"+Date.now()+"-"+index+"-"+Math.floor(Math.random()*100000));
+    while(ids.has(profile.id))profile.id=profileCleanId("restore-"+Date.now()+"-"+Math.floor(Math.random()*100000));
+    ids.add(profile.id);
+   });
+   persistLocalProfiles();localProfiles.push(...imported);persistLocalProfiles();refreshProfileOptions();
+   showToast(imported.length+" profile(s) restored · current profile unchanged");
+  }catch(error){showToast(error.message||"Could not restore profile backup")}
+ };
+ reader.onerror=()=>showToast("Could not read backup file");
+ reader.readAsText(file);
+}
 function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),kidsMode:false,kidsAgeBand:"8-12",kidsCategory:"all",parentPin:null,quietHoursStart:"",quietHoursEnd:"",breakReminderMinutes:0,watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
 function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,kidsAgeBand:Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,p.kidsAgeBand)?p.kidsAgeBand:"8-12",kidsCategory:KIDS_CATEGORIES.includes(p.kidsCategory)?p.kidsCategory:"all",parentPin:p.parentPin&&/^[a-f0-9]{32}$/i.test(p.parentPin.salt||"")&&/^[a-f0-9]{64}$/i.test(p.parentPin.hash||"")?{salt:p.parentPin.salt.toLowerCase(),hash:p.parentPin.hash.toLowerCase(),iterations:Math.max(100000,Math.min(250000,Number(p.parentPin.iterations)||PARENT_PIN_ITERATIONS))}:null,screenTime:normalizeScreenTime(p.screenTime,!!p.kidsMode),quietHoursStart:normalizeQuietTime(p.quietHoursStart),quietHoursEnd:normalizeQuietTime(p.quietHoursEnd),breakReminderMinutes:BREAK_REMINDER_INTERVALS.includes(Number(p.breakReminderMinutes))?Number(p.breakReminderMinutes):(p.kidsMode?30:0),watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
 let localProfiles=(()=>{const stored=readJson(PROFILE_STORE,null);if(Array.isArray(stored)&&stored.length)return stored.slice(0,8).map(profileSanitize).filter(p=>p.id);return[createLocalProfile("Explorer","local-default")]})();
