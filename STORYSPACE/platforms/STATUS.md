@@ -37,3 +37,11 @@ Set the repository variable `STORYSPACE_API_ROOT` to the absolute HTTPS base URL
 4. Integrate a compliant billing provider and subscription lifecycle.
 5. Configure and validate the Android keystore / Apple distribution certificate and provisioning profile, store accounts, review, notarization, and physical-device QA.
 6. Complete Android TV, tvOS, and console-specific UX and approvals.
+
+
+## Upgrade batch — profile / search / player
+
+- Added device-local profile switching and profile-specific saved items, preferences, history and resume points (maximum 8 profiles).
+- Added My Universe filter/sort and advanced search filters (genre, format, age rating, release year).
+- Improved preview controls (skip, speed, PiP/fullscreen affordances) and refreshed service-worker cache version.
+- CI smoke checks added. Real phone and player testing remains pending.
