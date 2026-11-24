@@ -9,6 +9,8 @@ public class PlaybackQueue {
     private int crossfadeSeconds;
     private Movies[] history;
     private int historyCount;
+    private Movies[] shufflePlayed;
+    private int shufflePlayedCount;
     private boolean autoplayEnabled;
     private String audioLanguage;
     private String subtitleLanguage;
@@ -26,6 +28,8 @@ public class PlaybackQueue {
         crossfadeSeconds = 0;
         history = new Movies[capacity > 0 ? capacity : 100];
         historyCount = 0;
+        shufflePlayed = new Movies[capacity > 0 ? capacity : 100];
+        shufflePlayedCount = 0;
         autoplayEnabled = true;
         audioLanguage = "English";
         subtitleLanguage = "English";
@@ -71,6 +75,7 @@ public class PlaybackQueue {
                     queue[j] = queue[j + 1];
                 }
                 queue[--queueCount] = null;
+                removeFromShufflePlayed(movie);
                 if (queueCount == 0) {
                     currentIndex = 0;
                 } else if (i < currentIndex) {
@@ -108,15 +113,19 @@ public class PlaybackQueue {
             return current;
         }
         if (shuffleEnabled) {
-            if (queueCount == 1) {
-                currentIndex = 0;
-            } else {
-                int selected;
-                do {
-                    selected = (int) (Math.random() * queueCount);
-                } while (selected == currentIndex);
-                currentIndex = selected;
+            markShufflePlayed(current);
+            int selected = chooseUnplayedShuffleIndex();
+            if (selected < 0 && repeatAll) {
+                resetShufflePlayed();
+                markShufflePlayed(current);
+                selected = queueCount == 1 ? 0 : chooseUnplayedShuffleIndex();
             }
+            if (selected < 0) {
+                currentIndex = -1;
+                touch();
+                return null;
+            }
+            currentIndex = selected;
         } else {
             currentIndex = currentIndex < 0 ? 0 : currentIndex + 1;
         }
@@ -157,6 +166,7 @@ public class PlaybackQueue {
         }
         queueCount = 0;
         currentIndex = 0;
+        resetShufflePlayed();
         clearHistory();
         touch();
     }
@@ -188,8 +198,69 @@ public class PlaybackQueue {
     }
 
     public void setShuffleEnabled(boolean shuffleEnabled) {
-        this.shuffleEnabled = shuffleEnabled;
+        if (this.shuffleEnabled != shuffleEnabled) {
+            this.shuffleEnabled = shuffleEnabled;
+            resetShufflePlayed();
+            if (shuffleEnabled) {
+                markShufflePlayed(getCurrent());
+            }
+        }
         touch();
+    }
+
+    private void markShufflePlayed(Movies movie) {
+        if (movie == null || isShufflePlayed(movie)
+                || shufflePlayedCount >= shufflePlayed.length) {
+            return;
+        }
+        shufflePlayed[shufflePlayedCount++] = movie;
+    }
+
+    private boolean isShufflePlayed(Movies movie) {
+        for (int i = 0; i < shufflePlayedCount; i++) {
+            if (shufflePlayed[i] == movie) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int chooseUnplayedShuffleIndex() {
+        int available = 0;
+        for (int i = 0; i < queueCount; i++) {
+            if (!isShufflePlayed(queue[i])) {
+                available++;
+            }
+        }
+        if (available == 0) {
+            return -1;
+        }
+        int target = (int) (Math.random() * available);
+        for (int i = 0; i < queueCount; i++) {
+            if (!isShufflePlayed(queue[i]) && target-- == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void resetShufflePlayed() {
+        for (int i = 0; i < shufflePlayedCount; i++) {
+            shufflePlayed[i] = null;
+        }
+        shufflePlayedCount = 0;
+    }
+
+    private void removeFromShufflePlayed(Movies movie) {
+        for (int i = 0; i < shufflePlayedCount; i++) {
+            if (shufflePlayed[i] == movie) {
+                for (int j = i; j < shufflePlayedCount - 1; j++) {
+                    shufflePlayed[j] = shufflePlayed[j + 1];
+                }
+                shufflePlayed[--shufflePlayedCount] = null;
+                return;
+            }
+        }
     }
 
     public boolean isShuffleEnabled() {
