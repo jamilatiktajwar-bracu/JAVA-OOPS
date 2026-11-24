@@ -146,7 +146,7 @@ public class CinemaAnalytics {
                 + ", Favorites: " + getFavouriteCount(user)
                 + ", Watchlist: " + getWatchListCount(user)
                 + ", Minutes: " + user.getTotalWatchedMinutes()
-                + ", Completion: " + String.format("%.1f", getCompletionRate(user)) + "%";
+                + ", Completion: " + String.format(Locale.ROOT, "%.1f", getCompletionRate(user)) + "%";
     }
 
     public static Movies[] getPersonalTopRated(NETFLIX_USER user, int limit) {
