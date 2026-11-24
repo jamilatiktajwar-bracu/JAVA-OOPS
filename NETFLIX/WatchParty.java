@@ -86,7 +86,7 @@ public class WatchParty {
     }
 
     public boolean setPlaybackPosition(int position) {
-        if (movie == null || position < 0
+        if (!partyActive || movie == null || position < 0
                 || (long) position > (long) movie.getDuration() * 60L) {
             return false;
         }
@@ -96,6 +96,9 @@ public class WatchParty {
     }
 
     public void play() {
+        if (!partyActive) {
+            return;
+        }
         playing = true;
         if (startedAt == 0) {
             startedAt = System.currentTimeMillis();
@@ -297,7 +300,7 @@ public class WatchParty {
     }
 
     public boolean synchronizeAllGuests(int hostPosition) {
-        if (movie == null || hostPosition < 0
+        if (!partyActive || movie == null || hostPosition < 0
                 || (long) hostPosition > (long) movie.getDuration() * 60L) {
             return false;
         }
