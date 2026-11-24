@@ -27,6 +27,7 @@ jobs:
       - name: Frontend and native bridge syntax
         run: |
           node --check STORYSPACE/web/app.js
+          node --check STORYSPACE/web/media-uploads.js
           node --check STORYSPACE/web/enhancements.js
           node --check STORYSPACE/web/native-bridge.js
           node --check STORYSPACE/web/sw.js

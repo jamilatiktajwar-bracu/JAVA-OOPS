@@ -450,6 +450,12 @@ async function openPlayer(m){
   const video=$("previewVideo");$("playerRestart").disabled=true;video.pause();
   video.onerror=()=>{if(request===playerLoadId&&!$("playerBackdrop").hidden)$("playerNotice").textContent="The preview could not be loaded. Check your connection and try again."};
   video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+
+  if(m.streamUrl){
+    const stream=safeMediaUrl(m.streamUrl);
+    if(stream){video.src=stream;$( "playerNotice").textContent="Community-hosted media · owner-approved upload.";if(request!==playerLoadId||$("playerBackdrop").hidden)return;video.load();try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start."}return;}
+  }
+
   try{
     if(personalized.token&&m.apiId){
       const data=await api("/media/"+encodeURIComponent(m.apiId)+"/preview");
