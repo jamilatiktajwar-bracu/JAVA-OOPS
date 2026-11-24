@@ -33,3 +33,5 @@
 @media(max-width:850px){.discovery-results{grid-template-columns:repeat(2,minmax(0,1fr))}.mix-poster{height:clamp(145px,32vw,220px)}}
 @media(max-width:560px){.discovery-studio{margin:0 4% 25px;padding:18px 15px 17px;border-radius:17px}.discovery-top{display:block}.discovery-shuffle{margin-top:14px}.discovery-moods{gap:7px;margin:15px 0}.discovery-mood{padding:8px 10px}.discovery-results{gap:9px}.mix-card-body{padding:9px}.mix-card-title{font-size:12px}.mix-card-actions{gap:5px}.discovery-action{font-size:8px;padding:8px 4px}}
 @media(prefers-reduced-motion:reduce){.mix-card,.mix-poster img,.discovery-shuffle{transition:none}.mix-card:hover,.discovery-shuffle:hover{transform:none}}
+
+.mix-reason{margin:7px 0 0;color:#aab8cd;font-size:9px;line-height:1.45;min-height:26px}
