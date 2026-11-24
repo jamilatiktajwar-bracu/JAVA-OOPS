@@ -2,6 +2,7 @@ public class NETFLIX_SMOKE_TEST {
     public static void main(String[] args) {
         testPlaybackQueue();
         testSystemHealthCounterSafety();
+        testCinemaAnalyticsConsistency();
         testOfflineDownloads();
         testViewingSession();
         testMovieReview();
@@ -29,6 +30,27 @@ public class NETFLIX_SMOKE_TEST {
         require(queue.remove(first), "queue should remove first movie");
         require(queue.getCurrent() == second, "current item should remain valid after removal");
         require(queue.getQueueCount() == 1, "queue count should be updated");
+    }
+
+    private static void testCinemaAnalyticsConsistency() {
+        NETFLIX_USER user = new NETFLIX_USER("analytics-tester");
+        Movies watched = new Movies("Analytics watched", "Drama", 100);
+        Movies favoriteOnly = new Movies("Analytics favorite only", "Comedy", 90);
+        require(user.watchMovie(watched), "analytics test movie should enter history");
+        require(user.addFavouriteMovie(favoriteOnly), "unwatched favorite should be accepted");
+        require(CinemaAnalytics.getFavouriteRatio(user) == 0.0,
+                "favorite ratio should count favorites within watch history");
+        require(user.addFavouriteMovie(watched), "watched movie should be favorited");
+        require(CinemaAnalytics.getFavouriteRatio(user) == 100.0,
+                "favorite ratio should be bounded by history intersection");
+        java.util.Locale original = java.util.Locale.getDefault();
+        try {
+            java.util.Locale.setDefault(new java.util.Locale("tr", "TR"));
+            require(CinemaAnalytics.getEngagementSummary(user).contains("Completion: 0.0%"),
+                    "analytics decimals should be stable across locales");
+        } finally {
+            java.util.Locale.setDefault(original);
+        }
     }
 
     private static void testOfflineDownloads() {
