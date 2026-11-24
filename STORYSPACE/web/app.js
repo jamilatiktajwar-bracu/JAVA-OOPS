@@ -91,12 +91,13 @@ function kidsCategoryMatches(m,category){
  return genres.includes(category)||moods.includes(category);
 }
 function renderKidsHub(){
- const enabled=kidsModeEnabled();
+ const enabled=kidsModeEnabled(),onHome=state.view==="home";
  document.documentElement.classList.toggle("kids-mode",enabled);
- const welcome=$("kidsWelcome"),section=$("kidsSection");
- if(welcome)welcome.hidden=!enabled;
- if(section)section.hidden=!enabled;
- if(!enabled)return;
+ const welcome=$("kidsWelcome"),section=$("kidsSection"),hero=$("hero");
+ if(welcome)welcome.hidden=!enabled||!onHome;
+ if(section)section.hidden=!enabled||!onHome;
+ if(hero&&onHome)hero.hidden=enabled&&!visibleCatalog(movies).length;
+ if(!enabled||!onHome)return;
  const category=KIDS_CATEGORIES.includes(activeLocalProfile.kidsCategory)?activeLocalProfile.kidsCategory:"all";
  document.querySelectorAll("[data-kids-category]").forEach(button=>{
   const selected=button.dataset.kidsCategory===category;
@@ -186,7 +187,7 @@ function openDetails(m){state.selected=m;$("modalArt").style.backgroundImage=`ur
 function closeDetails(){$("modalBackdrop").hidden=true;document.body.style.overflow="";state.selected=null}
 function playMovie(m){if(!kidsSafe(m)){showToast("This title is hidden in Kids Mode");return}closeDetails();showToast(`Preview mode · ${m.title}`)}
 function toggleList(m){if(state.list.has(m.id)){state.list.delete(m.id);delete savedAt[String(m.id)];showToast(`Removed ${m.title} from My Universe`)}else{state.list.add(m.id);savedAt[String(m.id)]=Date.now();showToast(`Saved ${m.title} to My Universe`)}storage.set("storyspace.savedAt",JSON.stringify(savedAt));persistList();renderHome();if(state.view==="mylist")showView("mylist")}
-function legacyShowView(view){state.view=view;document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".mood-pill").forEach(b=>b.classList.remove("active"));$("welcomeLine").hidden=view!=="home";$("moodSection").hidden=view!=="home";const homeSections=["continueSection","trendingSection","originalsSection","topSection","mylistSection"];homeSections.forEach(id=>$(id).hidden=view!=="home");$("searchResultsSection").hidden=true;const label={home:"",series:"Series",movies:"Films",new:"Fresh Stories",mylist:"My Universe",continue:"Pick up your journey",trending:"In the Orbit of Glass",originals:"Storyspace Premieres",top:"Curated for you"};if(view==="home"){homeSections.forEach(id=>$(id).hidden=id==="mylistSection"&&state.list.size===0);$("hero").hidden=false;return}$("hero").hidden=view==="mylist"||view==="continue";$("searchResultsSection").hidden=false;$("searchHeading").textContent=label[view]||"Explore";let filtered=movies;if(view==="series")filtered=movies.filter(m=>m.type==="series");if(view==="movies")filtered=movies.filter(m=>m.type==="movie");if(view==="new")filtered=movies.filter(m=>m.year>=2025);if(view==="mylist")filtered=movies.filter(m=>state.list.has(m.id));if(view==="continue")filtered=movies.filter(m=>m.progress>0);if(view==="trending")filtered=[movies[2],movies[3],movies[8],movies[9],movies[6],movies[12],movies[10],movies[1]];if(view==="originals")filtered=movies.filter(m=>m.original);if(view==="top")filtered=[...movies].sort((a,b)=>b.score-a.score);renderGrid(filtered);window.scrollTo({top:350,behavior:"smooth"})}
+function legacyShowView(view){state.view=view;document.querySelectorAll(".nav-link").forEach(b=>b.classList.toggle("active",b.dataset.view===view));document.querySelectorAll(".mood-pill").forEach(b=>b.classList.remove("active"));$("welcomeLine").hidden=view!=="home";$("kidsWelcome").hidden=view!=="home"||!kidsModeEnabled();$("kidsSection").hidden=view!=="home"||!kidsModeEnabled();$("moodSection").hidden=view!=="home";const homeSections=["continueSection","trendingSection","originalsSection","topSection","mylistSection"];homeSections.forEach(id=>$(id).hidden=view!=="home");$("searchResultsSection").hidden=true;const label={home:"",series:"Series",movies:"Films",new:"Fresh Stories",mylist:"My Universe",continue:"Pick up your journey",trending:"In the Orbit of Glass",originals:"Storyspace Premieres",top:"Curated for you"};if(view==="home"){homeSections.forEach(id=>$(id).hidden=id==="mylistSection"&&state.list.size===0);$("hero").hidden=false;return}$("hero").hidden=view==="mylist"||view==="continue";$("searchResultsSection").hidden=false;$("searchHeading").textContent=label[view]||"Explore";let filtered=movies;if(view==="series")filtered=movies.filter(m=>m.type==="series");if(view==="movies")filtered=movies.filter(m=>m.type==="movie");if(view==="new")filtered=movies.filter(m=>m.year>=2025);if(view==="mylist")filtered=movies.filter(m=>state.list.has(m.id));if(view==="continue")filtered=movies.filter(m=>m.progress>0);if(view==="trending")filtered=[movies[2],movies[3],movies[8],movies[9],movies[6],movies[12],movies[10],movies[1]];if(view==="originals")filtered=movies.filter(m=>m.original);if(view==="top")filtered=[...movies].sort((a,b)=>b.score-a.score);renderGrid(filtered);window.scrollTo({top:350,behavior:"smooth"})}
 let browseSourceItems=[];
 function renderGrid(items){
   browseSourceItems=visibleCatalog(items);
