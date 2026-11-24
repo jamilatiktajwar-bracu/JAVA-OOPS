@@ -330,6 +330,11 @@ public class NETFLIX_USER {
         if (review == null || !review.isValid() || reviewCount >= reviews.length) {
             return false;
         }
+        for (int i = 0; i < reviewCount; i++) {
+            if (reviews[i] == review) {
+                return false;
+            }
+        }
         reviews[reviewCount++] = review;
         return true;
     }
