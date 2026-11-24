@@ -65,7 +65,114 @@ const actionButton=(action,label,caption,dark=false)=>{const b=document.createEl
 actionButton("play","▶","Open story");actionButton("list",state.list.has(m.id)?"✓":"＋","Add/remove from My Universe",true);actionButton("info","✦","Explore details",true);overlay.append(actions);c.append(overlay);
 c.addEventListener("click",e=>{const b=e.target.closest("[data-action]");if(b){e.stopPropagation();const a=b.dataset.action;if(a==="play")playMovie(m);if(a==="list")toggleList(m);if(a==="info")openDetails(m)}else openDetails(m)});
 c.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===c){e.preventDefault();openDetails(m)}});return c}
-function kidsModeEnabled(){return !!activeLocalProfile?.kidsMode}function kidsSafe(m){if(!kidsModeEnabled())return true;const rating=String(m.rating||m.ageRating||"").trim().toUpperCase();return /^(G|TV-Y|TV-G|TV-PG|PG|7\+|10\+|ALL|U)$/.test(rating)}function visibleCatalog(items){return (items||[]).filter(kidsSafe)}function renderRow(id,items){const el=$(id);el.innerHTML="";visibleCatalog(items).forEach(m=>el.append(card(m)))}
+const KIDS_AGE_RATINGS={
+"0-7":["G","TV-Y","TV-G","U","ALL","0+","7+"],
+"8-12":["G","TV-Y","TV-G","U","ALL","0+","7+","PG","TV-PG","TV-Y7","10+","12+"],
+"13-15":["G","TV-Y","TV-G","U","ALL","0+","7+","PG","TV-PG","TV-Y7","10+","12+","PG-13","TV-14","13+","14+"],
+"16-17":["G","TV-Y","TV-G","U","ALL","0+","7+","PG","TV-PG","TV-Y7","10+","12+","PG-13","TV-14","13+","14+","16+","TV-16"]
+};
+const KIDS_CATEGORIES=["all","family","adventure","animation","fantasy","nature","learning","music","comedy"];
+function kidsModeEnabled(){return !!activeLocalProfile?.kidsMode}
+function kidsSafe(m){
+ if(!kidsModeEnabled())return true;
+ const band=KIDS_AGE_RATINGS[activeLocalProfile?.kidsAgeBand]||KIDS_AGE_RATINGS["8-12"];
+ const rating=String(m?.rating||m?.ageRating||"").replace(/\s+/g,"").toUpperCase();
+ return !!rating&&band.includes(rating);
+}
+function visibleCatalog(items){return (items||[]).filter(kidsSafe)}
+function kidsCategoryMatches(m,category){
+ if(!category||category==="all")return true;
+ const genres=titleTokens(m.genre||m.genres);
+ const moods=titleTokens(m.moods);
+ if(category==="learning")return genres.some(x=>["education","educational","documentary","science"].includes(x))||moods.includes("learning");
+ if(category==="nature")return genres.some(x=>["nature","wildlife","documentary"].includes(x));
+ return genres.includes(category)||moods.includes(category);
+}
+function renderKidsHub(){
+ const enabled=kidsModeEnabled();
+ document.documentElement.classList.toggle("kids-mode",enabled);
+ const welcome=$("kidsWelcome"),section=$("kidsSection");
+ if(welcome)welcome.hidden=!enabled;
+ if(section)section.hidden=!enabled;
+ if(!enabled)return;
+ const category=KIDS_CATEGORIES.includes(activeLocalProfile.kidsCategory)?activeLocalProfile.kidsCategory:"all";
+ document.querySelectorAll("[data-kids-category]").forEach(button=>{
+  const selected=button.dataset.kidsCategory===category;
+  button.classList.toggle("active",selected);
+  button.setAttribute("aria-pressed",String(selected));
+ });
+ const picks=ranked(visibleCatalog(movies).filter(m=>kidsCategoryMatches(m,category)));
+ renderRow("kidsPicksRow",picks.slice(0,12));
+ const count=$("kidsPicksCount");
+ if(count)count.textContent=picks.length+" stories";
+}
+const PARENT_PIN_ITERATIONS=120000;
+function bytesToHex(bytes){return Array.from(bytes).map(value=>value.toString(16).padStart(2,"0")).join("")}
+async function deriveParentPin(pin,saltHex,iterations=PARENT_PIN_ITERATIONS){
+ if(!window.crypto?.subtle)throw new Error("Secure PIN storage needs HTTPS or localhost.");
+ const salt=new Uint8Array((saltHex.match(/.{2}/g)||[]).map(value=>parseInt(value,16)));
+ const material=await window.crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveBits"]);
+ const bits=await window.crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations,hash:"SHA-256"},material,256);
+ return bytesToHex(new Uint8Array(bits));
+}
+function samePinHash(left,right){
+ if(typeof left!=="string"||typeof right!=="string"||left.length!==right.length)return false;
+ let diff=0;for(let i=0;i<left.length;i++)diff|=left.charCodeAt(i)^right.charCodeAt(i);
+ return diff===0;
+}
+async function verifyParentPin(){
+ const stored=activeLocalProfile?.parentPin;
+ if(!stored)return true;
+ const entered=window.prompt("Parent PIN required to change Kids Mode settings:");
+ if(entered===null)return false;
+ if(!/^\d{4,8}$/.test(entered)){showToast("Enter the 4–8 digit parent PIN");return false}
+ try{
+  const candidate=await deriveParentPin(entered,stored.salt,stored.iterations);
+  if(!samePinHash(candidate,stored.hash)){showToast("Incorrect parent PIN");return false}
+  return true;
+ }catch(error){showToast(error.message||"Could not verify parent PIN");return false}
+}
+async function changeParentPin(){
+ if(!window.crypto?.subtle){showToast("Set a PIN while using HTTPS or localhost");return}
+ if(activeLocalProfile.parentPin&&!(await verifyParentPin()))return;
+ const pin=window.prompt("Choose a 4–8 digit parent PIN:");
+ if(pin===null)return;
+ if(!/^\d{4,8}$/.test(pin)){showToast("PIN must contain 4–8 digits");return}
+ const confirmPin=window.prompt("Enter the new PIN again:");
+ if(confirmPin===null)return;
+ if(pin!==confirmPin){showToast("PINs did not match");return}
+ try{
+  const saltBytes=window.crypto.getRandomValues(new Uint8Array(16)),salt=bytesToHex(saltBytes);
+  const hash=await deriveParentPin(pin,salt);
+  activeLocalProfile.parentPin={salt,hash,iterations:PARENT_PIN_ITERATIONS};
+  persistLocalProfiles();refreshProfileOptions();showToast("Parent PIN saved on this device");
+ }catch(error){showToast(error.message||"Could not save parent PIN")}
+}
+async function removeParentPin(){
+ if(!activeLocalProfile.parentPin){showToast("No parent PIN is set");return}
+ if(!(await verifyParentPin()))return;
+ if(!window.confirm("Remove the parent PIN from this profile?"))return;
+ activeLocalProfile.parentPin=null;persistLocalProfiles();refreshProfileOptions();showToast("Parent PIN removed");
+}
+async function handleKidsModeToggle(enabled){
+ if(!enabled&&activeLocalProfile.kidsMode&&activeLocalProfile.parentPin&&!(await verifyParentPin())){
+  $("kidsModeToggle").checked=true;return;
+ }
+ activeLocalProfile.kidsMode=!!enabled;persistLocalProfiles();refreshProfileOptions();
+ renderHome();setHero(chooseHero());showView(state.view);
+ showToast(enabled?"Kids Mode on · family-friendly discovery enabled":"Kids Mode off");
+}
+async function handleKidsAgeBandChange(value){
+ if(!Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,value)){refreshProfileOptions();return}
+ if(activeLocalProfile.parentPin&&!(await verifyParentPin())){refreshProfileOptions();return}
+ activeLocalProfile.kidsAgeBand=value;persistLocalProfiles();refreshProfileOptions();
+ renderHome();setHero(chooseHero());showToast("Kids content age guide updated");
+}
+function handleKidsCategoryChange(category){
+ if(!KIDS_CATEGORIES.includes(category))return;
+ activeLocalProfile.kidsCategory=category;persistLocalProfiles();renderKidsHub();
+}
+function renderRow(id,items){const el=$(id);el.innerHTML="";visibleCatalog(items).forEach(m=>el.append(card(m)))}
 function renderHome(){renderRow("continueRow",movies.filter(m=>m.progress>0));renderRow("trendingRow",[movies[2],movies[3],movies[8],movies[9],movies[6],movies[12],movies[10],movies[1]]);renderRow("originalsRow",movies.filter(m=>m.original));renderRow("topRow",[...movies].sort((a,b)=>b.score-a.score).slice(0,8));renderRow("mylistRow",movies.filter(m=>state.list.has(m.id)));$("mylistSection").hidden=state.view==="home"&&state.list.size===0}
 function heroMovie(){return movies[0]}
 function setHero(m){$("heroTitle").innerHTML=m.title.toUpperCase().replace(/\s+/g,"<br>");$("heroDescription").textContent=m.description;$("heroArt").style.backgroundImage=`url('${m.poster}')`;const meta=$("hero").querySelector(".hero-meta");meta.innerHTML=`<span class="top10">FEATURED</span><span>${m.year}</span><span class="maturity">${m.rating}</span><span>${m.duration}</span><span class="quality">4K</span>`;$("heroPlay").onclick=()=>playMovie(m);$("heroInfo").onclick=()=>openDetails(m)}
@@ -132,7 +239,7 @@ $("profileButton").addEventListener("click",()=> $("profileMenu").classList.togg
 $("openProfileManager").onclick=()=>{$("profileMenu").classList.remove("open");openProfileManager()};
 $("profilesClose").onclick=closeProfileManager;
 $("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
-$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>{activeLocalProfile.kidsMode=!!e.target.checked;persistLocalProfiles();renderHome();setHero(chooseHero());showView(state.view);showToast(activeLocalProfile.kidsMode?"Kids Mode on · stricter title filter":"Kids Mode off")};
+$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
 $("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
 $("deleteProfile").onclick=()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
@@ -178,16 +285,16 @@ const personalized={preferences:normalizePreferences(readJson("storyspace.prefer
 const PROFILE_STORE="storyspace.localProfiles",PROFILE_ACTIVE="storyspace.activeProfile";
 const profileCleanName=value=>String(value||"").trim().slice(0,32)||"Explorer";
 const profileCleanId=value=>String(value||"").slice(0,48);
-function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),kidsMode:false,watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
-function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
+function createLocalProfile(name,id){return{id:profileCleanId(id||("local-"+Date.now()+"-"+Math.floor(Math.random()*10000))),name:profileCleanName(name),kidsMode:false,kidsAgeBand:"8-12",kidsCategory:"all",parentPin:null,watchlist:[],preferences:{genres:[],moods:[],languages:["English"],balance:"balanced"},history:[],resumePoints:{},savedAt:{}}}
+function profileSanitize(raw){const p=raw&&typeof raw==="object"?raw:{};return{id:profileCleanId(p.id),name:profileCleanName(p.name),kidsMode:!!p.kidsMode,kidsAgeBand:Object.prototype.hasOwnProperty.call(KIDS_AGE_RATINGS,p.kidsAgeBand)?p.kidsAgeBand:"8-12",kidsCategory:KIDS_CATEGORIES.includes(p.kidsCategory)?p.kidsCategory:"all",parentPin:p.parentPin&&/^[a-f0-9]{32}$/i.test(p.parentPin.salt||"")&&/^[a-f0-9]{64}$/i.test(p.parentPin.hash||"")?{salt:p.parentPin.salt.toLowerCase(),hash:p.parentPin.hash.toLowerCase(),iterations:Math.max(100000,Math.min(250000,Number(p.parentPin.iterations)||PARENT_PIN_ITERATIONS))}:null,watchlist:Array.isArray(p.watchlist)?p.watchlist.filter(v=>typeof v==="number"||typeof v==="string").slice(0,500):[],preferences:normalizePreferences(p.preferences),history:normalizeHistory(p.history),resumePoints:normalizeResumePoints(p.resumePoints),savedAt:p.savedAt&&typeof p.savedAt==="object"?p.savedAt:{}}}
 let localProfiles=(()=>{const stored=readJson(PROFILE_STORE,null);if(Array.isArray(stored)&&stored.length)return stored.slice(0,8).map(profileSanitize).filter(p=>p.id);return[createLocalProfile("Explorer","local-default")]})();
 let activeProfileId=storage.get(PROFILE_ACTIVE)||localProfiles[0].id;
 let activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];
 function profileCapture(p=activeLocalProfile){if(!p)return;p.watchlist=[...state.list].slice(0,500);p.preferences=normalizePreferences(personalized.preferences);p.history=normalizeHistory(personalized.history);p.resumePoints=normalizeResumePoints(resumePoints);p.savedAt={...savedAt}}
 function persistLocalProfiles(){if(!activeLocalProfile||!Array.isArray(localProfiles))return;profileCapture();storage.set(PROFILE_STORE,JSON.stringify(localProfiles.slice(0,8)));storage.set(PROFILE_ACTIVE,activeLocalProfile.id)}
 function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});movies.forEach(m=>{m.progress=defaultProgress[String(m.id)]||0;delete m.resumePoint});movies.forEach(applyResumePoint);storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
-function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;persistLocalProfiles();applyLocalProfile(target);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name)}
-function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}}
+function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;document.documentElement.classList.add("profile-switching");persistLocalProfiles();applyLocalProfile(target);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name);window.setTimeout(()=>document.documentElement.classList.remove("profile-switching"),520)}
+function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin}
 function openProfileManager(){refreshProfileOptions();$("profilesBackdrop").hidden=false;document.body.style.overflow="hidden";$("newProfileName").focus()}
 function closeProfileManager(){if($("profilesBackdrop").hidden)return;$("profilesBackdrop").hidden=true;document.body.style.overflow=""}
 function initializeLocalProfiles(){if(!storage.get(PROFILE_STORE)){const starter=localProfiles[0];starter.watchlist=[...state.list];starter.preferences=normalizePreferences(personalized.preferences);starter.history=normalizeHistory(personalized.history);starter.resumePoints=normalizeResumePoints(resumePoints);starter.savedAt={...savedAt};localProfiles=[starter];activeLocalProfile=starter;activeProfileId=starter.id}activeLocalProfile=localProfiles.find(p=>p.id===activeProfileId)||localProfiles[0];applyLocalProfile(activeLocalProfile);persistLocalProfiles()}
@@ -200,7 +307,7 @@ function scoreTitle(m){const p=personalized.preferences;let score=(m.score||7)*.
 function ranked(items=movies){return [...items].sort((a,b)=>scoreTitle(b)-scoreTitle(a))}
 function recordInterest(m,kind){let entry=personalized.history.find(x=>String(x.id)===String(m.id));if(entry){entry.count++;entry.kind=kind;entry.at=Date.now()}else personalized.history.unshift({id:m.id,count:1,kind,at:Date.now()});personalized.history=personalized.history.slice(0,100);storage.set("storyspace.history",JSON.stringify(personalized.history));persistLocalProfiles()}
 const baseRenderHome=renderHome;
-function renderHome(){const ordered=ranked(movies);const cont=movies.filter(m=>m.progress>0);$("continueSection").hidden=cont.length===0;renderRow("continueRow",cont);renderRow("trendingRow",ordered.slice(0,9));renderRow("originalsRow",ranked(movies.filter(m=>m.original)).slice(0,8));renderRow("topRow",ordered.slice(0,10));const ug=$("universeGenre"),us=$("universeSort");const savedMovies=movies.filter(m=>state.list.has(m.id));if(ug){const genres=[...new Set(savedMovies.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort(),prev=ug.value;ug.replaceChildren(...[["all","All genres"],...genres.map(g=>[g,g])].map(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o}));ug.value=genres.includes(prev)?prev:"all"}let universeItems=savedMovies.filter(m=>!ug||ug.value==="all"||titleTokens(m.genre||m.genres).includes(ug.value));const order=us?.value||"saved";if(order==="title")universeItems.sort((a,b)=>String(a.title||a.name).localeCompare(String(b.title||b.name)));else if(order==="rating")universeItems.sort((a,b)=>Number(b.score||b.communityScore)-Number(a.score||a.communityScore));else if(order==="year")universeItems.sort((a,b)=>Number(b.year||b.releaseYear)-Number(a.year||a.releaseYear));else universeItems.sort((a,b)=>Number(savedAt[String(b.id)]||0)-Number(savedAt[String(a.id)]||0));renderRow("mylistRow",universeItems);const uc=$("universeCount");if(uc)uc.textContent=universeItems.length+" saved";$("mylistSection").hidden=state.view==="home"&&state.list.size===0;const s=document.getElementById("personalSection");if(s){renderRow("personalRow",ordered.filter(m=>!cont.includes(m)).slice(0,8));s.hidden=false;const h=document.getElementById("personalHeading");h.textContent=personalized.preferences.genres.length? "Picked around "+personalized.preferences.genres.slice(0,2).join(" & "):"Your evolving picks";const note=document.getElementById("personalNote");note.textContent=(personalized.preferences.moods.length?"Mood signals: "+personalized.preferences.moods.slice(0,3).join(", "):"Based on what you explore, save, and choose.")+" · "+currentDaypart().label+" mix";const welcome=$("welcomeLine").querySelector("span");if(welcome)welcome.textContent="Good "+currentDaypart().label+" — stories for your state of mind."}}
+function renderHome(){const ordered=ranked(movies);const cont=movies.filter(m=>m.progress>0);$("continueSection").hidden=cont.length===0;renderRow("continueRow",cont);renderRow("trendingRow",ordered.slice(0,9));renderRow("originalsRow",ranked(movies.filter(m=>m.original)).slice(0,8));renderRow("topRow",ordered.slice(0,10));const ug=$("universeGenre"),us=$("universeSort");const savedMovies=movies.filter(m=>state.list.has(m.id));if(ug){const genres=[...new Set(savedMovies.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort(),prev=ug.value;ug.replaceChildren(...[["all","All genres"],...genres.map(g=>[g,g])].map(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;return o}));ug.value=genres.includes(prev)?prev:"all"}let universeItems=savedMovies.filter(m=>!ug||ug.value==="all"||titleTokens(m.genre||m.genres).includes(ug.value));const order=us?.value||"saved";if(order==="title")universeItems.sort((a,b)=>String(a.title||a.name).localeCompare(String(b.title||b.name)));else if(order==="rating")universeItems.sort((a,b)=>Number(b.score||b.communityScore)-Number(a.score||a.communityScore));else if(order==="year")universeItems.sort((a,b)=>Number(b.year||b.releaseYear)-Number(a.year||a.releaseYear));else universeItems.sort((a,b)=>Number(savedAt[String(b.id)]||0)-Number(savedAt[String(a.id)]||0));renderRow("mylistRow",universeItems);const uc=$("universeCount");if(uc)uc.textContent=universeItems.length+" saved";$("mylistSection").hidden=state.view==="home"&&state.list.size===0;const s=document.getElementById("personalSection");if(s){renderRow("personalRow",ordered.filter(m=>!cont.includes(m)).slice(0,8));s.hidden=false;const h=document.getElementById("personalHeading");h.textContent=personalized.preferences.genres.length? "Picked around "+personalized.preferences.genres.slice(0,2).join(" & "):"Your evolving picks";const note=document.getElementById("personalNote");note.textContent=(personalized.preferences.moods.length?"Mood signals: "+personalized.preferences.moods.slice(0,3).join(", "):"Based on what you explore, save, and choose.")+" · "+currentDaypart().label+" mix";const welcome=$("welcomeLine").querySelector("span");if(welcome)welcome.textContent="Good "+currentDaypart().label+" — stories for your state of mind."}renderKidsHub()}
 function setHero(m){if(!m)return;const title=String(m.title||m.name||"Explore a new story").toUpperCase();const titleEl=$("heroTitle");titleEl.replaceChildren();title.split(/\s+/).forEach((word,index)=>{if(index)titleEl.append(document.createElement("br"));titleEl.append(document.createTextNode(word))});$("heroDescription").textContent=m.description||m.synopsis||"";const image=art(m);$("heroArt").style.backgroundImage=image?`url("${image}")`:"";const meta=$("hero").querySelector(".hero-meta");meta.replaceChildren();const addMeta=(text,className="")=>{const span=document.createElement("span");span.className=className;span.textContent=String(text??"");meta.append(span)};addMeta("FOR YOU","top10");addMeta(m.year||m.releaseYear||"");addMeta(m.rating||m.ageRating||"13+","maturity");addMeta(m.duration||m.format||"");addMeta("HD","quality");$("heroPlay").onclick=()=>playMovie(m);$("heroInfo").onclick=()=>openDetails(m);const score=document.querySelector(".hero-rating b");if(score)score.textContent=Number(m.score||m.communityScore||8.5).toFixed(1);const genre=document.querySelector(".hero-rating small");if(genre)genre.textContent=" / "+String(m.genre||m.genres?.[0]||"Story");}
 function chooseHero(){const pool=ranked(visibleCatalog(movies)).filter(m=>!personalized.history.slice(0,8).some(h=>String(h.id)===String(m.id)));return pool[personalized.heroCycle%Math.max(1,pool.length)]||visibleCatalog(movies)[0]||movies[0]}
 function nextHero(){personalized.heroCycle++;setHero(chooseHero());const p=document.querySelector(".hero-progress span");if(p){p.style.width=(25+(personalized.heroCycle%4)*18)+"%"}}
@@ -329,7 +436,7 @@ $("authForm").onsubmit=async e=>{
 document.querySelectorAll(".mood-pill").forEach(old=>{const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener("click",()=>{const mood=fresh.dataset.mood;state.view="mood";$("hero").hidden=true;$("welcomeLine").hidden=true;$("moodSection").hidden=false;["continueSection","trendingSection","originalsSection","topSection","mylistSection","personalSection"].forEach(id=>{const el=$(id);if(el)el.hidden=true});$("searchResultsSection").hidden=false;$("searchHeading").textContent="Stories for: "+fresh.textContent;const matches=movies.filter(m=>titleTokens(m.genre||m.genres).includes(mood.toLowerCase())||titleTokens(m.moods).includes(mood.toLowerCase()));renderGrid(ranked(matches));})});
 function toggleList(m){const id=m.apiId||m.id;if(personalized.token&&m.apiId){api("/library/"+encodeURIComponent(m.apiId),{method:state.list.has(m.id)?"DELETE":"PUT"}).then(async()=>{if(state.list.has(m.id))state.list.delete(m.id);else state.list.add(m.id);persistList();await syncAccount();showToast(state.list.has(m.id)?"Added to My Universe":"Removed from My Universe")}).catch(e=>showToast(e.message));return;}if(state.list.has(m.id)){state.list.delete(m.id);showToast("Removed from My Universe")}else{state.list.add(m.id);showToast("Saved to My Universe")}persistList();recordInterest(m,"save");renderHome();if(state.view==="mylist")showView("mylist")}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();showToast("Preview concept · "+m.title+" · media player not connected");renderHome()}
-function openDetails(m){recordInterest(m,"details");state.selected=m;const image=art(m);$("modalArt").style.backgroundImage=image?`url("${image}")`:"";$("modalArtTitle").textContent=String(m.title||m.name||"").toUpperCase();$("modalYear").textContent=m.year||m.releaseYear||"";$("modalMaturity").textContent=m.rating||m.ageRating||"13+";$("modalDuration").textContent=m.duration||m.format||"";$("modalDescription").textContent=m.description||m.synopsis||"";$("modalCast").textContent=m.cast||"Original story";$("modalGenres").textContent=m.genre||m.genres?.join(", ")||"";$("modalPlay").onclick=()=>playMovie(m);$("modalBackdrop").hidden=false;document.body.style.overflow="hidden";$("modalClose").focus()}
+function openDetails(m){if(!kidsSafe(m)){showToast("This title is hidden by the Kids Mode age guide");return}recordInterest(m,"details");state.selected=m;const image=art(m);$("modalArt").style.backgroundImage=image?`url("${image}")`:"";$("modalArtTitle").textContent=String(m.title||m.name||"").toUpperCase();$("modalYear").textContent=m.year||m.releaseYear||"";$("modalMaturity").textContent=m.rating||m.ageRating||"13+";$("modalDuration").textContent=m.duration||m.format||"";$("modalDescription").textContent=m.description||m.synopsis||"";$("modalCast").textContent=m.cast||"Original story";$("modalGenres").textContent=m.genre||m.genres?.join(", ")||"";$("modalPlay").onclick=()=>playMovie(m);$("modalBackdrop").hidden=false;document.body.style.overflow="hidden";$("modalClose").focus()}
 const profileFresh=$("profileButton").cloneNode(true);$("profileButton").replaceWith(profileFresh);profileFresh.onclick=()=> $("profileMenu").classList.toggle("open");
 function showView(view){legacyShowView(view);const personal=$("personalSection");if(personal)personal.hidden=view!=="home";if(view==="home")renderHome()}
 function search(q){if($("personalSection"))$("personalSection").hidden=true;legacySearch(q)}
@@ -498,7 +605,7 @@ async function openPlayer(m){
   try{await video.play()}catch{$("playerNotice").textContent+=" Tap play to start the sample."}
 }
 function closePlayer(){persistPlayerProgress(true);$("playerSeek").disabled=true;$("playerSeek").value="0";$("playerCurrentTime").textContent="0:00";$("playerDuration").textContent="0:00";playerLoadId++;$("playerRestart").disabled=true;["skipBack","skipForward","playerPip"].forEach(id=>{const control=$(id);if(control)control.disabled=true});const v=$("previewVideo");v.pause();v.onerror=null;setPlayerRecovery("");v.removeAttribute("src");v.load();$("playerBackdrop").hidden=true;document.body.style.overflow="";activePlayerTitle=null}
-function playMovie(m){if(!kidsSafe(m)){showToast("This title is hidden in Kids Mode");return}recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
+function playMovie(m){if(!kidsSafe(m)){showToast("This title is hidden by the Kids Mode age guide");return}recordInterest(m,"play");closeDetails();closePreferences();openPlayer(m)}
 $("subscriptionAction").onclick=()=>{$("profileMenu").classList.remove("open");openMembership()};$("subscriptionClose").onclick=closeMembership;$("subscriptionBackdrop").onclick=e=>{if(e.target===$("subscriptionBackdrop"))closeMembership()};$("cancelSubscription").onclick=cancelMembership;
 $("adminAction").onclick=()=>{$("profileMenu").classList.remove("open");openAdmin()};$("adminClose").onclick=closeAdmin;$("adminBackdrop").onclick=e=>{if(e.target===$("adminBackdrop"))closeAdmin()};
 $("playerClose").onclick=closePlayer;$("playerBackdrop").onclick=e=>{if(e.target===$("playerBackdrop"))closePlayer()};
