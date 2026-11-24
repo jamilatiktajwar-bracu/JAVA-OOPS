@@ -74,7 +74,7 @@
       const genres = tokens(movie.genre || movie.genres);
       const preferred = taste.genres.find(g => genres.includes(g));
       if (preferred) return "Because you like " + preferred;
-      const historyMatch = genres.find(g => (taste.historyGenres.get(g) || 0) > 0;
+      const historyMatch = genres.find(g => (taste.historyGenres.get(g) || 0) > 0);
       if (historyMatch) return "Similar to stories you explored";
       if (mood.words.some(word => String(movie.description || movie.synopsis || "").toLowerCase().includes(word))) return "Fits your chosen mood";
       if (taste.balance === "explore") return "A fresh discovery";
@@ -205,15 +205,8 @@
     }
 
     function render(shuffleMix) {
-      const ranked = rankedPool();
-      let selected = ranked.slice(0, Math.min(12, ranked.length));
-      if (shuffleMix && selected.length > 1) {
-        for (let i = selected.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [selected[i], selected[j]] = [selected[j], selected[i]];
-        }
-      }
-      const chosen = selected.slice(0, 4);
+      const ranked = rankedPool(shuffleMix);
+      const chosen = selectDiverse(ranked, 4).map(item => Object.assign({}, item.movie, { __storyspaceReason: item.reason }));
       results.replaceChildren();
       if (!chosen.length) {
         results.append(element("p", "discovery-empty", "No stories match this mood yet. Try another feeling."));
