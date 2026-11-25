@@ -10,3 +10,8 @@ if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Er
 if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Genre-based recommendation logic missing");
 if(!c.includes(".details-recommendations"))throw Error("Similar-story responsive styles missing");
 if(!/storyspace-shell-v\d+/.test(sw))throw Error("Similar-story shell cache version missing");
+
+// Similar-story rail and cache bump
+if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Error("Similar-story modal markup missing");
+if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Similar-story ranking missing");
+if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v33"))throw Error("Similar-story styles/cache missing");
