@@ -270,3 +270,12 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 .profile-privacy-actions{display:flex;gap:9px;flex-wrap:wrap}
 .profile-privacy-actions button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:520px){.profile-privacy-actions{display:grid;grid-template-columns:1fr}.profile-privacy-actions button{width:100%}}
+
+/* Optional profile access PIN */
+.profile-access-panel{display:grid;gap:10px;margin:14px 0;padding:15px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.035)}
+.profile-access-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.profile-access-heading b{font-size:.92rem}
+.profile-access-heading span,.profile-access-panel>small{font-size:.76rem;line-height:1.5;color:var(--muted,#a7a7ad)}
+.profile-access-actions{display:flex;gap:9px;flex-wrap:wrap}
+.profile-access-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:520px){.profile-access-actions{display:grid;grid-template-columns:1fr}.profile-access-actions button{width:100%}}
