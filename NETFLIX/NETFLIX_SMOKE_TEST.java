@@ -268,6 +268,8 @@ public class NETFLIX_SMOKE_TEST {
         require(subscription.refundInvoice(0), "paid invoice should be refundable");
         require(!subscription.refundInvoice(0), "invoice must not be refunded twice");
         require(subscription.getRefundedAmount() == 700.0, "refund total should track one refund");
+        require("Refunded".equals(subscription.getBillingStatus()),
+                "refund should update the overall billing status");
 
         Subscription fullInvoices = new Subscription("Pro");
         fullInvoices.setPaymentMethod("Visa");
