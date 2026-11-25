@@ -24,3 +24,9 @@ if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player 
 const demoApp=read("app.js");
 for(const marker of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo","Sintel · Demo Movie","For Bigger Escapes · 4K Demo","For Bigger Joyrides · Demo","For Bigger Meltdowns · Demo","streamUrl","demo:true"])if(!demoApp.includes(marker))throw Error("Demo video library missing: "+marker);
 if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source mapping missing");
+
+// Demo Cinema row: sample titles must be rendered separately and never confused with licensed catalog items.
+assert(a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'),"Demo Cinema row renders demo-tagged entries");
+assert(h.includes('id="demoCinemaSection"')&&h.includes('id="demoCinemaRow"'),"Demo Cinema section is present in home markup");
+assert(h.includes("Not commercial films"),"Demo Cinema clearly identifies sample content");
+assert(sw.includes("storyspace-shell-v24"),"Demo Cinema shell cache version is incremented");
