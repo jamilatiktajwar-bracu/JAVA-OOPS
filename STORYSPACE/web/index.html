@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="cinematic.css">
   <link rel="stylesheet" href="player-gestures.css">
   <link rel="stylesheet" href="player-shortcuts.css">
-  <link rel="stylesheet" href="player-settings.css">
+  <link rel="stylesheet" href="player-settings.css">\n  <link rel="stylesheet" href="tv-navigation.css">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -32,7 +32,7 @@
         <button class="nav-link" data-view="movies">Films</button>
         <button class="nav-link" data-view="new">Fresh</button>
         <button class="nav-link" data-view="mylist">My Universe</button>
-        <button class="nav-link" id="openMediaHub" type="button">Upload</button>
+        <button class="nav-link" id="openMediaHub" type="button">Upload</button><button class="nav-link tv-navigation-toggle" id="tvNavigationToggle" type="button" aria-pressed="false" title="Enable TV / remote navigation">TV Mode</button>
       </nav>
       <div class="top-actions">
         <button class="icon-button search-toggle" aria-label="Search" title="Search (/)"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg></button>
@@ -113,7 +113,7 @@
   <script src="cinematic.js"></script>
   <script src="player-gestures.js"></script>
   <script src="player-shortcuts.js"></script>
-  <script src="player-settings.js"></script>
+  <script src="player-settings.js"></script>\n  <script src="tv-navigation.js"></script>
   <script src="media-uploads.js"></script>
   <script>if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(() => {});</script>
 </body>
