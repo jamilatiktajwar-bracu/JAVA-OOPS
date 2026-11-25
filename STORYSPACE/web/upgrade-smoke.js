@@ -149,3 +149,6 @@ if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('qu
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
 if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!sw.includes('storyspace-shell-v43'))throw Error('Quick Discovery offline shell missing');
 if(!read('check-platform-config.js').includes('quick-discovery.js'))throw Error('Platform asset configuration check missing Quick Discovery');
+
+// Watch Later event wiring guard
+if(!read("watch-later.js").includes("storyspace:watchlater-updated"))throw Error("Watch Later change event missing");
