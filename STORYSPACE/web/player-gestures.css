@@ -67,3 +67,6 @@
 @media(prefers-reduced-motion:reduce){
   .player-gesture-feedback{transition:none}
 }
+
+/* Expanded theater layout */
+.player-theater-mode{padding:0!important;background:#000!important;backdrop-filter:none!important}.player-theater-mode .player-panel{width:100vw!important;max-width:none!important;height:100vh!important;max-height:none!important;border-radius:0!important;padding:16px clamp(12px,3vw,48px)!important;overflow:auto!important}.player-theater-mode .player-stage{aspect-ratio:auto;height:min(72vh,calc(100vh - 270px));min-height:0}.player-theater-mode .player-stage video{object-fit:contain}.player-theater-mode .player-tools{justify-content:center}.player-theater-mode .player-settings-row{max-width:100%;margin-inline:auto}@media(max-width:650px){.player-theater-mode .player-panel{padding:10px!important}.player-theater-mode .player-stage{height:50vh}}
