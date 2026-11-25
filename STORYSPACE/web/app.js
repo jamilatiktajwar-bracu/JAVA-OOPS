@@ -663,6 +663,7 @@ function openDetails(m){if(!kidsSafe(m)){showToast("This title is hidden by the 
 const profileFresh=$("profileButton").cloneNode(true);$("profileButton").replaceWith(profileFresh);profileFresh.onclick=()=> $("profileMenu").classList.toggle("open");
 function showView(view){legacyShowView(view);const personal=$("personalSection");if(personal)personal.hidden=view!=="home";if(view==="home")renderHome()}
 function search(q){if($("personalSection"))$("personalSection").hidden=true;legacySearch(q)}
+$("demoQueueAll")?.addEventListener("click",()=>{const demos=movies.filter(m=>m.demo);if(!demos.length){showToast("No demo streams available yet");return}if(window.StoryspaceQueue?.addAll){window.StoryspaceQueue.addAll(demos);window.StoryspaceQueue.open();showToast("Added "+demos.length+" sample videos to queue")}else showToast("Queue is still loading · Try again in a moment")});
 updateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
 loadServerCatalog().then(()=>{renderHome();setHero(chooseHero());if(personalized.token)syncAccount()});
 if(!storage.get("storyspace.onboarded")){setTimeout(()=>openPreferences(),600)}
