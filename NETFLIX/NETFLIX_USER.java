@@ -1,9 +1,20 @@
 public class NETFLIX_USER {
+    /**
+     * Legacy public fields retained for source compatibility. Prefer accessors and
+     * collection methods because direct writes can bypass validation/invariants.
+     */
+    @Deprecated
     public String username;
+    @Deprecated
     public String email;
+    @Deprecated
     public String Plan;
     private String password;
+    /** @deprecated Use {@link #getFavouriteMovies()} and favourite methods. */
+    @Deprecated
     public Movies[] favourite_movies;
+    /** @deprecated Count is maintained by the favourite methods. */
+    @Deprecated
     public int favourite_movies_count;
     private Movies[] watchHistory;
     private int watchHistoryCount;
@@ -34,8 +45,9 @@ public class NETFLIX_USER {
     private PaymentWallet paymentWallet;
 
     public NETFLIX_USER(String username, String email, String PLAN, String password) {
-        this.username = username;
-        this.email = email;
+        this.username = username == null || username.trim().isEmpty()
+                ? "Guest" : username.trim();
+        this.email = email == null ? "" : email.trim();
         this.favourite_movies = new Movies[100];
         this.favourite_movies_count = 0;
         this.watchHistory = new Movies[100];
@@ -44,10 +56,10 @@ public class NETFLIX_USER {
         this.watchListCount = 0;
         this.devices = new String[4];
         this.deviceCount = 0;
-        this.profileName = username;
+        this.profileName = this.username;
         this.active = true;
         this.Plan = normalizePlan(PLAN);
-        this.subscription = new Subscription(PLAN);
+        this.subscription = new Subscription(this.Plan);
         this.reviews = new MovieReview[100];
         this.reviewCount = 0;
         this.playlists = new NetflixPlaylist[20];
@@ -695,28 +707,62 @@ public class NETFLIX_USER {
     }
 
     public boolean setPassword(String password) {
-        if (password == null) {
+        if (password == null || password.trim().isEmpty()) {
             return false;
         }
         this.password = password;
         return true;
     }
 
+    /** @deprecated Use {@link #setPassword(String)}. */
+    @Deprecated
     public void setpassword(String password) {
         setPassword(password);
+    }
+
+    public void setUsername(String username) {
+        if (username != null && !username.trim().isEmpty()) {
+            this.username = username.trim();
+            if (profileName == null || profileName.trim().isEmpty()) {
+                profileName = this.username;
+            }
+        }
     }
 
     public void setEmail(String email) {
         this.email = email == null ? "" : email.trim();
     }
 
-    public boolean isValidEmail() {
-        if (email == null) {
+    /**
+     * Validates an email address before changing it. The legacy setter remains
+     * available, but this method avoids replacing a valid address on bad input.
+     */
+    public boolean trySetEmail(String email) {
+        if (!isValidEmailAddress(email)) {
             return false;
         }
-        int atIndex = email.indexOf('@');
-        int dotIndex = email.lastIndexOf('.');
-        return atIndex > 0 && dotIndex > atIndex + 1 && dotIndex < email.length() - 1;
+        this.email = email.trim();
+        return true;
+    }
+
+    public boolean isValidEmail() {
+        return isValidEmailAddress(email);
+    }
+
+    private boolean isValidEmailAddress(String candidate) {
+        if (candidate == null) {
+            return false;
+        }
+        String value = candidate.trim();
+        int atIndex = value.indexOf('@');
+        int dotIndex = value.lastIndexOf('.');
+        return !value.isEmpty()
+                && atIndex > 0
+                && atIndex == value.lastIndexOf('@')
+                && dotIndex > atIndex + 1
+                && dotIndex < value.length() - 1
+                && !value.contains("..")
+                && !value.matches(".*\\\\s+.*");
     }
 
     public void setPlan(String plan) {
