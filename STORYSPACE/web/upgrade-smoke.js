@@ -198,4 +198,4 @@ if(!read("player-shortcuts.css").includes(".player-segment-button")||!sw.include
 // Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
 if(!settings.includes("toggleCaptionsShortcut")||!settings.includes("event.altKey")||!settings.includes("storyspace.captionLastEnabled"))throw Error("Caption on/off shortcut missing");
 if(!h.includes("Alt+C</kbd> captions on/off"))throw Error("Caption shortcut help text missing");
-for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","preferredTrack(tracks,language,fallback)","trackKey(track)"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
+for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","preferredTrack(tracks,language,fallback)","trackKey(track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
