@@ -292,3 +292,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 .profile-access-gate-card small{color:var(--muted,#a7a7ad);font-size:.72rem;line-height:1.5}
 .profile-access-gate-card button:disabled{opacity:.45;cursor:not-allowed}
 @media(prefers-reduced-motion:reduce){.profile-access-gate{backdrop-filter:none}}
+
+/* TV/remote directional focus */
+:focus-visible{outline:2px solid var(--cyan,#8af4e5)!important;outline-offset:3px!important;box-shadow:0 0 0 5px #8af4e522!important}
