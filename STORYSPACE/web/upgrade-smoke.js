@@ -73,3 +73,8 @@ if(!c.includes('data-state="seeking"')||!c.includes('data-state="ready"'))throw 
 
 // Live-stream metadata indicator regression guard
 if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.push("LIVE")'))throw Error("Live-stream metadata label missing");
+
+// Smart Queue shuffle and accessible reorder controls
+if(!h.includes('id="queueShuffle"')||!h.includes("Shuffle"))throw Error("Smart Queue shuffle control missing");
+if(!read("player-queue.js").includes("queueShuffle")||!read("player-queue.js").includes("Queue shuffled"))throw Error("Queue shuffle behavior missing");
+if(!read("player-queue.js").includes("aria-label","Move "))throw Error("Queue reorder accessibility labels missing");
