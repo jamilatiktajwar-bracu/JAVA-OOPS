@@ -16,7 +16,7 @@ An original adaptive story-discovery platform prototype built with a responsive 
 - Profiles, watchlists, search/filter and Continue Watching.
 - Mobile player gestures, keyboard shortcuts, captions and playback preferences.
 - Cinematic shelves, subtle 3D motion and reduced-motion accessibility.
-- PC-hosted personal media workflow with resumable upload and connection diagnostics.
+- PC-hosted personal media workflow with resumable upload and connection diagnostics.\n- Smart Queue shuffle and queue-aware Up Next end-card with poster/countdown polish.
 - Android build workflow and cross-platform CI.
 
 ## 🧰 Tech
@@ -30,7 +30,7 @@ An original adaptive story-discovery platform prototype built with a responsive 
 - **Admin:** Environment-bootstrap admin role, catalog create/delete and metrics.
 - **Media:** CC0 sample preview only; actual content delivery is not connected.
 
-## 🛠 Quick start
+## 👀 Preview the platforms\n- [Live web app (GitHub Pages, after Pages is enabled)](https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/)\n- [Responsive Phone / Tablet / Desktop showcase](https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/platform-showcase.html)\n- [Platform build & QA guide](STORYSPACE/PLATFORM-SHOWCASE.md)\n\n## 🛠 Quick start
 1. Start API: `cd STORYSPACE/backend && mvn spring-boot:run`.
 2. Open `STORYSPACE/web/index.html` in your browser.
 3. Create an account, choose genres/moods/languages, and watch your feed personalize.
