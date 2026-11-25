@@ -20,7 +20,7 @@ Open \`web/platform-showcase.html\` in a browser to preview the **real web app**
 - Self-hosted media upload/streaming requires the backend host to be configured and online.
 
 ## Sample media disclaimer
-The Demo Cinema clips are test/sample streams. They do not constitute a licensed commercial movie catalog. A PC-hosted media server is user-managed and needs suitable storage, bandwidth, and security.
+The 13 Demo Cinema entries are test/sample streams. They do not constitute a licensed commercial movie catalog. The sample entry **Tears of Steel** is identified as Blender Foundation material under CC BY 3.0; attribution must be retained when redistributed. Other sample clips should remain clearly labeled and be checked against their source terms before redistribution or commercial use. A PC-hosted media server is user-managed and needs suitable storage, bandwidth, and security.
 
 ## Downloading build artifacts
 1. Open the repository's [GitHub Actions](https://github.com/jamilatiktajwar-bracu/JAVA-OOPS/actions).
