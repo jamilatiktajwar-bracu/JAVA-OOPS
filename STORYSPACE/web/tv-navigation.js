@@ -26,7 +26,7 @@
   }
   document.addEventListener("keydown",event=>{
     if(!enabled||event.altKey||event.ctrlKey||event.metaKey||event.defaultPrevented)return;
-    const focused=event.target,tag=focused?.tagName?.toLowerCase();if(focused?.isContentEditable||["input","textarea","select"].includes(tag)||focused?.closest?.("[contenteditable=\\"true\\"]"))return;
+    const focused=event.target,tag=focused?.tagName?.toLowerCase();const editable=focused?.closest?.("[contenteditable]");if(focused?.isContentEditable||["input","textarea","select"].includes(tag)||(editable&&editable.getAttribute("contenteditable")!=="false"))return;
     const key=event.key,dir={ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down"}[key];
     if(dir){event.preventDefault();move(dir);return}
     if(key==="Escape"){document.activeElement?.blur?.();toggle.focus();event.preventDefault()}
