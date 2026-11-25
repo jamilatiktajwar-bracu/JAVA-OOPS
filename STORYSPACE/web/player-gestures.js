@@ -12,6 +12,7 @@
   const STORAGE_KEY = "storyspace.playerGestures";
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let enabled = true;
+  let brightness = 1;
   let pointer = null;
   let lastTap = { at: 0, zone: "" };
   let feedbackTimer = 0;
@@ -48,7 +49,7 @@
     toggle.setAttribute("aria-pressed", String(enabled));
     toggle.textContent = "Touch gestures: " + (enabled ? "On" : "Off");
     hint.textContent = enabled
-      ? "Double-tap the left or right side to skip 10 seconds. Swipe sideways to seek."
+      ? "Double-tap to skip · swipe sideways to seek · swipe vertically left for brightness or right for volume."
       : "Touch gestures are off. Use the video controls or keyboard shortcuts instead.";
     stage.classList.toggle("player-gestures-disabled", !enabled);
   }
@@ -97,6 +98,19 @@
 
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
+    if (Math.abs(dy) >= 42 && Math.abs(dy) > Math.abs(dx) * 1.25) {
+      if(start.zone==="left"){
+        brightness=clamp(brightness-dy/start.rect.height*0.75,0.45,1.4);
+        video.style.filter="brightness("+brightness.toFixed(2)+")";
+        showFeedback("Brightness "+Math.round(brightness*100)+"%");
+      }else if(start.zone==="right"){
+        video.volume=clamp(video.volume-dy/start.rect.height*0.75,0,1);
+        showFeedback("Volume "+Math.round(video.volume*100)+"%");
+      }else return;
+      lastTap={at:0,zone:""};
+      if(event.cancelable)event.preventDefault();
+      return;
+    }
     if (Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy) * 1.25) {
       if (!Number.isFinite(video.duration) || video.duration <= 0 || video.readyState < 1) return;
       const maxSwipeSeconds = Math.max(20, Math.min(120, video.duration * 0.28));
@@ -147,6 +161,7 @@
   updateToggle();
   window.StoryspacePlayerGestures = Object.freeze({
     isEnabled: () => enabled,
-    formatTime: formatGestureTime
+    formatTime: formatGestureTime,
+    brightness: () => brightness
   });
 })();
