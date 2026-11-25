@@ -626,6 +626,7 @@ async function syncAccount(){
     }
   }
 }
+function refreshProfileWelcome(){const welcome=$("welcomeLine");if(!welcome)return;const name=activeLocalProfile?.name||"Explorer",hour=new Date().getHours(),greeting=hour<5?"Still exploring, ":hour<12?"Good morning, ":hour<18?"Good afternoon, ":"Good evening, ";const history=personalized.history||[],saved=state.list?.size||0,resume=Object.keys(resumePoints||{}).length,genres=(personalized.preferences?.genres||[]).slice(0,2);let subtitle=resume?resume+(resume===1?" story":" stories")+" ready to resume":saved?saved+" saved in My Universe":genres.length?"Your mix is tuned for "+genres.join(" and "):history.length?"Your discovery is learning your taste":"Choose a feeling. Find a world.";if(activeLocalProfile?.kidsMode)subtitle="A kid-safe universe is ready to explore";const span=welcome.querySelector("span"),small=welcome.querySelector("small");if(span)span.textContent=greeting+name+".";if(small)small.textContent=subtitle}
 function updateAccountUI(){
   const acc=personalized.account,profile=activeLocalProfile;
   const avatarValue=PROFILE_AVATARS.includes(profile?.avatar)?profile.avatar:"✨";
