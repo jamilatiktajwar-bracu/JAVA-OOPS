@@ -756,13 +756,17 @@ public class NETFLIX_USER {
         String value = candidate.trim();
         int atIndex = value.indexOf('@');
         int dotIndex = value.lastIndexOf('.');
-        return !value.isEmpty()
-                && atIndex > 0
-                && atIndex == value.lastIndexOf('@')
-                && dotIndex > atIndex + 1
-                && dotIndex < value.length() - 1
-                && !value.contains("..")
-                && !value.matches(".*\\\\s+.*");
+        if (value.isEmpty() || atIndex <= 0 || atIndex != value.lastIndexOf('@')
+                || dotIndex <= atIndex + 1 || dotIndex >= value.length() - 1
+                || value.contains("..")) {
+            return false;
+        }
+        for (int i = 0; i < value.length(); i++) {
+            if (Character.isWhitespace(value.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void setPlan(String plan) {
