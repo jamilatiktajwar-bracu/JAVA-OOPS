@@ -626,6 +626,7 @@ async function syncAccount(){
     }
   }
 }
+function refreshProfileWelcome(){const welcome=$("welcomeLine");if(!welcome)return;const name=activeLocalProfile?.name||"Explorer",hour=new Date().getHours(),greeting=hour<5?"Still exploring, ":hour<12?"Good morning, ":hour<18?"Good afternoon, ":"Good evening, ";const history=personalized.history||[],saved=state.list?.size||0,resume=Object.keys(resumePoints||{}).length,genres=(personalized.preferences?.genres||[]).slice(0,2);let subtitle=resume?resume+(resume===1?" story":" stories")+" ready to resume":saved?saved+" saved in My Universe":genres.length?"Your mix is tuned for "+genres.join(" and "):history.length?"Your discovery is learning your taste":"Choose a feeling. Find a world.";if(activeLocalProfile?.kidsMode)subtitle="A kid-safe universe is ready to explore";const span=welcome.querySelector("span"),small=welcome.querySelector("small");if(span)span.textContent=greeting+name+".";if(small)small.textContent=subtitle}
 function updateAccountUI(){
   const acc=personalized.account,profile=activeLocalProfile;
   const avatarValue=PROFILE_AVATARS.includes(profile?.avatar)?profile.avatar:"✨";
@@ -643,6 +644,7 @@ function updateAccountUI(){
   }
   if(profile)document.documentElement.dataset.profileTheme=PROFILE_THEMES.includes(profile.theme)?profile.theme:"nebula";
   const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";
+  refreshProfileWelcome();
 }
 function openAuth(mode="register"){if(personalized.account){signOut();return}state.authMode=mode;$("authBackdrop").hidden=false;document.body.style.overflow="hidden";drawAuthMode();$("authEmail").focus()}
 function closeAuth(){ $("authBackdrop").hidden=true;document.body.style.overflow=""}
@@ -683,7 +685,8 @@ const profileFresh=$("profileButton").cloneNode(true);$("profileButton").replace
 function showView(view){legacyShowView(view);const personal=$("personalSection");if(personal)personal.hidden=view!=="home";if(view==="home")renderHome()}
 function search(q){if($("personalSection"))$("personalSection").hidden=true;legacySearch(q)}
 document.addEventListener("click",event=>{const button=event.target.closest("[data-discovery]");if(!button)return;const query=button.dataset.discovery,input=$("searchInput");input.value=query;$("searchBox").classList.add("has-value");search(query);input.focus()});
-$("universeLayoutToggle").onclick=()=>{storage.set("storyspace.universeLayout",storage.get("storyspace.universeLayout")==="grid"?"rail":"grid");syncUniverseLayout();showToast(storage.get("storyspace.universeLayout")==="grid"?"My Universe grid view":"My Universe rail view")};\nupdateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
+$("universeLayoutToggle").onclick=()=>{storage.set("storyspace.universeLayout",storage.get("storyspace.universeLayout")==="grid"?"rail":"grid");syncUniverseLayout();showToast(storage.get("storyspace.universeLayout")==="grid"?"My Universe grid view":"My Universe rail view")};
+updateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
 loadServerCatalog().then(()=>{renderHome();setHero(chooseHero());document.dispatchEvent(new CustomEvent("storyspace:catalog-updated"));if(personalized.token)syncAccount()});
 if(!storage.get("storyspace.onboarded")){setTimeout(()=>openPreferences(),600)}
 $("savePreferences").addEventListener("click",()=>{storage.set("storyspace.onboarded","1")});
