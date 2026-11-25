@@ -117,6 +117,6 @@ if(!sw.includes("storyspace-shell-v38"))throw Error("Expanded demo shell cache v
 
 // Local profile identity and theme persistence guards
 for(const id of ["renameProfile","profileAvatarChoice","profileThemeChoice"])if(!h.includes('id="'+id+'"'))throw Error("Missing profile personalization control: "+id);
-for(const token of ["PROFILE_AVATARS","PROFILE_THEMES","profileCleanName(raw)","Profile renamed","profile.theme","profile.avatar","dataset.profileTheme"])if(!a.includes(token))throw Error("Profile identity/theme behavior missing: "+token);
+for(const token of ["PROFILE_AVATARS","PROFILE_THEMES","profileCleanName(raw)","Profile renamed","activeLocalProfile.theme","activeLocalProfile.avatar","dataset.profileTheme"])if(!a.includes(token))throw Error("Profile identity/theme behavior missing: "+token);
 for(const theme of ["data-profile-theme=\"ocean\"","data-profile-theme=\"ember\"","data-profile-theme=\"forest\""])if(!c.includes(theme))throw Error("Missing theme palette: "+theme);
 if(!sw.includes("storyspace-shell-v38"))throw Error("Profile theme shell v38 missing");
