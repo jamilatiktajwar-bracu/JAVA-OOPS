@@ -83,3 +83,9 @@ if(!read("player-queue.js").includes("aria-label")||!read("player-queue.js").inc
 if(!h.includes("playerUpNextPoster")||!h.includes("playerUpNextProgress"))throw Error("Up-next poster/progress UI missing");
 if(!read("player-next.js").includes("posterNode.src")||!read("player-next.js").includes("progressNode.style.width"))throw Error("Up-next countdown progress behavior missing");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress"))throw Error("Up-next end-card styles missing");
+
+// Queue-aware Up Next priority and escape-to-dismiss
+const nextModule=read("player-next.js");
+if(!nextModule.includes("queuedItem()")||!nextModule.includes("From Smart Queue")||!nextModule.includes("StoryspaceQueue.playNext"))throw Error("Smart Queue priority in Up Next missing");
+if(!nextModule.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismissal missing");
+if(!sw.includes("storyspace-shell-v33"))throw Error("Queue-aware Up Next shell cache version missing");
