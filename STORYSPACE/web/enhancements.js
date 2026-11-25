@@ -42,16 +42,31 @@
     moodBar.setAttribute("role", "group");
     moodBar.setAttribute("aria-label", "Choose a viewing mood");
 
+    const tastePanel=element("section","taste-panel");
+    tastePanel.setAttribute("aria-label","Personalized taste controls");
+    const tasteHeading=element("div","taste-heading");
+    tasteHeading.append(element("span","taste-label","YOUR TASTE PROFILE"),element("strong","taste-title","Tune your mix"));
+    const balanceGroup=element("div","taste-balance");
+    balanceGroup.setAttribute("role","group");balanceGroup.setAttribute("aria-label","Recommendation balance");
+    const modes=[{id:"comfort",label:"Comfort picks",desc:"More familiar stories"},{id:"balanced",label:"Balanced",desc:"Your taste plus variety"},{id:"explore",label:"Explore",desc:"More new genres and discoveries"}];
+    const tasteInsight=element("p","taste-insight","Your mix learns from preferences and viewing activity.");
+    const tasteGenres=element("div","taste-genres");
+    modes.forEach(mode=>{const btn=element("button","taste-mode",mode.label);btn.type="button";btn.dataset.balance=mode.id;btn.setAttribute("aria-label",mode.desc);btn.addEventListener("click",()=>{if(typeof personalized==="undefined")return;personalized.preferences=Object.assign({},personalized.preferences,{balance:mode.id});try{localStorage.setItem("storyspace.preferences",JSON.stringify(personalized.preferences))}catch{}if(typeof persistLocalProfiles==="function")persistLocalProfiles();document.dispatchEvent(new CustomEvent("storyspace:interest-updated",{detail:{balance:mode.id}}));render(false)});balanceGroup.append(btn)});
+    tastePanel.append(tasteHeading,balanceGroup,tasteInsight,tasteGenres);
+    const restore=element("button","discovery-restore","↺ Show hidden stories");restore.type="button";restore.hidden=true;restore.setAttribute("aria-label","Restore stories hidden from recommendations");
     const results = element("div", "discovery-results");
     results.setAttribute("aria-live", "polite");
     results.setAttribute("aria-label", "Recommended stories");
 
-    root.append(top, moodBar, results);
+    root.append(top, moodBar, tastePanel, restore, results);
     const welcome = document.getElementById("welcomeLine");
     if (welcome) welcome.insertAdjacentElement("afterend", root);
     else content.prepend(root);
 
     let activeMood = "feel-good";
+    const dismissed=new Set();
+    try{const saved=JSON.parse(localStorage.getItem("storyspace.discoveryDismissed")||"[]");if(Array.isArray(saved))saved.slice(0,300).forEach(id=>{if(typeof id==="string"||typeof id==="number")dismissed.add(String(id))})}catch{}
+    function persistDismissed(){try{localStorage.setItem("storyspace.discoveryDismissed",JSON.stringify([...dismissed].slice(0,300)))}catch{}}
     try {
       const savedMood = localStorage.getItem("storyspace.discoveryMood");
       if (moods.some(mood => mood.id === savedMood)) activeMood = savedMood;
@@ -175,7 +190,8 @@
       save.type = "button";
       save.dataset.mixAction = "save";
       save.setAttribute("aria-label", (saved ? "Remove " : "Save ") + title + (saved ? " from" : " to") + " My Universe");
-      actions.append(details, save);
+      const hide=element("button","discovery-action discovery-dismiss","Not for me");hide.type="button";hide.dataset.mixAction="dismiss";hide.setAttribute("aria-label","Hide "+title+" from future recommendations");
+      actions.append(details, save, hide);
       body.append(actions);
       article.append(poster, body);
 
@@ -199,20 +215,23 @@
         } else if (button.dataset.mixAction === "save" && typeof toggleList === "function") {
           toggleList(movie);
           render(false);
-        }
+        } else if(button.dataset.mixAction==="dismiss") { dismissed.add(String(movie.apiId||movie.id));persistDismissed();render(false); }
       });
       return article;
     }
 
+    function syncTastePanel(){const taste=userTaste(),mode=taste.balance||"balanced";balanceGroup.querySelectorAll("[data-balance]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.balance===mode)));const historyGenres=[...taste.historyGenres.entries()].sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);const combined=[...new Set([...taste.genres.slice(0,3),...historyGenres])].slice(0,4);tasteGenres.replaceChildren();if(combined.length)combined.forEach(g=>tasteGenres.append(element("span","taste-chip",g)));else tasteGenres.append(element("span","taste-chip","Explore to build your taste"));const history=typeof personalized!=="undefined"&&Array.isArray(personalized.history)?personalized.history.reduce((sum,item)=>sum+(Number(item.count)||1),0):0;tasteInsight.textContent=history?history+" interaction"+(history===1?"":"s")+" learned · "+(combined.length?"Leaning toward "+combined.join(" · "):"Your taste profile is still growing"):"Your profile is new. Choose a balance to shape your mix";}
     function render(shuffleMix) {
-      const ranked = rankedPool(shuffleMix);
+      const ranked = rankedPool(shuffleMix).filter(item=>!dismissed.has(String(item.movie.apiId||item.movie.id)));
       const chosen = selectDiverse(ranked, 4).map(item => Object.assign({}, item.movie, { __storyspaceReason: item.reason }));
       results.replaceChildren();
       if (!chosen.length) {
-        results.append(element("p", "discovery-empty", "No stories match this mood yet. Try another feeling."));
+        results.append(element("p", "discovery-empty", dismissed.size?"You hid these stories. Restore them or choose another mood.":"No stories match this mood yet. Try another feeling."));
       } else {
         chosen.forEach(movie => results.append(buildCard(movie)));
       }
+      restore.hidden=dismissed.size===0;
+      restore.hidden=dismissed.size===0;
       moodBar.querySelectorAll(".discovery-mood").forEach(button => {
         button.setAttribute("aria-pressed", String(button.dataset.mood === activeMood));
       });
@@ -232,6 +251,8 @@
     });
 
     shuffle.addEventListener("click", () => render(true));
+    restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
+    restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
 
     function syncVisibility() {
       const currentView = typeof state !== "undefined" ? state.view : "home";
@@ -245,6 +266,8 @@
     document.getElementById("searchInput")?.addEventListener("input", syncVisibility);
     document.getElementById("clearSearch")?.addEventListener("click", () => queueMicrotask(syncVisibility));
     render(false);
+    document.addEventListener("storyspace:interest-updated",()=>render(false));
+    document.addEventListener("storyspace:profile-updated",()=>render(false));
     syncVisibility();
   }
 
