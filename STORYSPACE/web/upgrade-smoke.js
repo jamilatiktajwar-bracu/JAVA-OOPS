@@ -204,3 +204,8 @@ if(!sw.includes("storyspace-shell-v52"))throw Error("Theater mode shell cache no
 if(!settings.includes("toggleCaptionsShortcut")||!settings.includes("event.altKey")||!settings.includes("storyspace.captionLastEnabled"))throw Error("Caption on/off shortcut missing");
 if(!h.includes("Alt+C</kbd> captions on/off"))throw Error("Caption shortcut help text missing");
 for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","preferredTrack(tracks,language,fallback)","trackKey(track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
+
+// Mobile theater mode viewport and safe-area regression guards.
+const theaterCss=read("player-gestures.css");
+for(const token of ["100dvh","72dvh","55dvh","env(safe-area-inset-top)","env(safe-area-inset-bottom)","overscroll-behavior:contain"])if(!theaterCss.includes(token))throw Error("Mobile theater viewport/safe-area polish missing: "+token);
+if(!sw.includes("storyspace-shell-v52"))throw Error("Mobile theater polish shell cache missing");
