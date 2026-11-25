@@ -44,3 +44,10 @@ if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))thro
 if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
 if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
 if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version not bumped");
+
+// Player media metadata readout
+if(!h.includes("id=\\\"playerMediaInfo\\\""))throw Error("Player media info element missing");
+if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
+if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v27"))throw Error("Player media metadata shell cache missing");
+if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
