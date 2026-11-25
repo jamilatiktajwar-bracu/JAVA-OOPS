@@ -298,3 +298,16 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 /* End-of-preview recommendation panel */
 .player-up-next{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:14px 0;padding:16px 18px;border:1px solid #9af5e733;border-radius:14px;background:linear-gradient(120deg,#14253a,#1c1a38);box-shadow:0 10px 35px #0003}.player-up-next[hidden]{display:none}.player-up-next h3{margin:5px 0;font-family:var(--display);font-size:clamp(17px,3vw,24px)}.player-up-next p{margin:4px 0;color:var(--muted);font-size:12px}.player-up-next-countdown{color:var(--cyan)!important;font-weight:700}.player-up-next-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}.player-up-next-auto{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px}.player-up-next-auto input{accent-color:var(--cyan)}@media(max-width:600px){.player-up-next{align-items:flex-start;flex-direction:column}.player-up-next-actions{justify-content:flex-start;width:100%}}
+
+/* Compact mini-player mode: keeps playback alive while browsing. */
+.player-backdrop.player-mini-mode{background:transparent!important;backdrop-filter:none!important;pointer-events:none;z-index:1200}
+.player-mini-mode .player-panel{pointer-events:auto;position:fixed!important;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));top:auto!important;left:auto!important;width:min(390px,calc(100vw - 28px))!important;max-height:min(70vh,560px);overflow:auto;margin:0!important;border:1px solid #76e8df65;box-shadow:0 24px 75px #000b,0 0 28px #55dedf16;animation:miniPlayerIn .22s ease-out}
+.player-mini-mode .player-panel .section-kicker,.player-mini-mode .player-panel #playerTitle,.player-mini-mode .player-panel .player-gesture-row,.player-mini-mode .player-panel .player-timeline,.player-mini-mode .player-panel .player-tools,.player-mini-mode .player-panel .player-settings-row,.player-mini-mode .player-panel #playerNotice,.player-mini-mode .player-panel .player-shortcut-guide,.player-mini-mode .player-panel .player-shortcuts{display:none!important}
+.player-mini-mode .player-stage{aspect-ratio:16/9;min-height:0;margin:0!important}
+.player-mini-mode .player-stage video{width:100%;height:100%;object-fit:contain}
+.player-mini-mode .player-panel #playerUpNext{display:none!important}
+.player-mini-mode .player-mini-toggle{position:absolute;top:10px;right:52px;z-index:5}
+.player-mini-toggle{min-width:40px;min-height:38px;padding:0 10px;border-radius:10px;font-weight:700}
+@keyframes miniPlayerIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){.player-mini-mode .player-panel{width:min(340px,calc(100vw - 20px))!important;right:10px;bottom:10px}}
+@media(prefers-reduced-motion:reduce){.player-mini-mode .player-panel{animation:none}}
