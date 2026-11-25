@@ -335,3 +335,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 /* Smart Queue control affordances */
 .queue-footer{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.queue-footer button{min-height:40px}.queue-item-actions button{min-width:36px;min-height:36px}.queue-item-actions button:disabled{opacity:.4;cursor:not-allowed}
+
+/* Cinematic up-next end card */
+.player-up-next{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}.player-up-next-poster{float:left;width:64px;height:92px;object-fit:cover;border-radius:8px;margin:0 12px 8px 0}.player-up-next-progress{height:3px;background:rgba(255,255,255,.14);border-radius:9px;overflow:hidden;margin:8px 0;max-width:460px}.player-up-next-progress span{display:block;width:0;height:100%;background:var(--accent,#e50914);transition:width .2s linear}.player-up-next-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.player-up-next-auto{white-space:nowrap}@media(max-width:600px){.player-up-next{grid-template-columns:1fr}.player-up-next-actions{justify-content:flex-start}.player-up-next-poster{width:52px;height:76px}}
