@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v52"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes("storyspace-shell-v53"))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
@@ -209,3 +209,5 @@ for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","pre
 const theaterCss=read("player-gestures.css");
 for(const token of ["100dvh","72dvh","55dvh","env(safe-area-inset-top)","env(safe-area-inset-bottom)","overscroll-behavior:contain"])if(!theaterCss.includes(token))throw Error("Mobile theater viewport/safe-area polish missing: "+token);
 if(!sw.includes("storyspace-shell-v52"))throw Error("Mobile theater polish shell cache missing");
+if(!theaterCss.includes("orientation:landscape")||!theaterCss.includes("100dvh - 150px"))throw Error("Short landscape theater layout missing");
+if(!sw.includes("storyspace-shell-v53"))throw Error("Short landscape theater shell cache missing");
