@@ -19,3 +19,8 @@ if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))thr
 if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes("storyspace-shell-v23"))throw Error("player resilience offline shell not updated");
 for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience"])if(!resilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
+
+// Demo streaming library guards
+const demoApp=read("app.js");
+for(const marker of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo","Sintel · Demo Movie","For Bigger Escapes · 4K Demo","For Bigger Joyrides · Demo","For Bigger Meltdowns · Demo","streamUrl","demo:true"])if(!demoApp.includes(marker))throw Error("Demo video library missing: "+marker);
+if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source mapping missing");
