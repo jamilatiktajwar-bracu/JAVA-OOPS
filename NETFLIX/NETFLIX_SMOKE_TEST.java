@@ -366,6 +366,14 @@ public class NETFLIX_SMOKE_TEST {
 
         require(!user.setPassword("  "), "blank password updates should be rejected");
         require(user.setPassword("sample-password"), "nonblank password should be accepted");
+
+        user.Plan = null; // Legacy public field: direct writes bypass normalizing setters.
+        require(user.getDeviceLimit() == 1 && user.getFavouriteLimit() == 25
+                && user.canUpgradePlan(), "legacy null plan should use safe limits");
+        user.upgradePlan();
+        require(user.Plan == null, "invalid legacy plan should not crash or mutate unexpectedly");
+        user.setPlan("Pro");
+        require("Pro".equals(user.getPlan()), "validated setter should restore a normalized plan");
     }
 
     private static void testNetflixUserHistoryConsistency() {
