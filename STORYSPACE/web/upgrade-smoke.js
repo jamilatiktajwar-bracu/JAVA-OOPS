@@ -142,7 +142,7 @@ for(const token of ["syncUniverseLayout","storyspace.universeLayout","universe-g
 for(const asset of ["command-palette.css","command-palette.js"])if(!h.includes(asset)||!sw.includes("./"+asset))throw Error("Command palette asset missing: "+asset);
 for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching action","Alt+K","Watch Later","StoryspaceQueue"])if(!read("command-palette.js").includes(token))throw Error("Command palette action/navigation missing: "+token);
 if(!read("resume-hub.js").includes("resumeHub"))throw Error("Continue Watching hub asset missing");
-for(const sel of [".command-palette",".command-palette-item",".command-palette-input",".movie-row.universe-grid","prefers-reduced-motion"])if(!c.includes(sel))throw Error("Quick navigation/grid styles missing: "+sel);
+for(const sel of [".command-palette",".command-palette-item",".command-palette-input","prefers-reduced-motion"])if(!read("command-palette.css").includes(sel))throw Error("Command palette styles missing: "+sel);\nif(!c.includes(".movie-row.universe-grid"))throw Error("My Universe grid styles missing");
 if(!sw.includes("storyspace-shell-v43"))throw Error("Quick navigation shell v41 missing");
 
 // Profile-aware welcome context
