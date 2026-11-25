@@ -33,3 +33,9 @@ if(!sw.includes("storyspace-shell-v24"))throw Error("Demo Cinema shell cache ver
 
 // Visible demo tag on sample video cards.
 if(!a.includes('demoBadge.textContent="DEMO"')||!c.includes(".card-demo-badge"))throw Error("Demo card badge styling/markup missing");
+
+// Demo Cinema browse navigation and player source notice.
+if(!a.includes('"demoCinemaSection"'))throw Error("Demo Cinema section not included in home view visibility");
+if(!a.includes('if(view==="demoCinema")filtered=movies.filter(m=>m.demo);'))throw Error("Demo Cinema browse view missing");
+if(!a.includes('demoCinema:"Demo Cinema · Sample streams"'))throw Error("Demo Cinema browse heading missing");
+if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))throw Error("Demo stream notice is inaccurate or missing");
