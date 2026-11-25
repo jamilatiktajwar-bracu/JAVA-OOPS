@@ -50,4 +50,4 @@ if(!h.includes('id="demoQueueAll"'))throw Error("Demo Cinema queue-all button mi
 if(!a.includes("StoryspaceQueue?.addAll"))throw Error("Demo playlist queue action missing");
 if(!q.includes("function addAll(items)"))throw Error("Queue bulk-add API missing");
 if(!q.includes("addAll,open,close,playNext"))throw Error("Queue bulk-add API not exposed");
-if(!sw.includes("storyspace-shell-v27"))throw Error("Demo playlist cache version missing");
+if(!sw.includes("storyspace-shell-v28"))throw Error("Demo playlist cache version missing");
