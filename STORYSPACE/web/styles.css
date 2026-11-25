@@ -329,3 +329,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 /* Smart Queue controls */
 .queue-modes{display:flex;gap:8px;margin:8px 0}.queue-modes button{flex:1;font-size:12px;padding:8px}.queue-modes button.is-active{border-color:var(--cyan);background:#39d6ff20;color:var(--cyan)}.queue-footer{align-items:center}.queue-footer #queuePlay{min-width:112px}
+
+/* Smart Queue import/export */
+.queue-import-export{display:flex;gap:8px;margin:8px 0}.queue-import-export button{flex:1;font-size:12px;padding:8px}
