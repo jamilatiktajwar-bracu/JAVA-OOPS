@@ -32,6 +32,7 @@ const focusable=()=>Array.from(panel.querySelectorAll('button:not([disabled]),a[
 const playerObserver=new MutationObserver(()=>{if(!backdrop.hidden&&!playerReturnFocus){playerReturnFocus=document.activeElement;const first=focusable()[0];if(first)first.focus({preventScroll:true});}});
 playerObserver.observe(backdrop,{attributes:true,attributeFilter:['hidden']});
 panel.addEventListener('focusin',e=>{if(backdrop.hidden||panel.contains(e.target))return;const first=focusable()[0];if(first)first.focus({preventScroll:true});else{panel.setAttribute('tabindex','-1');panel.focus({preventScroll:true});}});
+panel.addEventListener('keydown',e=>{if(e.key!=='Escape'||backdrop.hidden||document.fullscreenElement===backdrop||document.fullscreenElement===panel)return;e.preventDefault();e.stopPropagation();close.click();});
 const focusRestoreObserver=new MutationObserver(()=>{if(backdrop.hidden&&playerReturnFocus){const target=playerReturnFocus;playerReturnFocus=null;if(target&&target.isConnected&&typeof target.focus==='function')target.focus({preventScroll:true});}});
 focusRestoreObserver.observe(backdrop,{attributes:true,attributeFilter:['hidden']});
 panel.addEventListener('keydown',e=>{if(backdrop.hidden||e.key!=='Tab')return;const items=focusable();if(!items.length){e.preventDefault();panel.setAttribute('tabindex','-1');panel.focus();return;}const first=items[0],last=items[items.length-1;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
