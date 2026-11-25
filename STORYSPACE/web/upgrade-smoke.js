@@ -143,7 +143,13 @@ for(const asset of ["command-palette.css","command-palette.js"])if(!h.includes(a
 for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching action","Alt+K","Watch Later","resumeHub","storyspaceQueue"])if(!read("command-palette.js").includes(token))throw Error("Command palette action/navigation missing: "+token);
 for(const sel of [".command-palette",".command-palette-item",".command-palette-input",".movie-row.universe-grid","prefers-reduced-motion"])if(!c.includes(sel))throw Error("Quick navigation/grid styles missing: "+sel);
 if(!sw.includes("storyspace-shell-v43"))throw Error("Quick navigation shell v41 missing");
-\n// Profile-aware welcome context\nfor(const token of ["refreshProfileWelcome","Good morning, ","Good afternoon, ","Good evening, ","stories","My Universe","resume","kidsMode"])if(!a.includes(token))throw Error("Profile-aware welcome behavior missing: "+token);\nif(!c.includes(".welcome-line span")||!c.includes(".welcome-line small"))throw Error("Welcome context styles missing");\nif(!sw.includes("storyspace-shell-v43"))throw Error("Welcome context cache v42 missing");\n\n// Quick Discovery collections, dynamic genre shortcuts and platform asset guard
+
+// Profile-aware welcome context
+for(const token of ["refreshProfileWelcome","Good morning, ","Good afternoon, ","Good evening, ","stories","My Universe","resume","kidsMode"])if(!a.includes(token))throw Error("Profile-aware welcome behavior missing: "+token);
+if(!c.includes(".welcome-line span")||!c.includes(".welcome-line small"))throw Error("Welcome context styles missing");
+if(!sw.includes("storyspace-shell-v43"))throw Error("Welcome context cache v42 missing");
+
+// Quick Discovery collections, dynamic genre shortcuts and platform asset guard
 if(!h.includes('quick-discovery.js')||!h.includes('quick-discovery.css'))throw Error('Quick Discovery assets missing from page');
 if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('quick-discovery.js').includes('Demo Cinema'))throw Error('Quick collections/genre refresh missing');
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
