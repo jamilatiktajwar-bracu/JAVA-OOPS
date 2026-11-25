@@ -39,3 +39,8 @@ if(!a.includes('"demoCinemaSection"'))throw Error("Demo Cinema section not inclu
 if(!a.includes('if(view==="demoCinema")filtered=movies.filter(m=>m.demo);'))throw Error("Demo Cinema browse view missing");
 if(!a.includes('demoCinema:"Demo Cinema · Sample streams"'))throw Error("Demo Cinema browse heading missing");
 if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))throw Error("Demo stream notice is inaccurate or missing");
+
+// Demo-stream error messaging and cache-version regression checks
+if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
+if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
+if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version not bumped");
