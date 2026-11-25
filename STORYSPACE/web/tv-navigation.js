@@ -25,7 +25,7 @@
     if(best){best.focus({preventScroll:true});best.scrollIntoView?.({block:"nearest",inline:"nearest",behavior:"smooth"})}
   }
   document.addEventListener("keydown",event=>{
-    if(!enabled||event.altKey||event.ctrlKey||event.metaKey||event.defaultPrevented)return;
+    if(!enabled||event.altKey||event.ctrlKey||event.metaKey||event.defaultPrevented)return;\n    const focused=event.target,tag=focused?.tagName?.toLowerCase();if(focused?.isContentEditable||["input","textarea","select"].includes(tag)||focused?.closest?.("[contenteditable=\\"true\\"]"))return;
     const key=event.key,dir={ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down"}[key];
     if(dir){event.preventDefault();move(dir);return}
     if(key==="Escape"){document.activeElement?.blur?.();toggle.focus();event.preventDefault()}
