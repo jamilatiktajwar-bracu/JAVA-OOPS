@@ -295,3 +295,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 /* TV/remote directional focus */
 :focus-visible{outline:2px solid var(--cyan,#8af4e5)!important;outline-offset:3px!important;box-shadow:0 0 0 5px #8af4e522!important}
+
+/* End-of-preview recommendation panel */
+.player-up-next{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:14px 0;padding:16px 18px;border:1px solid #9af5e733;border-radius:14px;background:linear-gradient(120deg,#14253a,#1c1a38);box-shadow:0 10px 35px #0003}.player-up-next[hidden]{display:none}.player-up-next h3{margin:5px 0;font-family:var(--display);font-size:clamp(17px,3vw,24px)}.player-up-next p{margin:4px 0;color:var(--muted);font-size:12px}.player-up-next-countdown{color:var(--cyan)!important;font-weight:700}.player-up-next-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}.player-up-next-auto{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px}.player-up-next-auto input{accent-color:var(--cyan)}@media(max-width:600px){.player-up-next{align-items:flex-start;flex-direction:column}.player-up-next-actions{justify-content:flex-start;width:100%}}
