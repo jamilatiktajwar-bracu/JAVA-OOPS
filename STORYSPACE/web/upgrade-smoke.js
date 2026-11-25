@@ -170,3 +170,7 @@ if(discoveryRestoreHandler!==1)throw Error("Discovery restore handler must be re
 // Discovery UI state synchronization guards
 if((read("enhancements.js").match(/restore\.hidden=dismissed\.size===0;/g)||[]).length!==1)throw Error("Discovery restore visibility should update once");
 if(!read("enhancements.js").includes("syncTastePanel();"))throw Error("Taste profile controls are not synchronized after render");
+
+// Discovery recommendation cards keep nested actions semantically valid
+if(read("enhancements.js").includes('article.setAttribute("role", "button")')||read("enhancements.js").includes("article.tabIndex = 0;"))throw Error("Discovery cards must not expose nested interactive button semantics");
+if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explore " + title)'))throw Error("Discovery details action must remain keyboard accessible");
