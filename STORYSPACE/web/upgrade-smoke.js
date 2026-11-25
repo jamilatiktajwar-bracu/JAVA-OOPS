@@ -14,4 +14,9 @@ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Similar-story shell cache vers
 // Similar-story rail and cache bump
 if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Error("Similar-story modal markup missing");
 if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Similar-story ranking missing");
-if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v33"))throw Error("Similar-story styles/cache missing");
+if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v34"))throw Error("Similar-story styles/cache missing");
+
+// Modal highlights/save/resume and hero surprise
+if(!h.includes("modalSignals")||!h.includes("modalSave")||!h.includes("modalResumeProgress")||!h.includes("heroSurprise"))throw Error("Modal detail controls missing");
+if(!a.includes("syncSignals")||!a.includes("syncSave")||!a.includes("Continue where you left off")||!a.includes("function surpriseHero"))throw Error("Modal save/resume/surprise wiring missing");
+if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!sw.includes("storyspace-shell-v34"))throw Error("Modal details styling/cache missing");
