@@ -268,7 +268,7 @@
     document.getElementById("clearSearch")?.addEventListener("click", () => queueMicrotask(syncVisibility));
     render(false);
     document.addEventListener("storyspace:interest-updated",()=>render(false));
-    document.addEventListener("storyspace:profile-updated",()=>render(false));
+    document.addEventListener("storyspace:profile-updated",()=>render(false));\n    document.addEventListener("storyspace:watchlater-updated",()=>render(false));
     syncVisibility();
   }
 
