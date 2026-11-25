@@ -138,6 +138,40 @@ async function verifyParentPin(){
   return true;
  }catch(error){showToast(error.message||"Could not verify parent PIN");return false}
 }
+function showProfileAccessGate(profile){
+ const gate=$("profileAccessGate");if(!gate||!profile?.profileLock)return;
+ gate.dataset.profileId=profile.id;
+ $("profileAccessGateName").textContent=profile.name;
+ $("profileAccessGatePin").value="";
+ $("profileAccessGateError").textContent="";
+ const fallback=localProfiles.some(p=>p.id!==profile.id&&!p.profileLock);
+ $("profileAccessGateSwitch").disabled=!fallback;
+ gate.hidden=false;document.body.style.overflow="hidden";
+ $("profileAccessGatePin").focus();
+}
+function closeProfileAccessGate(){
+ const gate=$("profileAccessGate");if(!gate)return;
+ gate.hidden=true;gate.dataset.profileId="";document.body.style.overflow="";
+}
+async function unlockProfileAccessGate(){
+ const gate=$("profileAccessGate"),profile=localProfiles.find(p=>p.id===gate?.dataset.profileId);
+ if(!profile?.profileLock){closeProfileAccessGate();return}
+ const entered=$("profileAccessGatePin").value;
+ if(!/^\\d{4,8}$/.test(entered)){$("profileAccessGateError").textContent="Enter the 4–8 digit profile PIN.";return}
+ try{
+  const candidate=await deriveParentPin(entered,profile.profileLock.salt,profile.profileLock.iterations);
+  if(!samePinHash(candidate,profile.profileLock.hash)){$("profileAccessGateError").textContent="That PIN is not correct. Try again."; $("profileAccessGatePin").select();return}
+  closeProfileAccessGate();showToast(profile.name+" unlocked");
+ }catch(error){$("profileAccessGateError").textContent=error.message||"Could not verify this profile."}
+}
+async function useUnlockedProfileInstead(){
+ const gate=$("profileAccessGate"),lockedId=gate?.dataset.profileId;
+ const fallback=localProfiles.find(p=>p.id!==lockedId&&!p.profileLock);
+ if(!fallback){$("profileAccessGateError").textContent="No other unlocked profile is available. Enter this profile’s PIN.";return}
+ if(activeLocalProfile?.parentPin&&!(await verifyParentPin()))return;
+ persistLocalProfiles();applyLocalProfile(fallback);showView(state.view);refreshProfileOptions();
+ closeProfileAccessGate();showToast("Switched to "+fallback.name);
+}
 async function verifyProfileAccess(profile){
  const stored=profile?.profileLock;
  if(!stored)return true;
@@ -281,7 +315,7 @@ $("profileButton").addEventListener("click",()=> $("profileMenu").classList.togg
 $("openProfileManager").onclick=()=>{$("profileMenu").classList.remove("open");openProfileManager()};
 $("profilesClose").onclick=closeProfileManager;
 $("profilesBackdrop").onclick=e=>{if(e.target===$("profilesBackdrop"))closeProfileManager()};
-$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("dailyScreenLimit").onchange=e=>handleDailyScreenLimitChange(e.target.value);$("breakReminderMinutes").onchange=e=>handleBreakReminderChange(e.target.value);$("quietHoursStart").onchange=handleQuietHoursChange;$("quietHoursEnd").onchange=handleQuietHoursChange;$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;$("setProfileLock").onclick=changeProfileAccessPin;$("removeProfileLock").onclick=removeProfileAccessPin;document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
+$("profileSelect").onchange=e=>switchLocalProfile(e.target.value);$("kidsModeToggle").onchange=e=>handleKidsModeToggle(e.target.checked);$("kidsAgeBand").onchange=e=>handleKidsAgeBandChange(e.target.value);$("dailyScreenLimit").onchange=e=>handleDailyScreenLimitChange(e.target.value);$("breakReminderMinutes").onchange=e=>handleBreakReminderChange(e.target.value);$("quietHoursStart").onchange=handleQuietHoursChange;$("quietHoursEnd").onchange=handleQuietHoursChange;$("setParentPin").onclick=changeParentPin;$("removeParentPin").onclick=removeParentPin;$("setProfileLock").onclick=changeProfileAccessPin;$("removeProfileLock").onclick=removeProfileAccessPin;$("profileAccessGateUnlock").onclick=unlockProfileAccessGate;$("profileAccessGateSwitch").onclick=useUnlockedProfileInstead;$("profileAccessGatePin").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();unlockProfileAccessGate()}});document.querySelectorAll("[data-kids-category]").forEach(button=>button.addEventListener("click",()=>handleKidsCategoryChange(button.dataset.kidsCategory)));
 $("clearWatchHistory").onclick=clearProfileWatchHistory;$("clearMyUniverse").onclick=clearProfileMyUniverse;$("exportProfiles").onclick=exportProfileBackup;$("importProfiles").onclick=()=>$("profileBackupFile").click();$("profileBackupFile").onchange=e=>{importProfileBackup(e.target.files?.[0]);e.target.value=""};$("addProfile").onclick=()=>{const raw=$("newProfileName").value.trim();if(!raw){showToast("Enter a profile name");return}const name=profileCleanName(raw);if(localProfiles.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast("A profile with that name already exists");return}if(localProfiles.length>=8){showToast("You can keep up to 8 profiles on this device");return}const next=createLocalProfile(name);localProfiles.push(next);persistLocalProfiles();$("newProfileName").value="";switchLocalProfile(next.id)};
 $("deleteProfile").onclick=async()=>{if(localProfiles.length<=1){showToast("Keep at least one local profile");return}if(activeLocalProfile.parentPin&&!(await verifyParentPin()))return;if(activeLocalProfile.profileLock&&!(await verifyProfileAccess(activeLocalProfile)))return;const removed=activeLocalProfile;localProfiles=localProfiles.filter(p=>p.id!==removed.id);activeLocalProfile=localProfiles[0];activeProfileId=activeLocalProfile.id;applyLocalProfile(activeLocalProfile);showView(state.view);persistLocalProfiles();refreshProfileOptions();showToast("Deleted local profile "+removed.name)};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("profilesBackdrop").hidden)closeProfileManager()});
@@ -442,7 +476,7 @@ function profileCapture(p=activeLocalProfile){if(!p)return;p.watchlist=[...state
 function persistLocalProfiles(){if(!activeLocalProfile||!Array.isArray(localProfiles))return;profileCapture();storage.set(PROFILE_STORE,JSON.stringify(localProfiles.slice(0,8)));storage.set(PROFILE_ACTIVE,activeLocalProfile.id)}
 function applyLocalProfile(p){activeLocalProfile=p;activeProfileId=p.id;profileScreenTime(p);state.list=new Set(p.watchlist);personalized.preferences=normalizePreferences(p.preferences);personalized.history=normalizeHistory(p.history);Object.keys(resumePoints).forEach(k=>delete resumePoints[k]);Object.assign(resumePoints,normalizeResumePoints(p.resumePoints));Object.keys(savedAt).forEach(k=>delete savedAt[k]);Object.assign(savedAt,p.savedAt||{});movies.forEach(m=>{m.progress=defaultProgress[String(m.id)]||0;delete m.resumePoint});movies.forEach(applyResumePoint);storage.set("storyspace.myUniverse",JSON.stringify([...state.list]));storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));storage.set("storyspace.history",JSON.stringify(personalized.history));storage.set("storyspace.resumePoints",JSON.stringify(resumePoints));storage.set("storyspace.savedAt",JSON.stringify(savedAt));updateAccountUI();renderHome();setHero(chooseHero())}
 async function switchLocalProfile(id){const target=localProfiles.find(p=>p.id===id);if(!target||target===activeLocalProfile)return;if(activeLocalProfile.parentPin&&!(await verifyParentPin())){refreshProfileOptions();return}if(target.profileLock&&!(await verifyProfileAccess(target))){refreshProfileOptions();return}document.documentElement.classList.add("profile-switching");persistLocalProfiles();applyLocalProfile(target);showView(state.view);refreshProfileOptions();closeProfileManager();showToast("Switched to "+target.name);window.setTimeout(()=>document.documentElement.classList.remove("profile-switching"),520)}
-function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;renderScreenTimeDashboard();renderProfilePrivacy();select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin;const setLock=$("setProfileLock"),removeLock=$("removeProfileLock");if(setLock)setLock.textContent=activeLocalProfile?.profileLock?"Change profile PIN":"Set profile access PIN";if(removeLock)removeLock.disabled=!activeLocalProfile?.profileLock;const start=$("quietHoursStart"),end=$("quietHoursEnd"),breaks=$("breakReminderMinutes");if(start){start.value=normalizeQuietTime(activeLocalProfile?.quietHoursStart);start.disabled=!activeLocalProfile?.kidsMode}if(end){end.value=normalizeQuietTime(activeLocalProfile?.quietHoursEnd);end.disabled=!activeLocalProfile?.kidsMode}if(breaks){breaks.value=String(activeLocalProfile?.breakReminderMinutes||0);breaks.disabled=!activeLocalProfile?.kidsMode}}
+function refreshProfileOptions(){const select=$("profileSelect");if(!select)return;renderScreenTimeDashboard();renderProfilePrivacy();select.replaceChildren(...localProfiles.map(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name+(p.kidsMode?" · Kids":"")+(p.profileLock?" · Locked":"");return o}));select.value=activeLocalProfile?.id||localProfiles[0]?.id||"";const del=$("deleteProfile");if(del)del.disabled=localProfiles.length<=1;const toggle=$("kidsModeToggle");if(toggle){toggle.checked=!!activeLocalProfile?.kidsMode;toggle.setAttribute("aria-checked",String(toggle.checked))}const age=$("kidsAgeBand");if(age){age.value=activeLocalProfile?.kidsAgeBand||"8-12";age.disabled=!activeLocalProfile?.kidsMode}const setPin=$("setParentPin"),removePin=$("removeParentPin");if(setPin)setPin.textContent=activeLocalProfile?.parentPin?"Change parent PIN":"Set parent PIN";if(removePin)removePin.disabled=!activeLocalProfile?.parentPin;const setLock=$("setProfileLock"),removeLock=$("removeProfileLock");if(setLock)setLock.textContent=activeLocalProfile?.profileLock?"Change profile PIN":"Set profile access PIN";if(removeLock)removeLock.disabled=!activeLocalProfile?.profileLock;const start=$("quietHoursStart"),end=$("quietHoursEnd"),breaks=$("breakReminderMinutes");if(start){start.value=normalizeQuietTime(activeLocalProfile?.quietHoursStart);start.disabled=!activeLocalProfile?.kidsMode}if(end){end.value=normalizeQuietTime(activeLocalProfile?.quietHoursEnd);end.disabled=!activeLocalProfile?.kidsMode}if(breaks){breaks.value=String(activeLocalProfile?.breakReminderMinutes||0);breaks.disabled=!activeLocalProfile?.kidsMode}}
 function renderProfilePrivacy(){
  const summary=$("profileActivitySummary"),clearHistory=$("clearWatchHistory"),clearList=$("clearMyUniverse");
  if(!summary||!activeLocalProfile)return;
@@ -1054,3 +1088,5 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
     if(tvMode && btn) btn.classList.add("tv-activated");
   });
 })();
+
+if(activeLocalProfile?.profileLock)showProfileAccessGate(activeLocalProfile);
