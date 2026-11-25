@@ -253,10 +253,10 @@ public class NETFLIX_USER {
     }
 
     public int getDeviceLimit() {
-        if (Plan.equals("Max")) {
+        if ("Max".equals(Plan)) {
             return 4;
         }
-        if (Plan.equals("Pro")) {
+        if ("Pro".equals(Plan)) {
             return 2;
         }
         return 1;
@@ -330,7 +330,7 @@ public class NETFLIX_USER {
     }
 
     public boolean canUpgradePlan() {
-        return !Plan.equals("Max");
+        return !"Max".equals(Plan);
     }
 
     public boolean addReview(MovieReview review) {
@@ -679,15 +679,15 @@ public class NETFLIX_USER {
     }
 
     public void upgradePlan() {
-        if (Plan.equals("Free")) {
+        if ("Free".equals(Plan)) {
             Plan = "Pro";
             subscription.setPlan("Pro");
             System.out.println("Upgraded to Pro plan.");
-        } else if (Plan.equals("Pro")) {
+        } else if ("Pro".equals(Plan)) {
             Plan = "Max";
             subscription.setPlan("Max");
             System.out.println("Upgraded to Max plan.");
-        } else if (Plan.equals("Max")) {
+        } else if ("Max".equals(Plan)) {
             System.out.println("You are already on the Max plan.");
         }
     }
