@@ -337,6 +337,10 @@ public class NETFLIX_SMOKE_TEST {
         require(second.getRemainingUses() == 5, "failed redemption should not consume promo usage");
         subscription.removeCoupon();
         require(second.redeem(subscription), "second promo should redeem after active coupon is removed");
+        require(!new PromoCode("  ", 10.0, 1).isValid(),
+                "blank promo codes should not silently become a default code");
+        require(!new PromoCode("ZERO-USE", 10.0, 0).isValid(),
+                "promo codes with no allowed uses should be invalid");
     }
 
     private static void testNetflixUserInputValidation() {
