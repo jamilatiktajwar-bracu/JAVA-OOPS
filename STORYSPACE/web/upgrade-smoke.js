@@ -26,7 +26,7 @@ for(const marker of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo
 if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source mapping missing");
 
 // Demo Cinema row: sample titles must be rendered separately and never confused with licensed catalog items.
-assert(a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'),"Demo Cinema row renders demo-tagged entries");
-assert(h.includes('id="demoCinemaSection"')&&h.includes('id="demoCinemaRow"'),"Demo Cinema section is present in home markup");
-assert(h.includes("Not commercial films"),"Demo Cinema clearly identifies sample content");
-assert(sw.includes("storyspace-shell-v24"),"Demo Cinema shell cache version is incremented");
+if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");
+if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
+if(!h.includes("Not commercial films"))throw Error("Demo Cinema sample-content disclaimer missing");
+if(!sw.includes("storyspace-shell-v24"))throw Error("Demo Cinema shell cache version not bumped");
