@@ -45,9 +45,21 @@ if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stre
 if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
 if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version not bumped");
 
-// Demo playlist auto-advance when the active video ends\nif(!q.includes("autoPlayQueue=true;playFirst()"))throw Error("Queue play-all mode missing");\nif(!q.includes("video?.addEventListener(\\\"ended\\\""))throw Error("Queue auto-advance ended handler missing");\nif(!q.includes("Demo playlist finished"))throw Error("Queue completion feedback missing");\n\n// One-tap demo playlist queue
+// Demo playlist auto-advance regression checks
+if(!q.includes('autoPlayQueue=true;played=[]'))throw Error('Queue autoplay activation missing');
+if(!q.includes('video?.addEventListener("ended"'))throw Error('Queue ended handler missing');
+if(!q.includes('Playlist finished'))throw Error('Queue completion feedback missing');
+
+// One-tap demo playlist queue
 if(!h.includes('id="demoQueueAll"'))throw Error("Demo Cinema queue-all button missing");
 if(!a.includes("StoryspaceQueue?.addAll"))throw Error("Demo playlist queue action missing");
 if(!q.includes("function addAll(items)"))throw Error("Queue bulk-add API missing");
 if(!q.includes("addAll,open,close,playNext"))throw Error("Queue bulk-add API not exposed");
-if(!sw.includes("storyspace-shell-v28"))throw Error("Demo playlist cache version missing");
+if(!sw.includes("storyspace-shell-v29"))throw Error("Demo playlist cache version missing");
+
+// Smart Queue shuffle/repeat controls and up-next coexistence guard
+if(!h.includes('id="queueShuffle"')||!h.includes('id="queueRepeat"'))throw Error("Queue mode controls missing");
+if(!q.includes("repeatAll&&played.length"))throw Error("Repeat-all loop missing");
+if(!q.includes("queuePrefs"))throw Error("Queue preferences not persisted");
+if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up-next autoplay suppression missing");
+if(!sw.includes("storyspace-shell-v29"))throw Error("Queue controls shell cache not bumped");
