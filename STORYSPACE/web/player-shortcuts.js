@@ -21,7 +21,7 @@
     return ["input","textarea","select","button"].includes(name)||
       target.closest?.("[contenteditable='true'],[role='textbox']");
   };
-  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));\n  function showCaptionFeedback(){const label=document.getElementById("playerSettingsNotice");if(label){label.textContent="Caption selection changed · "+(document.getElementById("playerCaptionTrack")?.selectedOptions[0]?.text||"Off");}}
   const seek=delta=>{
     if(!Number.isFinite(video.duration)||video.duration<=0||video.readyState<1)return;
     video.currentTime=clamp(video.currentTime+delta,0,video.duration);
@@ -38,7 +38,7 @@
       case "j":seek(-10);break;case "l":seek(10);break;
       case "arrowup":video.volume=clamp(video.volume+0.05,0,1);video.muted=false;event.preventDefault();break;
       case "arrowdown":video.volume=clamp(video.volume-0.05,0,1);event.preventDefault();break;
-      case "m":video.muted=!video.muted;break;
+      case "m":video.muted=!video.muted;break;\n      case "c":if(window.StoryspacePlayerSettings?.cycleCaption){window.StoryspacePlayerSettings.cycleCaption();showCaptionFeedback();}else handled=false;break;
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!stage.classList.contains("player-theater-mode"));break;
       case "r":video.currentTime=0;video.play().catch(()=>{});break;
@@ -49,5 +49,5 @@
     if(handled){event.stopPropagation();event.stopImmediatePropagation();}
   });
   backdrop.addEventListener("transitionend",()=>{if(backdrop.hidden)setGuide(false);});
-  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide,setTheater});
+  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide,setTheater,showCaptionFeedback});
 })();
