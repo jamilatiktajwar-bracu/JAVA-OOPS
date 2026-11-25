@@ -124,8 +124,8 @@ public class ViewingSession {
     }
 
     public void setQuality(String quality) {
-        if (quality != null && !quality.trim().isEmpty()) {
-            this.quality = quality.trim();
+        if (quality != null && isQualityAvailable(quality.trim())) {
+            this.quality = lowDataMode ? "480p" : quality.trim();
         }
     }
 
@@ -239,7 +239,9 @@ public class ViewingSession {
             return false;
         }
         this.bandwidthMbps = bandwidthMbps;
-        if (bandwidthMbps >= 25) {
+        if (lowDataMode) {
+            quality = "480p";
+        } else if (bandwidthMbps >= 25) {
             quality = "4K";
         } else if (bandwidthMbps >= 10) {
             quality = "1080p";
