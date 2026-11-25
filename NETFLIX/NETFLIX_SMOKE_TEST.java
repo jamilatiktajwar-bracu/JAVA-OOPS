@@ -26,12 +26,50 @@ public class NETFLIX_SMOKE_TEST {
     private static void testPlaybackQueue() {
         Movies first = new Movies("First", "Drama", 90);
         Movies second = new Movies("Second", "Drama", 100);
+        Movies third = new Movies("Third", "Comedy", 110);
         PlaybackQueue queue = new PlaybackQueue(5);
         require(queue.add(first), "queue should accept first movie");
         require(queue.add(second), "queue should accept second movie");
         require(queue.remove(first), "queue should remove first movie");
         require(queue.getCurrent() == second, "current item should remain valid after removal");
         require(queue.getQueueCount() == 1, "queue count should be updated");
+
+        PlaybackQueue endedQueue = new PlaybackQueue(3);
+        require(endedQueue.add(first) && endedQueue.add(second) && endedQueue.add(third),
+                "queue should accept items for end-of-queue test");
+        require(endedQueue.next() == second && endedQueue.next() == third,
+                "queue should advance through items");
+        require(endedQueue.next() == null && endedQueue.getCurrent() == null,
+                "queue should represent its ended state");
+        require(endedQueue.next() == first && endedQueue.getCurrentIndex() == 0,
+                "next after end should restart at the first item");
+        require(endedQueue.addNext(first) == false,
+                "queue should still reject duplicate entries");
+        endedQueue.clear();
+        require(endedQueue.addNext(third) && endedQueue.getCurrent() == third,
+                "add-next should restore the cursor after clear");
+
+        PlaybackQueue shuffleQueue = new PlaybackQueue(3);
+        require(shuffleQueue.add(first) && shuffleQueue.add(second) && shuffleQueue.add(third),
+                "shuffle queue should accept items");
+        shuffleQueue.setShuffleEnabled(true);
+        Movies initial = shuffleQueue.getCurrent();
+        Movies next = shuffleQueue.next();
+        Movies last = shuffleQueue.next();
+        require(next != null && last != null && next != initial && last != initial && last != next,
+                "shuffle should visit each item once before exhaustion");
+        require(shuffleQueue.next() == null, "non-repeat shuffle should stop after a full cycle");
+        shuffleQueue.setRepeatAll(true);
+        require(shuffleQueue.next() != null, "repeat-all shuffle should begin a new cycle");
+        require(!shuffleQueue.isRepeatOne(), "repeat-all should disable repeat-one mode");
+
+        PlaybackQueue repeatOneQueue = new PlaybackQueue(2);
+        require(repeatOneQueue.add(first), "repeat-one queue should accept item");
+        repeatOneQueue.setRepeatOne(true);
+        require(repeatOneQueue.next() == first && repeatOneQueue.getHistoryCount() == 0,
+                "repeat-one should replay current item without adding duplicate history");
+        repeatOneQueue.setRepeatAll(true);
+        require(!repeatOneQueue.isRepeatOne(), "repeat-all should switch repeat modes");
     }
 
     private static void testCinemaAnalyticsConsistency() {
