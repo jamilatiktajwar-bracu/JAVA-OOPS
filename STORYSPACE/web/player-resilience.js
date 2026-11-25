@@ -17,7 +17,7 @@ video.addEventListener("timeupdate",()=>{if(!video.paused&&video.currentTime>las
 video.addEventListener("pause",hide);
 video.addEventListener("ended",hide);
 video.addEventListener("emptied",hide);
-video.addEventListener("error",()=>{clearTimeout(waitingTimer);const code=video.error?.code;const reason=code===2?"Network interrupted":code===3?"Video decoding failed":code===4?"This video format or source is unavailable":"Playback could not continue";show(reason+" · Use Retry playback to try again.")});
+video.addEventListener("error",()=>{clearTimeout(waitingTimer);const code=video.error?.code;const reason=code===2?"Network interrupted":code===3?"Video decoding failed":code===4?"This video format or source is unavailable":"Playback could not continue";show((video.dataset.demoStream==="1"?"Sample stream unavailable · ":"")+reason+" · Use Retry playback to try again.")});
 window.addEventListener("offline",()=>{if(active())show("You’re offline · Playback will resume when connection returns")});
 window.addEventListener("online",()=>{if(active()){show("Connection restored · Resuming playback…");video.load();video.play().catch(()=>{})}});
 const retry=document.getElementById("playerRetry");
