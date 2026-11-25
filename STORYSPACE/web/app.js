@@ -143,7 +143,7 @@ async function verifyProfileAccess(profile){
  if(!stored)return true;
  const entered=window.prompt("Enter the profile access PIN for "+profile.name+":");
  if(entered===null)return false;
- if(!/^\\d{4,8}$/.test(entered)){showToast("Enter the 4–8 digit profile PIN");return false}
+ if(!/^\d{4,8}$/.test(entered)){showToast("Enter the 4–8 digit profile PIN");return false}
  try{
   const candidate=await deriveParentPin(entered,stored.salt,stored.iterations);
   if(!samePinHash(candidate,stored.hash)){showToast("Incorrect profile PIN");return false}
@@ -155,7 +155,7 @@ async function changeProfileAccessPin(){
  if(activeLocalProfile.profileLock&&!(await verifyProfileAccess(activeLocalProfile)))return;
  const pin=window.prompt("Choose a 4–8 digit profile access PIN:");
  if(pin===null)return;
- if(!/^\\d{4,8}$/.test(pin)){showToast("Profile PIN must contain 4–8 digits");return}
+ if(!/^\d{4,8}$/.test(pin)){showToast("Profile PIN must contain 4–8 digits");return}
  const confirmation=window.prompt("Enter the profile PIN again:");
  if(confirmation===null)return;
  if(pin!==confirmation){showToast("Profile PINs did not match");return}
