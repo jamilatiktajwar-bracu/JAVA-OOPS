@@ -28,7 +28,7 @@ if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source 
 // Demo Cinema row: sample titles must be rendered separately and never confused with licensed catalog items.
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
-if(!h.includes("Not commercial films"))throw Error("Demo Cinema sample-content disclaimer missing");
+if(!h.includes("13 sample streams")||!h.includes("Not a commercial film catalog"))throw Error("Demo Cinema sample-content disclaimer/count missing");
 if(!sw.includes("storyspace-shell-v43"))throw Error("Demo Cinema shell cache version not bumped");
 
 // Visible demo tag on sample video cards.
