@@ -194,3 +194,6 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 .media-health button{flex:none;font-size:10px;padding:8px 10px}
 @keyframes media-health-pulse{50%{opacity:.45}}
 @media(max-width:460px){.media-health{align-items:flex-start;flex-direction:column}.media-health button{width:100%}}
+
+/* Quick discovery chips */
+.discovery-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}.discovery-shortcuts button{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:8px 13px;transition:background .18s,color .18s,border-color .18s,transform .18s}.discovery-shortcuts button:hover,.discovery-shortcuts button:focus-visible{background:var(--surface2);border-color:var(--aqua);color:var(--white);transform:translateY(-1px)}.discovery-shortcuts button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
