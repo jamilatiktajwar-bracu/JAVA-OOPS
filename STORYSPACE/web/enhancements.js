@@ -253,7 +253,6 @@
 
     shuffle.addEventListener("click", () => render(true));
     restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
-    restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
 
     function syncVisibility() {
       const currentView = typeof state !== "undefined" ? state.view : "home";
