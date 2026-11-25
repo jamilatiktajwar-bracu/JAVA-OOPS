@@ -329,4 +329,4 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 
 /* Playback diagnostics status */
-.player-playback-health{margin:3px 0 0;color:var(--muted);font-size:11px;min-height:1.3em}.player-playback-health[data-state="buffering"]{color:#ffd39b}.player-playback-health[data-state="offline"]{color:#ff9b9b}.player-playback-health[data-state="playing"]{color:#9be8cb}.player-playback-health[hidden]{display:none}
+.player-playback-health{margin:3px 0 0;color:var(--muted);font-size:11px;min-height:1.3em}.player-playback-health[data-state="buffering"]{color:#ffd39b}.player-playback-health[data-state="offline"]{color:#ff9b9b}.player-playback-health[data-state="stalled"]{color:#ffd39b}.player-playback-health[data-state="playing"]{color:#9be8cb}.player-playback-health[hidden]{display:none}
