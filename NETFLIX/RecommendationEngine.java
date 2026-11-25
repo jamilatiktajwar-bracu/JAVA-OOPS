@@ -66,7 +66,9 @@ public class RecommendationEngine {
                 || user.isFavourite(movie) || user.isInWatchHistory(movie)) {
             return false;
         }
-        if (user.isParentalControlEnabled() && movie.getAgeRating() > user.getMaximumAgeRating()) {
+        if (user.isParentalControlEnabled()
+                && (movie.getAgeRating() > user.getMaximumAgeRating()
+                || (movie.getAgeRating() == 0 && user.getMaximumAgeRating() < 18))) {
             return false;
         }
         if (movie.getRating() < ratingThreshold || movie.getReleaseYear() < minimumYear) {
