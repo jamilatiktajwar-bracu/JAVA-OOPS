@@ -1,3 +1,5 @@
+import java.util.Locale;
+
 public class WatchParty {
     private String partyName;
     private Movies movie;
@@ -96,7 +98,7 @@ public class WatchParty {
     }
 
     public void play() {
-        if (!partyActive) {
+        if (!partyActive || movie == null) {
             return;
         }
         playing = true;
@@ -148,7 +150,7 @@ public class WatchParty {
     }
 
     public boolean setMaxGuests(int maxGuests) {
-        if (maxGuests < 1 || maxGuests > guests.length) {
+        if (maxGuests < 1 || maxGuests > guests.length || maxGuests < guestCount) {
             return false;
         }
         this.maxGuests = maxGuests;
@@ -187,12 +189,13 @@ public class WatchParty {
         if (!chatEnabled || !partyActive || author == null
                 || !isParticipant(author)
                 || message == null || message.trim().isEmpty()
+                || message.trim().length() > 500
                 || chatCount >= chatMessages.length
                 || isMuted(author)) {
             return false;
         }
         if (moderationEnabled) {
-            String normalized = message.trim().toLowerCase();
+            String normalized = message.trim().toLowerCase(Locale.ROOT);
             if (normalized.contains("spam") || normalized.contains("abuse")) {
                 return false;
             }
@@ -223,6 +226,7 @@ public class WatchParty {
         if (!reactionsEnabled || !partyActive || author == null
                 || !isParticipant(author)
                 || reaction == null || reaction.trim().isEmpty()
+                || reaction.trim().length() > 32
                 || reactionCount >= reactions.length
                 || isMuted(author)) {
             return false;
@@ -294,8 +298,7 @@ public class WatchParty {
         if (difference <= syncToleranceSeconds) {
             return true;
         }
-        playbackPosition = guestPosition;
-        lastSyncPosition = guestPosition;
+        // Guest position is observational; the host controls the party timeline.
         return false;
     }
 
@@ -330,6 +333,8 @@ public class WatchParty {
 
     public void restartParty() {
         partyActive = true;
+        playing = false;
+        startedAt = 0;
         playbackPosition = 0;
         lastSyncPosition = 0;
     }
