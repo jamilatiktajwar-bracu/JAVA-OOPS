@@ -15,3 +15,8 @@ if(!sw.includes("storyspace-shell-v10"))throw Error("Similar-story shell cache v
 if(!h.includes("id=\"modalSave\"")||!h.includes("aria-pressed=\"false\""))throw Error("Details save button missing or not accessible");
 if(!a.includes("saveButton.onclick=()=>{toggleList(m);syncSave();}")&&!a.includes("saveButton.onclick=()=>{toggleList(m);syncSave();}"))throw Error("Details watchlist action not wired");
 if(!c.includes(".details-save-button")||!sw.includes("storyspace-shell-v11"))throw Error("Details save styling/cache missing");
+
+// Details resume progress
+if(!h.includes("modalResumeProgress")||!h.includes("modalResumeFill")||!h.includes("modalResumeLabel"))throw Error("Details resume UI missing");
+if(!a.includes("const progress=Math.max(0,Math.min(100,Number(m.progress)||0))")||!a.includes("Continue where you left off"))throw Error("Details resume state rendering missing");
+if(!c.includes(".modal-resume-track")||!sw.includes("storyspace-shell-v12"))throw Error("Details resume styling/cache missing");
