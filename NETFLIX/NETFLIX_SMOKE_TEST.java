@@ -2,6 +2,7 @@ public class NETFLIX_SMOKE_TEST {
     public static void main(String[] args) {
         testPlaybackQueue();
         testSystemHealthCounterSafety();
+        testAdminAuditLogValidation();
         testCinemaAnalyticsConsistency();
         testOfflineDownloads();
         testViewingSession();
@@ -70,6 +71,25 @@ public class NETFLIX_SMOKE_TEST {
                 "repeat-one should replay current item without adding duplicate history");
         repeatOneQueue.setRepeatAll(true);
         require(!repeatOneQueue.isRepeatOne(), "repeat-all should switch repeat modes");
+    }
+
+    private static void testAdminAuditLogValidation() {
+        AdminAuditLog audit = new AdminAuditLog(3);
+        require(audit.record(" admin ", " profile updated "),
+                "audit log should accept valid trimmed values");
+        require("admin".equals(audit.getActors()[0])
+                && "profile updated".equals(audit.getActions()[0]),
+                "audit log should normalize surrounding whitespace");
+        String oversizedActor = new String(new char[129]).replace((char) 0, 'a');
+        String oversizedAction = new String(new char[513]).replace((char) 0, 'x');
+        require(!audit.record("actor\\n", "action")
+                && !audit.record(oversizedActor, "action")
+                && !audit.record("actor", oversizedAction),
+                "audit log should reject control characters and oversized values");
+        require(audit.getLogCount() == 1, "rejected audit entries must not mutate the log");
+        audit.clear();
+        require(audit.getLogCount() == 0 && "No actions".equals(audit.getLatestAction()),
+                "audit clear should reset count and latest-action reporting");
     }
 
     private static void testCinemaAnalyticsConsistency() {
