@@ -13,6 +13,7 @@ public class NETFLIX_SMOKE_TEST {
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
         testPromoCodeRedemptionConsistency();
+        testNetflixUserInputValidation();
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
         testColdStartRecommendationLimit();
@@ -243,6 +244,29 @@ public class NETFLIX_SMOKE_TEST {
         require(second.getRemainingUses() == 5, "failed redemption should not consume promo usage");
         subscription.removeCoupon();
         require(second.redeem(subscription), "second promo should redeem after active coupon is removed");
+    }
+
+    private static void testNetflixUserInputValidation() {
+        NETFLIX_USER user = new NETFLIX_USER("  test-user  ", "person@example.com", "unknown", "");
+        require("test-user".equals(user.getUsername()), "constructor should trim username");
+        require("Free".equals(user.getPlan()), "unknown plan should normalize to Free");
+        require(user.getProfileName().equals(user.getUsername()), "profile name should initialize from normalized username");
+
+        user.setUsername("  updated-user ");
+        require("updated-user".equals(user.getUsername()), "username setter should trim input");
+        user.setUsername("  ");
+        require("updated-user".equals(user.getUsername()), "blank username should not overwrite current value");
+
+        require(user.isValidEmail(), "valid email should pass validation");
+        require(user.trySetEmail(" next@example.org "), "valid email should update");
+        require("next@example.org".equals(user.getEmail()), "email should be trimmed on validated update");
+        require(!user.trySetEmail("not-an-email"), "malformed email should be rejected");
+        require(!user.trySetEmail("a@@example.com"), "multiple @ characters should be rejected");
+        require(!user.trySetEmail("a b@example.com"), "whitespace in email should be rejected");
+        require("next@example.org".equals(user.getEmail()), "rejected email must not overwrite current address");
+
+        require(!user.setPassword("  "), "blank password updates should be rejected");
+        require(user.setPassword("sample-password"), "nonblank password should be accepted");
     }
 
     private static void testNetflixUserHistoryConsistency() {
