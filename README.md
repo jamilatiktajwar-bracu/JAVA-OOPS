@@ -30,6 +30,10 @@ An original adaptive story-discovery platform prototype built with a responsive 
 - **Admin:** Environment-bootstrap admin role, catalog create/delete and metrics.
 - **Media:** CC0 sample preview only; actual content delivery is not connected.
 
+## 📱 Download the latest Android APK
+- [Android build workflow](https://github.com/jamilatiktajwar-bracu/JAVA-OOPS/actions/workflows/storyspace-android.yml)
+- Main updates to Storyspace web/platform files now trigger a debug APK build. Open the latest successful run and download the **storyspace-android-debug** artifact (retained for 14 days). Manual workflow runs are also available.
+
 ## 👀 Preview the platforms\n- [Live web app (GitHub Pages, after Pages is enabled)](https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/)\n- [Responsive Phone / Tablet / Desktop showcase](https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/platform-showcase.html)\n- [Platform build & QA guide](STORYSPACE/PLATFORM-SHOWCASE.md)\n\n## 🛠 Quick start
 1. Start API: `cd STORYSPACE/backend && mvn spring-boot:run`.
 2. Open `STORYSPACE/web/index.html` in your browser.
