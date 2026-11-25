@@ -96,7 +96,7 @@ if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includ
 
 // Main-based Queue and Up Next polish guards
 if(!h.includes('id="playerUpNextPoster"')||!h.includes('id="playerUpNextProgress"'))throw Error("Up Next poster/countdown bar missing");
-if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.includes("StoryspaceQueue.playNext"))throw Error("Queue-aware next-item playback missing");
+if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.includes("StoryspaceQueue?.playNext"))throw Error("Queue-aware next-item playback missing");
 if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
 if(!h.includes('id="queueShuffle"')||!queue.includes("Queue shuffled")||!queue.includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
