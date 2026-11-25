@@ -77,3 +77,12 @@
 .player-theater-mode .player-settings-row{max-width:100%;margin-inline:auto}
 @media(max-width:650px){.player-theater-mode .player-panel{padding:calc(8px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom))!important}.player-theater-mode .player-stage{height:55dvh;max-height:calc(100dvh - 210px)}.player-theater-mode .player-tools{gap:8px}}
 @media(prefers-reduced-motion:reduce){.player-theater-mode .player-panel{scroll-behavior:auto}}
+
+/* Short landscape screens: prioritize the video and keep controls scrollable. */
+@media(max-height:520px) and (orientation:landscape){
+  .player-theater-mode .player-panel{padding:calc(6px + env(safe-area-inset-top)) 12px calc(6px + env(safe-area-inset-bottom))!important}
+  .player-theater-mode .player-stage{height:calc(100dvh - 150px);max-height:none}
+  .player-theater-mode .player-stage video{max-height:none}
+  .player-theater-mode .player-gesture-row{margin:4px 0}
+  .player-theater-mode .player-tools{gap:6px}
+}
