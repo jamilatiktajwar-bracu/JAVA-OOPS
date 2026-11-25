@@ -250,6 +250,8 @@ public class NETFLIX_SMOKE_TEST {
         NETFLIX_USER user = new NETFLIX_USER("  test-user  ", "person@example.com", "unknown", "");
         require("test-user".equals(user.getUsername()), "constructor should trim username");
         require("Free".equals(user.getPlan()), "unknown plan should normalize to Free");
+        require("Free".equals(user.getSubscription().getPlanName()),
+                "subscription should use the same normalized plan as the user");
         require(user.getProfileName().equals(user.getUsername()), "profile name should initialize from normalized username");
 
         user.setUsername("  updated-user ");
