@@ -46,7 +46,7 @@ if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailab
 if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version not bumped");
 
 // Player media metadata readout
-if(!h.includes("id=\\\"playerMediaInfo\\\""))throw Error("Player media info element missing");
+if(!h.includes('id="playerMediaInfo"'))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
 if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v28"))throw Error("Player media metadata shell cache missing");
