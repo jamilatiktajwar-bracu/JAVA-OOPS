@@ -65,3 +65,5 @@ Remove-Item *.class
 - This is an educational simulation; it does not stream media or process real payments.
 - The demo uses placeholder data only. Never use real passwords, card numbers, or personal information in sample code.
 - The project currently uses arrays and fixed capacities in several classes to keep the OOP exercise approachable.
+- `NETFLIX_USER` keeps a few legacy public fields for compatibility; use its getters, setters, and collection methods instead because direct field writes bypass validation.
+- Passwords and parental-control PINs are stored only as plain in-memory demo values. This project is not an authentication or security implementation; never use real credentials.
