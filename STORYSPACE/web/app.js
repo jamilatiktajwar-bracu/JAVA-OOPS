@@ -15,6 +15,14 @@ const movies=[
 {id:14,title:"Root & Star",type:"movie",year:2023,rating:"13+",duration:"2h 12m",genre:"Drama",score:8.2,description:"A small-town doctor returns to the forest where his family history began.",cast:"Original story ensemble",poster:"https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=85",progress:0},
 {id:15,title:"Neon Orchard",type:"series",year:2025,rating:"16+",duration:"2 Seasons",genre:"Music",score:8.0,original:true,description:"A group of young artists try to make their sound heard in a city that never sleeps.",cast:"Original story ensemble",poster:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=85",progress:0},
 {id:16,title:"Hush Harbor",type:"movie",year:2024,rating:"18+",duration:"1h 58m",genre:"Horror",score:7.8,description:"A new home has a rule: never open the door after midnight.",cast:"Original story ensemble",poster:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=900&q=85",progress:0}
+
+{id:101,title:"Big Buck Bunny · Full Demo",type:"movie",year:2008,rating:"G",duration:"10 min",genre:"Animation",score:8.2,description:"A full-length open animation short from the Blender open movie project. Use this to test longer playback, seeking, resume progress and buffering.",cast:"Blender open movie project",poster:"https://images.unsplash.com/photo-147239 del?auto=format&fit=crop&w=900&q=85",progress:0,streamUrl:"https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",demo:true},
+{id:102,title:"Elephants Dream · Full Demo",type:"movie",year:2006,rating:"PG",duration:"10 min",genre:"Sci-Fi Animation",score:7.9,description:"An open animated film with a longer runtime for exercising the player controls and playback progress.",cast:"Blender open movie project",poster:"https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85",progress:0,streamUrl:"https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",demo:true},
+{id:103,title:"Sintel · Demo Movie",type:"movie",year:2010,rating:"PG",duration:"15 min",genre:"Fantasy Animation",score:8.1,description:"A cinematic open animation short. Great for checking fullscreen, timeline seeking and watch progress.",cast:"Blender open movie project",poster:"https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=900&q=85",progress:0,streamUrl:"https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",demo:true},
+{id:104,title:"For Bigger Escapes · 4K Demo",type:"movie",year:2013,rating:"PG",duration:"Demo clip",genre:"Travel",score:7.7,description:"High-resolution sample footage for testing image quality, bandwidth and responsive playback.",cast:"Google video sample",poster:"https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85",progress:0,streamUrl:"https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",demo:true},
+{id:105,title:"For Bigger Joyrides · Demo",type:"movie",year:2013,rating:"PG",duration:"Demo clip",genre:"Action",score:7.6,description:"Action-style sample footage for testing the streaming player, mobile controls and quality.",cast:"Google video sample",poster:"https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=85",progress:0,streamUrl:"https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",demo:true},
+{id:106,title:"For Bigger Meltdowns · Demo",type:"movie",year:2013,rating:"PG",duration:"Demo clip",genre:"Comedy",score:7.5,description:"Another sample stream to compare playback starts, seek behavior and error recovery.",cast:"Google video sample",poster:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=85",progress:0,streamUrl:"https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",demo:true}
+
 ];
 const storage={
   get(key){try{return window.localStorage.getItem(key)}catch{return null}},
@@ -867,10 +875,10 @@ async function openPlayer(m){
   activePlayerTitle=m;window.StoryspacePlayerNext?.setContext(m,movies,next=>playMovie(next));lastProgressPersistAt=0;lastProgressSyncAt=0;lastRemoteProgress=Number(m.progress)||0;
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
   $("playerTitle").textContent=m.title||m.name||"Preview";
-  $("playerNotice").textContent="CC0 demo clip only; this is not the movie/series footage.";
+  $("playerNotice").textContent=m.demo?"Open-license/sample streaming demo · External sample video.":"CC0 demo clip only; this is not the movie/series footage.";
   const video=$("previewVideo");$("playerRestart").disabled=true;setPlayerRecovery("");video.pause();
   video.onerror=null;setPlayerRecovery("");
-  video.src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+  video.src=m.demo?"https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4":"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 
   if(m.streamUrl){
     const stream=safeMediaUrl(m.streamUrl);
