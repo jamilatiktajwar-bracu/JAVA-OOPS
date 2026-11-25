@@ -1,6 +1,6 @@
 # Storyspace platform preview and build status
 
-## What this page is
+## Live preview (free GitHub Pages)\nAfter the repository owner enables **Settings → Pages → Build and deployment → GitHub Actions**, the web demo and showcase will be published at:\n- App: https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/\n- Responsive showcase: https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/platform-showcase.html\n\nA deployment workflow is included. The first deployment requires that Pages be switched to GitHub Actions in repository settings; no domain or paid hosting is required. This is a static front-end demo, so backend sign-in/media-host features need a separately configured backend.\n\n## What this page is
 Open \`web/platform-showcase.html\` in a browser to preview the **real web app** at phone, tablet, and desktop/TV viewport sizes. These are responsive web layouts in a device frame—not native OS screenshots and not proof of physical-device testing.
 
 ## Platform build targets
