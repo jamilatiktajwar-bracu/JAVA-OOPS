@@ -6,8 +6,14 @@
   const guide=document.getElementById("playerShortcutGuide");
   const fullscreenButton=document.getElementById("playerFullscreen");
   const closeButton=document.getElementById("playerClose");
-  if(!video||!backdrop||!helpButton||!guide||!fullscreenButton||!closeButton)return;
+  const stage=document.getElementById("playerStage");
+  const theaterButton=document.getElementById("playerTheater");
+  if(!video||!backdrop||!helpButton||!guide||!fullscreenButton||!closeButton||!stage||!theaterButton)return;
   const visible=()=>!backdrop.hidden;
+  const theaterKey="storyspace.playerTheater";
+  function setTheater(enabled){stage.classList.toggle("player-theater-mode",enabled);theaterButton.setAttribute("aria-pressed",String(enabled));theaterButton.textContent=enabled?"Exit theater":"Theater mode";try{localStorage.setItem(theaterKey,String(enabled))}catch{}}
+  theaterButton.addEventListener("click",()=>setTheater(!stage.classList.contains("player-theater-mode")));
+  try{setTheater(localStorage.getItem(theaterKey)==="true")}catch{setTheater(false)}
   const isEditable=target=>{
     if(!target)return false;
     if(target.isContentEditable)return true;
@@ -34,6 +40,8 @@
       case "arrowdown":video.volume=clamp(video.volume-0.05,0,1);event.preventDefault();break;
       case "m":video.muted=!video.muted;break;
       case "f":fullscreenButton.click();break;
+      case "t":setTheater(!stage.classList.contains("player-theater-mode"));break;
+      case "c":if(window.StoryspacePlayerSettings?.toggleCaptions())event.preventDefault();else handled=false;break;
       case "r":video.currentTime=0;video.play().catch(()=>{});break;
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
@@ -42,5 +50,5 @@
     if(handled){event.stopPropagation();event.stopImmediatePropagation();}
   });
   backdrop.addEventListener("transitionend",()=>{if(backdrop.hidden)setGuide(false);});
-  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide});
+  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide,setTheater});
 })();
