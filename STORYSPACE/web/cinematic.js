@@ -229,7 +229,7 @@
     const card=event.target.closest?.(".movie-card");
     if(!card||!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;
     const row=card.closest(".movie-row,.movie-grid");if(!row)return;
-    const cards=$$(".movie-card",row),index=cards.indexOf(card);
+    const cards=$$$(".movie-card",row),index=cards.indexOf(card);
     const next=event.key==="Home"?0:event.key==="End"?cards.length-1:index+(event.key==="ArrowRight"?1:-1);
     if(next<0||next>=cards.length)return;
     event.preventDefault();cards[next].focus({preventScroll:true});
@@ -240,7 +240,7 @@
     if(!spatialEnabled||!row.isConnected)return;
     const bounds=row.getBoundingClientRect();if(bounds.bottom<0||bounds.top>window.innerHeight)return;
     const center=bounds.left+bounds.width/2;
-    for(const card of $(".movie-card",row)){
+    for(const card of $$(".movie-card",row)){
       const rect=card.getBoundingClientRect(),relative=(rect.left+rect.width/2-center)/Math.max(1,bounds.width/2);
       const clamped=Math.max(-1.35,Math.min(1.35,relative));
       card.style.setProperty("--spatial-yaw",(clamped*-12).toFixed(2)+"deg");
@@ -256,7 +256,7 @@
         $$(".movie-card").forEach(card=>["--spatial-yaw","--spatial-z","--spatial-scale"].forEach(key=>card.style.removeProperty(key)));
         return;
       }
-      $(".movie-row,.movie-grid").forEach(updateSpatialContainer);
+      $$(".movie-row,.movie-grid").forEach(updateSpatialContainer);
     });
   }
   document.addEventListener("scroll",scheduleSpatialUpdate,{passive:true,capture:true});
