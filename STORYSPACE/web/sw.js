@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v27";
+const SHELL_CACHE = "storyspace-shell-v28";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
