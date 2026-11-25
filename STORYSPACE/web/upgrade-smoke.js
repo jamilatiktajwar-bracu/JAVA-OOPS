@@ -191,7 +191,8 @@ if(!read("player-settings.css").includes(".player-volume-control")||!read("playe
 
 // Custom intro and credits skip markers are scoped to the media URL and user-set.
 for(const id of ["markIntroEnd","skipIntro","markCreditsStart","skipCredits"])if(!h.includes('id="'+id+'"'))throw Error("Player segment skip control missing: "+id);
-for(const token of ["storyspace.playerSegments.v1.","introEnd","creditsStart","timeupdate","loadedmetadata","Skip intro","Skip credits"])if(!read("player-ux.js").includes(token))throw Error("Custom skip marker behavior missing: "+token);
+for(const token of ["storyspace.playerSegments.v1.","introEnd","creditsStart","timeupdate","loadedmetadata"])if(!read("player-ux.js").includes(token))throw Error("Custom skip marker behavior missing: "+token);
+if(!h.includes(">Skip intro</button>")||!h.includes(">Skip credits</button>"))throw Error("Custom skip labels missing from player UI");
 if(!read("player-shortcuts.css").includes(".player-segment-button")||!sw.includes("storyspace-shell-v50"))throw Error("Player skip control styles/cache missing");
 
 // Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
