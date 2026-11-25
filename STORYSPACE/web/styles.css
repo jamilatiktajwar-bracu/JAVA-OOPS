@@ -332,3 +332,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 .player-playback-health{margin:3px 0 0;color:var(--muted);font-size:11px;min-height:1.3em}.player-playback-health[data-state="buffering"]{color:#ffd39b}.player-playback-health[data-state="offline"]{color:#ff9b9b}.player-playback-health[data-state="stalled"]{color:#ffd39b}.player-playback-health[data-state="playing"]{color:#9be8cb}.player-playback-health[hidden]{display:none}
 
 .player-playback-health[data-state="seeking"]{color:#c8c9ff}.player-playback-health[data-state="ready"]{color:#b7e8ff}
+
+/* Smart Queue control affordances */
+.queue-footer{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.queue-footer button{min-height:40px}.queue-item-actions button{min-width:36px;min-height:36px}.queue-item-actions button:disabled{opacity:.4;cursor:not-allowed}
