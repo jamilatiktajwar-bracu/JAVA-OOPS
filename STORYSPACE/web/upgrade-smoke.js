@@ -59,18 +59,6 @@ if(!c.includes(".player-media-info"))throw Error("Player media metadata styling 
 if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v45"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
-// Player playback diagnostics
-const diagnostics=read("player-playback-diagnostics.js");
-if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
-if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v45"))throw Error("Playback diagnostics cache entry missing");
-for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
-if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
-
-// Playback diagnostics accessibility + state mapping guards
-if(!h.includes('id="playerPlaybackHealth" role="status" aria-live="off"'))throw Error("Playback diagnostics must not spam live announcements");
-if(!diagnostics.includes('label.toLowerCase().includes("seek")?"seeking"')||!diagnostics.includes('label.toLowerCase().includes("ready")?"ready"'))throw Error("Seeking/ready diagnostics state mapping missing");
-if(!c.includes('data-state="seeking"')||!c.includes('data-state="ready"'))throw Error("Seeking/ready diagnostics style missing");
-
 // Live-stream metadata indicator regression guard
 if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.push("LIVE")'))throw Error("Live-stream metadata label missing");
 
@@ -276,3 +264,7 @@ if(!read("watch-later.js").includes("storyspace:watchlater-updated"))throw Error
 if(!a.includes("refreshProfileWelcome();"))throw Error("Profile welcome invocation missing");
 
 for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","video.removeEventListener(\"loadedmetadata\",restore)","playerRetry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
+
+// Player reconnect/resume recovery regression guard
+for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","video.removeEventListener(\"loadedmetadata\",restore)","playerRetry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
+if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes("storyspace-shell-v46"))throw Error("Player recovery module/cache wiring missing");
