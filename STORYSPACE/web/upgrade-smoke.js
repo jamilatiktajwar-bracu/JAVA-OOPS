@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes("storyspace-shell-v48"))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
@@ -183,3 +183,8 @@ if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||
 // Live gesture preview regression checks
 for(const token of ['function previewGesture(event)','Seek preview · ','Brightness preview · ','Volume preview · ','pointermove'])if(!read('player-gestures.js').includes(token))throw Error('Gesture preview missing: '+token);
 if(!sw.includes('storyspace-shell-v47'))throw Error('Gesture preview shell cache not bumped');
+
+// Persistent player volume/mute controls
+for(const id of ["playerVolume","playerMuteToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing volume preference control: "+id);
+for(const token of ["storyspace.playerVolume","storyspace.playerMuted","function syncVolume()","aria-valuetext","volumechange"])if(!read("player-settings.js").includes(token))throw Error("Player volume persistence/sync missing: "+token);
+if(!c.includes(".player-volume-control")||!c.includes(".player-mute-toggle"))throw Error("Player volume control styling missing");
