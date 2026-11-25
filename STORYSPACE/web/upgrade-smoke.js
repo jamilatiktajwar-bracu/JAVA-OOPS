@@ -109,3 +109,8 @@ for(const token of ["storyspace-playlist","version:1","queue.length>=100","queue
 if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up Next must not conflict with active queue autoplay");
 if(!css.includes(".queue-import-export")||!css.includes(".queue-play-next")||!css.includes(".demo-queue-all"))throw Error("Queue extended styles missing");
 if(!sw.includes("storyspace-shell-v36"))throw Error("Queue feature cache v36 missing");
+
+// Expanded 13-item sample catalog is included in the existing Demo Cinema row.
+for(const title of ["For Bigger Fun · Demo","For Bigger Blazes · Demo","Tears of Steel · Open Film","Subaru Outback · Sample","Volkswagen GTI Review · Sample","Bullrun Road Rally · Sample","What Car for $1,000? · Sample"])if(!demoApp.includes(title))throw Error("Expanded sample catalog missing: "+title);
+if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Expanded Demo Cinema row render missing");
+if(!sw.includes("storyspace-shell-v37"))throw Error("Expanded demo shell cache v37 missing");
