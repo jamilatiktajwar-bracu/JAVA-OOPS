@@ -35,6 +35,7 @@
       case "m":video.muted=!video.muted;break;
       case "c":{const size=document.getElementById("playerCaptionSize"),sizes=["small","medium","large","extra-large"];if(size){size.value=sizes[(sizes.indexOf(size.value)+1)%sizes.length];size.dispatchEvent(new Event("change"));event.preventDefault()}break;}
       case "f":fullscreenButton.click();break;
+      case "t":setTheater(!backdrop.classList.contains("player-theater-mode"));event.preventDefault();break;
       case "r":video.currentTime=0;video.play().catch(()=>{});break;
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
@@ -42,6 +43,6 @@
     }
     if(handled){event.stopPropagation();event.stopImmediatePropagation();}
   });
-  backdrop.addEventListener("transitionend",()=>{if(backdrop.hidden)setGuide(false);});
-  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide});
+  backdrop.addEventListener("transitionend",()=>{if(backdrop.hidden){setGuide(false);setTheater(false)}});
+  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,setGuide,setTheater});
 })();
