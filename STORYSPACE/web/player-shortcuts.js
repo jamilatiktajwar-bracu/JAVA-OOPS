@@ -33,6 +33,7 @@
       case "arrowup":video.volume=clamp(video.volume+0.05,0,1);video.muted=false;event.preventDefault();break;
       case "arrowdown":video.volume=clamp(video.volume-0.05,0,1);event.preventDefault();break;
       case "m":video.muted=!video.muted;break;
+      case "c":{const size=document.getElementById("playerCaptionSize"),sizes=["small","medium","large","extra-large"];if(size){size.value=sizes[(sizes.indexOf(size.value)+1)%sizes.length];size.dispatchEvent(new Event("change"));event.preventDefault()}break;}
       case "f":fullscreenButton.click();break;
       case "r":video.currentTime=0;video.play().catch(()=>{});break;
       case "?":setGuide(guide.hidden);break;
