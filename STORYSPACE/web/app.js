@@ -703,6 +703,7 @@ function refreshContinueRow(){
   const items=movies.filter(m=>Number(m.progress)>0);
   if(typeof renderRow==="function")renderRow("continueRow",items);
   const section=$("continueSection");if(section)section.hidden=items.length===0;
+  if(window.storyspaceResumeHub)window.storyspaceResumeHub.refresh();
 }
 function persistPlayerProgress(force=false){
   const video=$("previewVideo"),title=activePlayerTitle;
