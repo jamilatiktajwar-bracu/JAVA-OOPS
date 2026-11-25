@@ -11,6 +11,7 @@ public class NETFLIX_SMOKE_TEST {
         testSubscriptionPlanNormalization();
         testMovieConstructorNormalization();
         testMovieMetadataArrayHandling();
+        testUnknownAgeRatingSafety();
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
         testPromoCodeRedemptionConsistency();
@@ -269,6 +270,46 @@ public class NETFLIX_SMOKE_TEST {
         String[] cast = movie.getCast();
         cast[0] = "Mutated";
         require("Actor".equals(movie.getCast()[0]), "cast getter should return a defensive array copy");
+    }
+
+    private static void testUnknownAgeRatingSafety() {
+        String title = "Unrated safety test " + System.nanoTime();
+        require(Movies.addMovie(title, "Drama", 90, 2025),
+                "unrated test title should be added");
+        try {
+            Movies movie = Movies.searchByTitle(title)[0];
+            require(movie.getAgeRating() == 0, "new movie should begin with unknown age rating");
+            require(!movie.canBeWatchedBy(13) && movie.canBeWatchedBy(18)
+                    && !movie.canBeWatchedBy(-1),
+                    "unknown ratings should be blocked for minors and invalid ages");
+            require(!containsTitle(Movies.filterByAgeRating(13), title),
+                    "age-rating filter should omit unrated titles");
+            require(!containsTitle(Movies.filterCatalog(null, 13, null, 0, 2200), title),
+                    "catalog age filter should omit unrated titles for minors");
+
+            movie.setRating(10.0);
+            NETFLIX_USER child = new NETFLIX_USER("unrated-child");
+            require(child.enableParentalControl("1234", 13),
+                    "parental controls should enable for unrated-title test");
+            RecommendationEngine engine = new RecommendationEngine(child);
+            require(!containsTitle(engine.recommend(10), title)
+                    && !containsTitle(engine.getColdStartRecommendations(10), title),
+                    "recommendations should not expose unrated titles to restricted profiles");
+        } finally {
+            Movies.removeMovie(title);
+        }
+    }
+
+    private static boolean containsTitle(Movies[] movies, String title) {
+        if (movies == null || title == null) {
+            return false;
+        }
+        for (Movies movie : movies) {
+            if (movie != null && title.equals(movie.getTitle())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void testSubscriptionPaymentAndRefundSafety() {
