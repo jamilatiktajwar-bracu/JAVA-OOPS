@@ -62,7 +62,8 @@ public class RecommendationEngine {
     }
 
     private boolean isCandidate(Movies movie) {
-        if (movie == null || user.isFavourite(movie) || user.isInWatchHistory(movie)) {
+        if (movie == null || user == null
+                || user.isFavourite(movie) || user.isInWatchHistory(movie)) {
             return false;
         }
         if (user.isParentalControlEnabled() && movie.getAgeRating() > user.getMaximumAgeRating()) {
