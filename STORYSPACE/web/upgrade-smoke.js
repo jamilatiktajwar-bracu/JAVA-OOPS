@@ -14,4 +14,4 @@ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Similar-story shell cache vers
 // Details watchlist action
 if(!h.includes("id=\"modalSave\"")||!h.includes("aria-pressed=\"false\""))throw Error("Details save button missing or not accessible");
 if(!a.includes("saveButton.onclick=()=>{toggleList(m);syncSave();}")&&!a.includes("saveButton.onclick=()=>{toggleList(m);syncSave();}"))throw Error("Details watchlist action not wired");
-if(!c.includes(".details-save-button")||!sw.includes("storyspace-shell-v11"))throw Error("Details save styling/cache missing");
+if(!c.includes(".details-save-button")||!/storyspace-shell-v\d+/.test(sw))throw Error("Details save styling/cache missing");
