@@ -45,7 +45,7 @@ if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stre
 if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
 if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version not bumped");
 
-// One-tap demo playlist queue
+// Demo playlist auto-advance when the active video ends\nif(!q.includes("autoPlayQueue=true;playFirst()"))throw Error("Queue play-all mode missing");\nif(!q.includes("video?.addEventListener(\\\"ended\\\""))throw Error("Queue auto-advance ended handler missing");\nif(!q.includes("Demo playlist finished"))throw Error("Queue completion feedback missing");\n\n// One-tap demo playlist queue
 if(!h.includes('id="demoQueueAll"'))throw Error("Demo Cinema queue-all button missing");
 if(!a.includes("StoryspaceQueue?.addAll"))throw Error("Demo playlist queue action missing");
 if(!q.includes("function addAll(items)"))throw Error("Queue bulk-add API missing");
