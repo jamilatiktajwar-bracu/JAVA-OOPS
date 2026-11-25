@@ -29,5 +29,5 @@
   video.textTracks.addEventListener?.("change",refreshTracks);
   video.querySelectorAll("track").forEach(t=>t.addEventListener("load",refreshTracks));
   video.audioTracks?.addEventListener?.("addtrack",refreshTracks);video.audioTracks?.addEventListener?.("removetrack",refreshTracks);
-  window.StoryspacePlayerSettings=Object.freeze({refreshTracks,applyStyle,applyCaptionChoice});refreshTracks();
+  function cycleCaption(){const opts=["-1","-2",...Array.from({length:video.textTracks.length},(_,i)=>String(i))];const at=opts.indexOf(captions.value),next=opts[(at+1+opts.length)%opts.length];captions.value=next;applyCaptionChoice(next);save("storyspace.captionTrack",next);refreshTracks();return captions.options[captions.selectedIndex]?.text||"Captions off"}\n  window.StoryspacePlayerSettings=Object.freeze({refreshTracks,applyStyle,applyCaptionChoice,cycleCaption});refreshTracks();
 })();
