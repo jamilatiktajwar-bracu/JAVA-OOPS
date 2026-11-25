@@ -397,7 +397,10 @@ public class NETFLIX_USER {
 
     public boolean addPaymentMethod(PaymentMethod method) {
         if (paymentWallet.addMethod(method)) {
-            subscription.setPaymentMethod(method.getType());
+            PaymentMethod defaultMethod = paymentWallet.getDefaultMethod();
+            if (defaultMethod != null) {
+                subscription.setPaymentMethod(defaultMethod.getType());
+            }
             return true;
         }
         return false;
