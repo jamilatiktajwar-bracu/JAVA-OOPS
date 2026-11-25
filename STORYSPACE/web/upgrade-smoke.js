@@ -4,3 +4,9 @@ if(!h.includes("data-discovery=\"genre:Sci-Fi\"")||!h.includes("data-discovery=\
 if(!a.includes("event.target.closest(\"[data-discovery]\")")||!a.includes("filters.year")||!a.includes("matchesYear"))throw Error("Quick discovery chip behavior/year filtering missing");
 if(!c.includes(".discovery-shortcuts"))throw Error("Quick discovery chip styles missing");
 if(!sw.includes("storyspace-shell-v9"))throw Error("Quick discovery shell cache not bumped");
+
+// Similar-story recommendations in details
+if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Error("Similar-story details row missing");
+if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Genre-based recommendation logic missing");
+if(!c.includes(".details-recommendations"))throw Error("Similar-story responsive styles missing");
+if(!sw.includes("storyspace-shell-v10"))throw Error("Similar-story shell cache version missing");
