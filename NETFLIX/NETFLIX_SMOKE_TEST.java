@@ -16,6 +16,7 @@ public class NETFLIX_SMOKE_TEST {
         testNetflixUserInputValidation();
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
+        testRecommendationEngineNullUserPaths();
         testColdStartRecommendationLimit();
         testPlaylistCursorAndDurationSafety();
         testWatchPartyParticipationAndBoundaries();
@@ -320,6 +321,25 @@ public class NETFLIX_SMOKE_TEST {
         require(noUser.getSurpriseRecommendations(3).length == 0, "null-user surprise should return empty");
         require("No movie or user context".equals(noUser.explainRecommendation(new Movies("Explain", "Drama", 90))),
                 "explanation should handle missing user safely");
+    }
+
+    private static void testRecommendationEngineNullUserPaths() {
+        String title = "Null user recommendation test " + System.nanoTime();
+        require(Movies.addMovie(title, "NullUserGenre", 90),
+                "temporary movie should be added for null-user recommendation test");
+        try {
+            Movies movie = Movies.searchByTitle(title)[0];
+            NETFLIX_USER similarUser = new NETFLIX_USER("recommendation-source");
+            require(similarUser.addFavouriteMovie(movie),
+                    "collaborative source should accept its favorite movie");
+            RecommendationEngine noUser = new RecommendationEngine(null);
+            require(noUser.getGenreRecommendations("NullUserGenre", 2).length == 0,
+                    "genre recommendations should safely return empty without user context");
+            require(noUser.getCollaborativeRecommendations(similarUser, 2).length == 0,
+                    "collaborative recommendations should safely return empty without user context");
+        } finally {
+            Movies.removeMovie(title);
+        }
     }
 
     private static void testColdStartRecommendationLimit() {
