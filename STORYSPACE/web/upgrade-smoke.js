@@ -162,3 +162,11 @@ if(!read('../platforms/check-platform-config.js').includes('quick-discovery.js')
 if(!read("watch-later.js").includes("storyspace:watchlater-updated"))throw Error("Watch Later change event missing");
 
 if(!a.includes("refreshProfileWelcome();"))throw Error("Profile welcome invocation missing");
+
+// Discovery restore button should not trigger duplicate rerenders
+const discoveryRestoreHandler = read("enhancements.js").split('restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});').length - 1;
+if(discoveryRestoreHandler!==1)throw Error("Discovery restore handler must be registered exactly once");
+
+// Discovery UI state synchronization guards
+if((read("enhancements.js").match(/restore\.hidden=dismissed\.size===0;/g)||[]).length!==1)throw Error("Discovery restore visibility should update once");
+if(!read("enhancements.js").includes("syncTastePanel();"))throw Error("Taste profile controls are not synchronized after render");

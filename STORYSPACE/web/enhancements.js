@@ -232,7 +232,7 @@
         chosen.forEach(movie => results.append(buildCard(movie)));
       }
       restore.hidden=dismissed.size===0;
-      restore.hidden=dismissed.size===0;
+      syncTastePanel();
       moodBar.querySelectorAll(".discovery-mood").forEach(button => {
         button.setAttribute("aria-pressed", String(button.dataset.mood === activeMood));
       });
@@ -252,7 +252,6 @@
     });
 
     shuffle.addEventListener("click", () => render(true));
-    restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
     restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
 
     function syncVisibility() {
