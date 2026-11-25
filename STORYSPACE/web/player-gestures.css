@@ -69,3 +69,4 @@
 }
 
 .player-gesture-feedback{white-space:pre-line}
+\n.player-stage.player-theater-mode{max-height:82vh;border-radius:16px;box-shadow:0 18px 80px #000b}\n.player-stage.player-theater-mode>video{max-height:82vh;object-fit:contain}\n#playerTheater[aria-pressed="true"]{border-color:#7cebd766;color:#bdfcf1;background:#10302d}\n@media(prefers-reduced-motion:reduce){.player-stage.player-theater-mode{box-shadow:none}}\n
