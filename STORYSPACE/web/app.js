@@ -876,7 +876,7 @@ async function openPlayer(m){
   closeDetails();$("playerBackdrop").hidden=false;document.body.style.overflow="hidden";
   $("playerTitle").textContent=m.title||m.name||"Preview";
   $("playerNotice").textContent=m.demo?"Open-license/sample streaming demo · External sample video.":"CC0 demo clip only; this is not the movie/series footage.";
-  const video=$("previewVideo");$("playerRestart").disabled=true;setPlayerRecovery("");video.pause();
+  const video=$("previewVideo");video.dataset.demoStream=m.demo?"1":"0";$("playerRestart").disabled=true;setPlayerRecovery("");video.pause();
   video.onerror=null;setPlayerRecovery("");
   video.src=m.demo?"https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4":"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 
