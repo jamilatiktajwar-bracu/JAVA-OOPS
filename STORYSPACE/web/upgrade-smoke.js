@@ -149,3 +149,8 @@ if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('qu
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
 if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!sw.includes('storyspace-shell-v43'))throw Error('Quick Discovery offline shell missing');
 if(!read('check-platform-config.js').includes('quick-discovery.js'))throw Error('Platform asset configuration check missing Quick Discovery');
+
+// Command Palette keyboard accessibility and focus containment
+const command=read('command-palette.js'),commandCss=read('command-palette.css');
+for(const token of ['aria-haspopup','aria-expanded','aria-controls','command-palette-close','e.key!=="Tab"','focusables'])if(!command.includes(token))throw Error('Command Palette keyboard/accessibility guard missing: '+token);
+if(!commandCss.includes('.command-palette-close:focus-visible'))throw Error('Command Palette close focus styles missing');
