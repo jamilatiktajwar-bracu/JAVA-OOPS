@@ -162,6 +162,13 @@ public class NETFLIX_SMOKE_TEST {
         require(review.getHelpfulnessScore() == 0, "vote score should reflect both vote types");
         require(review.report(), "report should be accepted");
         require(review.needsReview(), "reported review should require moderation");
+        review.markApproved();
+        require(review.isApproved() && !review.isReported() && !review.needsReview(),
+                "approval should clear the pending moderation flag while retaining report history");
+        review.setSpoiler(true);
+        require(review.needsReview(), "spoiler reviews should still require review");
+        review.setSpoiler(false);
+        require(!review.needsReview(), "removing a spoiler flag should clear review need");
     }
 
     private static void testLocaleIndependentMovieSearch() {
