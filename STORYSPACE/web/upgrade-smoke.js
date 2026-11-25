@@ -29,7 +29,7 @@ if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source 
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
 if(!h.includes("Not commercial films"))throw Error("Demo Cinema sample-content disclaimer missing");
-if(!sw.includes("storyspace-shell-v24"))throw Error("Demo Cinema shell cache version not bumped");
+if(!sw.includes("storyspace-shell-v33"))throw Error("Demo Cinema shell cache version not bumped");
 
 // Visible demo tag on sample video cards.
 if(!a.includes('demoBadge.textContent="DEMO"')||!c.includes(".card-demo-badge"))throw Error("Demo card badge styling/markup missing");
@@ -43,26 +43,26 @@ if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))thro
 // Demo-stream error messaging and cache-version regression checks
 if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
 if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
-if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version not bumped");
+if(!sw.includes("storyspace-shell-v33"))throw Error("Demo recovery cache version not bumped");
 
 // Player media metadata readout
 if(!h.includes('id="playerMediaInfo"'))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v28"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v33"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player media metadata readout
 if(!h.includes("playerMediaInfo"))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v28"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v33"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player playback diagnostics
 const diagnostics=read("player-playback-diagnostics.js");
 if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
-if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v28"))throw Error("Playback diagnostics cache entry missing");
+if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v33"))throw Error("Playback diagnostics cache entry missing");
 for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
 if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
 
