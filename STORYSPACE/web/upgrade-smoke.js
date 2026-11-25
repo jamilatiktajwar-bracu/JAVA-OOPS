@@ -140,7 +140,7 @@ if(!sw.includes("storyspace-shell-v43"))throw Error("Personal lists shell v40 mi
 for(const id of ["commandPaletteOpen","universeLayoutToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing quick navigation/layout control: "+id);
 for(const token of ["syncUniverseLayout","storyspace.universeLayout","universe-grid","universeLayoutToggle"])if(!a.includes(token))throw Error("My Universe layout preference missing: "+token);
 for(const asset of ["command-palette.css","command-palette.js"])if(!h.includes(asset)||!sw.includes("./"+asset))throw Error("Command palette asset missing: "+asset);
-for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching action","Alt+K","Watch Later","resumeHub","storyspaceQueue"])if(!read("command-palette.js").includes(token))throw Error("Command palette action/navigation missing: "+token);
+for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching action","Alt+K","Watch Later","storyspaceQueue"])if(!read("command-palette.js").includes(token))throw Error("Command palette action/navigation missing: "+token);\nif(!read("resume-hub.js").includes("resumeHub"))throw Error("Continue Watching hub asset missing");
 for(const sel of [".command-palette",".command-palette-item",".command-palette-input",".movie-row.universe-grid","prefers-reduced-motion"])if(!c.includes(sel))throw Error("Quick navigation/grid styles missing: "+sel);
 if(!sw.includes("storyspace-shell-v43"))throw Error("Quick navigation shell v41 missing");
 
