@@ -492,7 +492,11 @@ public class Subscription {
         }
         int safeRemaining = Math.min(remainingDays, cycleDays);
         double difference = newMonthlyFee - oldMonthlyFee;
-        return difference * ((double) safeRemaining / cycleDays);
+        double prorated = difference * ((double) safeRemaining / cycleDays);
+        if (Double.isFinite(prorated)) {
+            return prorated;
+        }
+        return difference < 0.0 ? -Double.MAX_VALUE : Double.MAX_VALUE;
     }
 
     private void touchBilling() {
