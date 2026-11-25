@@ -70,3 +70,6 @@ if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics styl
 if(!h.includes('id="playerPlaybackHealth" role="status" aria-live="off"'))throw Error("Playback diagnostics must not spam live announcements");
 if(!diagnostics.includes('label.toLowerCase().includes("seek")?"seeking"')||!diagnostics.includes('label.toLowerCase().includes("ready")?"ready"'))throw Error("Seeking/ready diagnostics state mapping missing");
 if(!c.includes('data-state="seeking"')||!c.includes('data-state="ready"'))throw Error("Seeking/ready diagnostics style missing");
+
+// Live-stream metadata indicator regression guard
+if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.push("LIVE")'))throw Error("Live-stream metadata label missing");
