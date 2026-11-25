@@ -51,3 +51,10 @@ if(!h.includes("player-media-info.js"))throw Error("Player media metadata module
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
 if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v27"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
+
+// Player media metadata readout
+if(!h.includes("playerMediaInfo"))throw Error("Player media info element missing");
+if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
+if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v27"))throw Error("Player media metadata shell cache missing");
+if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
