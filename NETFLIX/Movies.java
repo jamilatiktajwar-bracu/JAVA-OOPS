@@ -335,7 +335,8 @@ public class Movies {
         Movies[] matches = new Movies[movieCount];
         int count = 0;
         for (int i = 0; i < movieCount; i++) {
-            if (movieList[i].getAgeRating() <= maximumAge) {
+            int ageRating = movieList[i].getAgeRating();
+            if (ageRating > 0 && ageRating <= maximumAge) {
                 matches[count++] = movieList[i];
             }
         }
@@ -958,11 +959,11 @@ public class Movies {
     }
 
     public boolean canBeWatchedBy(int userAge) {
-        return !parentalRestrictionActive() || userAge >= ageRating;
-    }
-
-    private boolean parentalRestrictionActive() {
-        return ageRating > 0;
+        if (userAge < 0) {
+            return false;
+        }
+        // A zero rating means unknown, not automatically family-safe.
+        return ageRating == 0 ? userAge >= 18 : userAge >= ageRating;
     }
 
     public void displayFullInfo() {
