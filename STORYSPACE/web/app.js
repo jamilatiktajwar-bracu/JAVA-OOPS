@@ -684,7 +684,7 @@ function showView(view){legacyShowView(view);const personal=$("personalSection")
 function search(q){if($("personalSection"))$("personalSection").hidden=true;legacySearch(q)}
 document.addEventListener("click",event=>{const button=event.target.closest("[data-discovery]");if(!button)return;const query=button.dataset.discovery,input=$("searchInput");input.value=query;$("searchBox").classList.add("has-value");search(query);input.focus()});
 $("universeLayoutToggle").onclick=()=>{storage.set("storyspace.universeLayout",storage.get("storyspace.universeLayout")==="grid"?"rail":"grid");syncUniverseLayout();showToast(storage.get("storyspace.universeLayout")==="grid"?"My Universe grid view":"My Universe rail view")};\nupdateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
-loadServerCatalog().then(()=>{renderHome();setHero(chooseHero());if(personalized.token)syncAccount()});
+loadServerCatalog().then(()=>{renderHome();setHero(chooseHero());document.dispatchEvent(new CustomEvent("storyspace:catalog-updated"));if(personalized.token)syncAccount()});
 if(!storage.get("storyspace.onboarded")){setTimeout(()=>openPreferences(),600)}
 $("savePreferences").addEventListener("click",()=>{storage.set("storyspace.onboarded","1")});
 setInterval(()=>{
