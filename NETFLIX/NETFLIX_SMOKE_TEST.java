@@ -325,6 +325,16 @@ public class NETFLIX_SMOKE_TEST {
         require(wallet.getDefaultMethod() == first, "wallet should select remaining method as default");
         require(!second.isDefaultMethod(), "removed method should no longer carry a default flag");
         require(wallet.getMethodCount() == 1, "wallet count should remain consistent");
+
+        NETFLIX_USER paymentUser = new NETFLIX_USER("payment-default");
+        PaymentMethod defaultCard = new PaymentMethod("Visa", "1111222233334444", "Owner");
+        PaymentMethod alternate = new PaymentMethod("PayPal", "5555666677778888", "Owner");
+        require(paymentUser.addPaymentMethod(defaultCard)
+                && paymentUser.addPaymentMethod(alternate),
+                "user wallet should accept both payment methods");
+        require(paymentUser.getPaymentWallet().getDefaultMethod() == defaultCard
+                && "Visa".equals(paymentUser.getSubscription().getPaymentMethod()),
+                "subscription should keep the wallet's actual default method");
     }
 
     private static void testPromoCodeRedemptionConsistency() {
