@@ -203,3 +203,6 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 
 /* Save action in story details */
 .details-save-button{border:1px solid var(--line);background:var(--surface2);color:var(--white);border-radius:999px;padding:7px 12px;font:inherit;font-size:11px;cursor:pointer}.details-save-button[aria-pressed="true"]{border-color:var(--aqua);color:var(--aqua)}.details-save-button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* Resume state in story details */
+.modal-resume{margin:10px 0 15px}.modal-resume[hidden]{display:none!important}.modal-resume-track{height:4px;background:#ffffff22;border-radius:9px;overflow:hidden}.modal-resume-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,#67e4d2,#92b4ff);transition:width .35s ease}.modal-resume small{display:block;margin-top:6px;color:#91a9c6;font-size:10px;letter-spacing:.04em}@media(prefers-reduced-motion:reduce){.modal-resume-track span{transition:none}}
