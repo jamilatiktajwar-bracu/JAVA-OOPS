@@ -93,3 +93,11 @@ if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v34")
 if(!h.includes("modalSignals")||!h.includes("modalSave")||!h.includes("modalResumeProgress")||!h.includes("heroSurprise"))throw Error("Details modal controls missing");
 if(!a.includes("syncSignals")||!a.includes("syncSave")||!a.includes("Continue where you left off")||!a.includes("function surpriseHero"))throw Error("Details save/resume/surprise behavior missing");
 if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!sw.includes("storyspace-shell-v34"))throw Error("Details modal styles/cache missing");
+
+// Main-based Queue and Up Next polish guards
+if(!h.includes('id="playerUpNextPoster"')||!h.includes('id="playerUpNextProgress"'))throw Error("Up Next poster/countdown bar missing");
+if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.includes("StoryspaceQueue.playNext"))throw Error("Queue-aware next-item playback missing");
+if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
+if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
+if(!h.includes('id="queueShuffle"')||!queue.includes("Queue shuffled")||!queue.includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
+if(!sw.includes("storyspace-shell-v35"))throw Error("Shell cache v35 not bumped");
