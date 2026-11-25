@@ -41,6 +41,7 @@
       case "m":video.muted=!video.muted;break;
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!stage.classList.contains("player-theater-mode"));break;
+      case "c":if(window.StoryspacePlayerSettings?.toggleCaptions())event.preventDefault();else handled=false;break;
       case "r":video.currentTime=0;video.play().catch(()=>{});break;
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
