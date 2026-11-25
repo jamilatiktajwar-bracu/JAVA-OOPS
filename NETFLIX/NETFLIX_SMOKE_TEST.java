@@ -82,7 +82,7 @@ public class NETFLIX_SMOKE_TEST {
                 "audit log should normalize surrounding whitespace");
         String oversizedActor = new String(new char[129]).replace((char) 0, 'a');
         String oversizedAction = new String(new char[513]).replace((char) 0, 'x');
-        require(!audit.record("actor\\n", "action")
+        require(!audit.record("actor" + (char) 10, "action")
                 && !audit.record(oversizedActor, "action")
                 && !audit.record("actor", oversizedAction),
                 "audit log should reject control characters and oversized values");
