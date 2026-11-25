@@ -187,7 +187,7 @@ if(!sw.includes('storyspace-shell-v49'))throw Error('Gesture preview shell cache
 // Persistent player volume/mute controls
 for(const id of ["playerVolume","playerMuteToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing volume preference control: "+id);
 for(const token of ["storyspace.playerVolume","storyspace.playerMuted","function syncVolume()","aria-valuetext","volumechange"])if(!read("player-settings.js").includes(token))throw Error("Player volume persistence/sync missing: "+token);
-if(!c.includes(".player-volume-control")||!c.includes(".player-mute-toggle"))throw Error("Player volume control styling missing");
+if(!read("player-settings.css").includes(".player-volume-control")||!read("player-settings.css").includes(".player-mute-toggle"))throw Error("Player volume control styling missing");
 
 // Custom intro and credits skip markers are scoped to the media URL and user-set.
 for(const id of ["markIntroEnd","skipIntro","markCreditsStart","skipCredits"])if(!h.includes('id="'+id+'"'))throw Error("Player segment skip control missing: "+id);
