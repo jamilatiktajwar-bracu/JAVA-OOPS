@@ -49,7 +49,7 @@ if(!sw.includes("storyspace-shell-v26"))throw Error("Demo recovery cache version
 if(!h.includes("id=\\\"playerMediaInfo\\\""))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v27"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v28"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player media metadata readout
@@ -58,3 +58,10 @@ if(!h.includes("player-media-info.js"))throw Error("Player media metadata module
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
 if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v27"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
+
+// Player playback diagnostics
+const diagnostics=read("player-playback-diagnostics.js");
+if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
+if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v28"))throw Error("Playback diagnostics cache entry missing");
+for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
+if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
