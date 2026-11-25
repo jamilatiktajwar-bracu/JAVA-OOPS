@@ -78,3 +78,8 @@ if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.
 if(!h.includes('id="queueShuffle"')||!h.includes("Shuffle"))throw Error("Smart Queue shuffle control missing");
 if(!read("player-queue.js").includes("queueShuffle")||!read("player-queue.js").includes("Queue shuffled"))throw Error("Queue shuffle behavior missing");
 if(!read("player-queue.js").includes("aria-label")||!read("player-queue.js").includes("Move "))throw Error("Queue reorder accessibility labels missing");
+
+// Up-next cinematic end-card UI guards
+if(!h.includes("playerUpNextPoster")||!h.includes("playerUpNextProgress"))throw Error("Up-next poster/progress UI missing");
+if(!read("player-next.js").includes("posterNode.src")||!read("player-next.js").includes("progressNode.style.width"))throw Error("Up-next countdown progress behavior missing");
+if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress"))throw Error("Up-next end-card styles missing");
