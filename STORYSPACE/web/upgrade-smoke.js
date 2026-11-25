@@ -70,3 +70,10 @@ if(!q.includes('function importPlaylist(data)')||!q.includes('data.version!==1')
 if(!q.includes('queue.length>=100'))throw Error('Playlist import size guard missing');
 if(!h.includes('id="queueExport"')||!h.includes('id="queueImportFile"'))throw Error('Queue backup controls missing');
 if(!sw.includes('storyspace-shell-v30'))throw Error('Playlist backup shell cache not bumped');
+
+// Queue per-item play and priority scheduling safeguards
+if(!q.includes("queue-play-item")||!q.includes("bridge()?.play?.(m)"))throw Error("Play-now queue item action missing");
+if(!q.includes("queue-play-next")||!q.includes("queue.unshift(entry)"))throw Error("Play-next priority action missing");
+if(!q.includes("queue.length>=100"))throw Error("Queue capacity guard missing");
+if(!c.includes("queue-play-item")||!c.includes("queue-play-next"))throw Error("Queue quick-action styling missing");
+if(!sw.includes("storyspace-shell-v31"))throw Error("Queue quick-action cache version missing");
