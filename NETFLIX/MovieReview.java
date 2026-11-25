@@ -195,7 +195,7 @@ public class MovieReview {
     }
 
     public boolean needsReview() {
-        return reported || reportCount > 0 || containsSpoiler();
+        return reported || containsSpoiler();
     }
 
     public void display() {
