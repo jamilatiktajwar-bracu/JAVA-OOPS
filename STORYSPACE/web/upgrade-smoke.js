@@ -4,19 +4,19 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v21"))throw Error("shell cache version not bumped");
+if(!sw.includes("storyspace-shell-v31"))throw Error("shell cache version not bumped");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
 if(!h.includes("player-ux.js"))throw Error("player UX script not wired");
-if(!sw.includes("player-ux.js")||!sw.includes("storyspace-shell-v22"))throw Error("player UX offline shell not updated");
+if(!sw.includes("player-ux.js")||!sw.includes("storyspace-shell-v31"))throw Error("player UX offline shell not updated");
 if(!pux.includes("player-seek-preview")||!pux.includes("dy>90")||!pux.includes("fullscreenchange"))throw Error("seek preview/swipe-dismiss/fullscreen UX missing");
 if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:reduce"))throw Error("fullscreen transition styles missing");
 
 // Player resilience batch v1 guards
 const resilience=read("player-resilience.js"),resilienceCss=read("player-resilience.css");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
-if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes("storyspace-shell-v23"))throw Error("player resilience offline shell not updated");
+if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes("storyspace-shell-v31"))throw Error("player resilience offline shell not updated");
 for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience"])if(!resilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
