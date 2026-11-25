@@ -31,7 +31,7 @@ const movies=[
 {"id":112,"title":"Bullrun Road Rally · Sample","type":"movie","year":2010,"rating":"PG","duration":"47 sec","genre":"Travel","score":7.4,"description":"A rally sample clip for quick playback testing.","cast":"Garage419 · sample source","poster":"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85","progress":0,"streamUrl":"https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4","demo":true},
 {"id":113,"title":"What Car for $1,000? · Sample","type":"movie","year":2010,"rating":"PG","duration":"9 min","genre":"Automotive","score":7.4,"description":"Sample video with longer runtime to test seeking and resume.","cast":"Garage419 · sample source","poster":"https://storage.googleapis.com/gtv-videos-bucket/sample/images/WhatCarCanYouGetForAGrand.jpg","progress":0,"streamUrl":"https://storage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4","demo":true}
 ];
-const storage{
+const storage={
   get(key){try{return window.localStorage.getItem(key)}catch{return null}},
   set(key,value){try{window.localStorage.setItem(key,value);return true}catch{return false}},
   remove(key){try{window.localStorage.removeItem(key)}catch{}}
