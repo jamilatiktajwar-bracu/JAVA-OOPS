@@ -24,3 +24,8 @@ if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player 
 const demoApp=read("app.js");
 for(const marker of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo","Sintel · Demo Movie","For Bigger Escapes · 4K Demo","For Bigger Joyrides · Demo","For Bigger Meltdowns · Demo","streamUrl","demo:true"])if(!demoApp.includes(marker))throw Error("Demo video library missing: "+marker);
 if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source mapping missing");
+
+// Demo Cinema expansion checks
+for(const title of ["For Bigger Fun · Demo","For Bigger Blazes · Demo","Tears of Steel · Open Film","Subaru Outback · Sample","Volkswagen GTI Review · Sample","Bullrun Road Rally · Sample","What Car for $1,000? · Sample"])if(!demoApp.includes(title))throw Error("Expanded sample catalogue missing: "+title);
+if(!h.includes("demoVideosRow")||!a.includes('renderRow("demoVideosRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema section is not wired into homepage rendering");
+if(!sw.includes("storyspace-shell-v24"))throw Error("Demo Cinema cache version missing");
