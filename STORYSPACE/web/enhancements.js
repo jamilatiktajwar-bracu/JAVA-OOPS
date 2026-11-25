@@ -191,7 +191,8 @@
       save.dataset.mixAction = "save";
       save.setAttribute("aria-label", (saved ? "Remove " : "Save ") + title + (saved ? " from" : " to") + " My Universe");
       const hide=element("button","discovery-action discovery-dismiss","Not for me");hide.type="button";hide.dataset.mixAction="dismiss";hide.setAttribute("aria-label","Hide "+title+" from future recommendations");
-      const watchId=String(movie.apiId||movie.id);const watchLater=window.storyspaceWatchLater;const watchButton=element("button","discovery-action",watchLater&&watchLater.has(watchId)?"✓ Watch later":"＋ Watch later");watchButton.type="button";watchButton.dataset.mixAction="watch-later";watchButton.setAttribute("aria-pressed",String(Boolean(watchLater&&watchLater.has(watchId))));watchButton.setAttribute("aria-label",(watchLater&&watchLater.has(watchId)?"Remove ":"Add ")+title+" "+(watchLater&&watchLater.has(watchId)?"from":"to")+" Watch later");\n      actions.append(details, save, hide, watchButton);
+      const watchId=String(movie.apiId||movie.id);const watchLater=window.storyspaceWatchLater;const watchButton=element("button","discovery-action",watchLater&&watchLater.has(watchId)?"✓ Watch later":"＋ Watch later");watchButton.type="button";watchButton.dataset.mixAction="watch-later";watchButton.setAttribute("aria-pressed",String(Boolean(watchLater&&watchLater.has(watchId))));watchButton.setAttribute("aria-label",(watchLater&&watchLater.has(watchId)?"Remove ":"Add ")+title+" "+(watchLater&&watchLater.has(watchId)?"from":"to")+" Watch later");
+      actions.append(details, save, hide, watchButton);
       body.append(actions);
       article.append(poster, body);
 
@@ -215,7 +216,7 @@
         } else if (button.dataset.mixAction === "save" && typeof toggleList === "function") {
           toggleList(movie);
           render(false);
-        } else if(button.dataset.mixAction==="dismiss") { dismissed.add(String(movie.apiId||movie.id));persistDismissed();render(false); } else if(button.dataset.mixAction==="watch-later"&&window.storyspaceWatchLater){const added=window.storyspaceWatchLater.toggle(String(movie.apiId||movie.id));button.textContent=added?"✓ Watch later":"＋ Watch later";button.setAttribute("aria-pressed",String(added));render(false)}
+        } else if(button.dataset.mixAction==="dismiss") { dismissed.add(String(movie.apiId||movie.id));persistDismissed();render(false); } else if(button.dataset.mixAction==="watch-later"&&window.storyspaceWatchLater){const added=window.storyspaceWatchLater.toggle(String(movie.apiId||movie.id));button.textContent=added?"✓ Watch later":"＋ Watch later";button.setAttribute("aria-pressed",String(added));render(false)} else if(button.dataset.mixAction==="watch-later"&&window.storyspaceWatchLater){const added=window.storyspaceWatchLater.toggle(String(movie.apiId||movie.id));button.textContent=added?"✓ Watch later":"＋ Watch later";button.setAttribute("aria-pressed",String(added));render(false)}
       });
       return article;
     }
