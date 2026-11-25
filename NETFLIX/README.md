@@ -48,6 +48,7 @@ Remove-Item *.class
 - Playlists, bookmarks, playback queues, viewing sessions, and watch parties
 - Offline download simulation, progress, priorities, storage estimation, and failure/retry
 - Recommendations and catalog, engagement, accessibility, audit, and system-health summaries
+- Conservative age filtering: unrated titles are excluded from age-filtered catalogs and restricted recommendations
 
 ## Main classes
 | Class | Responsibility |
