@@ -1,9 +1,9 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v10";
+const SHELL_CACHE = "storyspace-shell-v33";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
-  "./player-gestures.css", "./player-gestures.js", "./player-shortcuts.css", "./player-shortcuts.js", "./player-settings.css", "./player-settings.js", "./interaction-polish.css", "./media-uploads.js", "./native-bridge.js",
+  "./player-gestures.css", "./player-gestures.js", "./player-shortcuts.css", "./player-shortcuts.js", "./player-settings.css", "./player-settings.js", "./tv-navigation.js", "./player-next.js", "./player-mini.js", "./player-queue.js", "./player-ux.js", "./player-resilience.js", "./player-media-info.js", "./player-playback-diagnostics.js", "./player-resilience.css", "./interaction-polish.css", "./media-uploads.js", "./native-bridge.js",
   "./manifest.webmanifest", "./assets/storyspace-icon.svg"
 ];
 const MAX_RUNTIME_ENTRIES = 80;
