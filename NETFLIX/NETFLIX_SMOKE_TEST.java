@@ -298,13 +298,13 @@ public class NETFLIX_SMOKE_TEST {
         require(!cancelledTrial.isInTrial() && cancelledTrial.getTrialDaysRemaining() == 0
                 && "Cancelled".equals(cancelledTrial.getBillingStatus()),
                 "cancel should clear trial state and set billing status");
-        Subscription cancelled = new Subscription("Pro");
-        cancelled.cancel();
-        require(!cancelled.isActive() && "Cancelled".equals(cancelled.getBillingStatus()),
+        Subscription renewedSubscription = new Subscription("Pro");
+        renewedSubscription.cancel();
+        require(!renewedSubscription.isActive() && "Cancelled".equals(renewedSubscription.getBillingStatus()),
                 "cancel should update status for non-trial subscriptions");
-        cancelled.renew();
-        require(cancelled.isActive() && cancelled.isAutoRenew() && !cancelled.isPaused()
-                && "Current".equals(cancelled.getBillingStatus()),
+        renewedSubscription.renew();
+        require(renewedSubscription.isActive() && renewedSubscription.isAutoRenew() && !renewedSubscription.isPaused()
+                && "Current".equals(renewedSubscription.getBillingStatus()),
                 "renew should restore a consistent subscription state");
 
         Subscription fullInvoices = new Subscription("Pro");
