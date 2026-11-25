@@ -9,14 +9,14 @@ if(!sw.includes("storyspace-shell-v48"))throw Error("shell cache version not bum
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
 if(!h.includes("player-ux.js"))throw Error("player UX script not wired");
-if(!sw.includes("player-ux.js")||!sw.includes("storyspace-shell-v47"))throw Error("player UX offline shell not updated");
+if(!sw.includes("player-ux.js")||!sw.includes("storyspace-shell-v48"))throw Error("player UX offline shell not updated");
 if(!pux.includes("player-seek-preview")||!pux.includes("dy>90")||!pux.includes("fullscreenchange"))throw Error("seek preview/swipe-dismiss/fullscreen UX missing");
 if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:reduce"))throw Error("fullscreen transition styles missing");
 
 // Player resilience batch v1 guards
 const resilience=read("player-resilience.js"),resilienceCss=read("player-resilience.css");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
-if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes("storyspace-shell-v47"))throw Error("player resilience offline shell not updated");
+if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes("storyspace-shell-v48"))throw Error("player resilience offline shell not updated");
 for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience"])if(!resilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
@@ -29,7 +29,7 @@ if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source 
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
 if(!h.includes("13 sample streams")||!h.includes("Not a commercial film catalog"))throw Error("Demo Cinema sample-content disclaimer/count missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Demo Cinema shell cache version not bumped");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Demo Cinema shell cache version not bumped");
 
 // Visible demo tag on sample video cards.
 if(!a.includes('demoBadge.textContent="DEMO"')||!c.includes(".card-demo-badge"))throw Error("Demo card badge styling/markup missing");
@@ -43,26 +43,26 @@ if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))thro
 // Demo-stream error messaging and cache-version regression checks
 if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
 if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Demo recovery cache version not bumped");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Demo recovery cache version not bumped");
 
 // Player media metadata readout
 if(!h.includes('id="playerMediaInfo"'))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v47"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v48"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player media metadata readout
 if(!h.includes("playerMediaInfo"))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v47"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v48"))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player playback diagnostics
 const diagnostics=read("player-playback-diagnostics.js");
 if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
-if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v47"))throw Error("Playback diagnostics cache entry missing");
+if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v48"))throw Error("Playback diagnostics cache entry missing");
 for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
 if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
 
@@ -77,22 +77,22 @@ if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.
 // Preserve responsive polish already merged to main.
 if(!h.includes("interaction-polish.css")||!sw.includes("./interaction-polish.css"))throw Error("Responsive polish asset missing from consolidated shell");
 if(!read("player-queue.js").includes("StoryspaceQueue")||!sw.includes("./player-queue.js"))throw Error("Smart Queue module missing from consolidated shell");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Consolidated shell cache not bumped");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Consolidated shell cache not bumped");
 
 // Discovery shortcuts and year search from merged PR #118
 if(!h.includes("data-discovery=\"genre:Sci-Fi\"")||!h.includes("data-discovery=\"year:2026\""))throw Error("Quick discovery markup missing");
 if(!a.includes("event.target.closest(\"[data-discovery]\")")||!a.includes("filters.year")||!a.includes("matchesYear"))throw Error("Discovery year filter wiring missing");
-if(!c.includes(".discovery-shortcuts")||!sw.includes("storyspace-shell-v47"))throw Error("Discovery styles/cache missing");
+if(!c.includes(".discovery-shortcuts")||!sw.includes("storyspace-shell-v48"))throw Error("Discovery styles/cache missing");
 
 // Similar-story rail added to consolidated branch
 if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Error("Similar-story markup missing");
 if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Similar-story ranking missing");
-if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v47"))throw Error("Similar-story styles/cache missing");
+if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v48"))throw Error("Similar-story styles/cache missing");
 
 // Integrated details modal save/resume/highlights and surprise picker
 if(!h.includes("modalSignals")||!h.includes("modalSave")||!h.includes("modalResumeProgress")||!h.includes("heroSurprise"))throw Error("Details modal controls missing");
 if(!a.includes("syncSignals")||!a.includes("syncSave")||!a.includes("Continue where you left off")||!a.includes("function surpriseHero"))throw Error("Details save/resume/surprise behavior missing");
-if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!sw.includes("storyspace-shell-v47"))throw Error("Details modal styles/cache missing");
+if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!sw.includes("storyspace-shell-v48"))throw Error("Details modal styles/cache missing");
 
 // Main-based Queue and Up Next polish guards
 if(!h.includes('id="playerUpNextPoster"')||!h.includes('id="playerUpNextProgress"'))throw Error("Up Next poster/countdown bar missing");
@@ -100,7 +100,7 @@ if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.inc
 if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
 if(!h.includes('id="queueShuffle"')||!read("player-queue.js").includes("Queue shuffled")||!read("player-queue.js").includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Shell cache v36 not bumped");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Shell cache v36 not bumped");
 
 // Full Smart Queue controls: auto-advance, repeat, playlist import/export, direct actions and demo bulk-add.
 const queue=read("player-queue.js");
@@ -108,24 +108,24 @@ for(const id of ["queueExport","queueImport","queueImportFile","queueRepeat","qu
 for(const token of ["storyspace-playlist","version:1","queue.length>=100","queuePlay","autoPlayQueue","repeatAll","queueExport","queueImportFile","queue-play-item","queue-play-next","aria-label","Queue limit reached","demoQueueAll"])if(!queue.includes(token))throw Error("Smart Queue behavior missing: "+token);
 if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up Next must not conflict with active queue autoplay");
 if(!css.includes(".queue-import-export")||!css.includes(".queue-play-next")||!css.includes(".demo-queue-all"))throw Error("Queue extended styles missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Queue feature cache v36 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Queue feature cache v36 missing");
 
 // Expanded 13-item sample catalog is included in the existing Demo Cinema row.
 for(const title of ["For Bigger Fun · Demo","For Bigger Blazes · Demo","Tears of Steel · Open Film","Subaru Outback · Sample","Volkswagen GTI Review · Sample","Bullrun Road Rally · Sample","What Car for $1,000? · Sample"])if(!demoApp.includes(title))throw Error("Expanded sample catalog missing: "+title);
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Expanded Demo Cinema row render missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Expanded demo shell cache v37 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Expanded demo shell cache v37 missing");
 
 // Local profile identity and theme persistence guards
 for(const id of ["renameProfile","profileAvatarChoice","profileThemeChoice"])if(!h.includes('id="'+id+'"'))throw Error("Missing profile personalization control: "+id);
 for(const token of ["PROFILE_AVATARS","PROFILE_THEMES","profileCleanName(raw)","Profile renamed","activeLocalProfile.theme","activeLocalProfile.avatar","dataset.profileTheme"])if(!a.includes(token))throw Error("Profile identity/theme behavior missing: "+token);
 for(const theme of ["data-profile-theme=\"ocean\"","data-profile-theme=\"ember\"","data-profile-theme=\"forest\""])if(!c.includes(theme))throw Error("Missing theme palette: "+theme);
-if(!sw.includes("storyspace-shell-v47"))throw Error("Profile theme shell v38 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Profile theme shell v38 missing");
 
 // Discovery taste balance and Not-for-me controls
 for(const token of ["taste-panel","taste-mode","tasteInsight","storyspace:interest-updated","storyspace:profile-updated","comfort","balanced","explore"])if(!e.includes(token))throw Error("Taste balance feature missing: "+token);
 for(const token of ["storyspace.discoveryDismissed","dismissed.add(String(movie.apiId||movie.id))","restore.hidden=dismissed.size===0","dismissed.clear()"])if(!e.includes(token))throw Error("Not-for-me persistence/restore missing: "+token);
 for(const token of [".taste-panel",".taste-mode[aria-pressed=\"true\"]",".discovery-restore",".discovery-dismiss"])if(!ec.includes(token))throw Error("Discovery personalization styles missing: "+token);
-if(!sw.includes("storyspace-shell-v47"))throw Error("Discovery personalization shell v39 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Discovery personalization shell v39 missing");
 
 // Watch Later and Resume Hub controls, modules and offline assets
 for(const id of ["watchLaterOpen","watchLaterCount","storyspaceWatchLater","watchLaterClose","watchLaterList","resumeHub","resumeHubClose","resumeHubList"])if(!h.includes('id="'+id+'"'))throw Error("Missing personal list/hub interface: "+id);
@@ -134,7 +134,7 @@ for(const token of ["storyspace.watchLater.v1.","profileKey()","MAX","watchLater
 for(const token of ["storyspace.resumePoints","resumeHubList","resumeHubClose","Clear progress","refreshContinueRow","storyspaceResumeHub"])if(!read("resume-hub.js").includes(token))throw Error("Resume Hub behavior missing: "+token);
 if(!e.includes("watch-later")||!e.includes("storyspaceWatchLater.toggle"))throw Error("Discovery Studio Watch Later actions missing");
 if(!c.includes(".watch-later-panel")||!c.includes(".resume-hub-card"))throw Error("Watch Later/Resume Hub responsive styles missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Personal lists shell v40 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Personal lists shell v40 missing");
 
 // Command palette and saved My Universe layout
 for(const id of ["commandPaletteOpen","universeLayoutToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing quick navigation/layout control: "+id);
@@ -144,18 +144,18 @@ for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching acti
 if(!read("resume-hub.js").includes("resumeHub"))throw Error("Continue Watching hub asset missing");
 for(const sel of [".command-palette",".command-palette-item",".command-palette-input","prefers-reduced-motion"])if(!read("command-palette.css").includes(sel))throw Error("Command palette styles missing: "+sel);
 if(!c.includes(".movie-row.universe-grid"))throw Error("My Universe grid styles missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Quick navigation shell v41 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Quick navigation shell v41 missing");
 
 // Profile-aware welcome context
 for(const token of ["refreshProfileWelcome","Good morning, ","Good afternoon, ","Good evening, ","stories","My Universe","resume","kidsMode"])if(!a.includes(token))throw Error("Profile-aware welcome behavior missing: "+token);
 if(!c.includes(".welcome-line span")||!c.includes(".welcome-line small"))throw Error("Welcome context styles missing");
-if(!sw.includes("storyspace-shell-v47"))throw Error("Welcome context cache v42 missing");
+if(!sw.includes("storyspace-shell-v48"))throw Error("Welcome context cache v42 missing");
 
 // Quick Discovery collections, dynamic genre shortcuts and platform asset guard
 if(!h.includes('quick-discovery.js')||!h.includes('quick-discovery.css'))throw Error('Quick Discovery assets missing from page');
 if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('quick-discovery.js').includes('Demo Cinema'))throw Error('Quick collections/genre refresh missing');
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
-if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!sw.includes('storyspace-shell-v47'))throw Error('Quick Discovery offline shell missing');
+if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!sw.includes('storyspace-shell-v48'))throw Error('Quick Discovery offline shell missing');
 if(!read('../platforms/check-platform-config.js').includes('quick-discovery.js'))throw Error('Platform asset configuration check missing Quick Discovery');
 
 // Watch Later event wiring guard
@@ -178,13 +178,13 @@ if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explor
 
 // Player reconnect/resume recovery regression guard
 for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
-if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes("storyspace-shell-v47"))throw Error("Player recovery module/cache wiring missing");
+if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes("storyspace-shell-v48"))throw Error("Player recovery module/cache wiring missing");
 
 // Live gesture preview regression checks
 for(const token of ['function previewGesture(event)','Seek preview · ','Brightness preview · ','Volume preview · ','pointermove'])if(!read('player-gestures.js').includes(token))throw Error('Gesture preview missing: '+token);
-if(!sw.includes('storyspace-shell-v47'))throw Error('Gesture preview shell cache not bumped');
+if(!sw.includes('storyspace-shell-v48'))throw Error('Gesture preview shell cache not bumped');
 
 // Persistent player volume/mute controls
 for(const id of ["playerVolume","playerMuteToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing volume preference control: "+id);
 for(const token of ["storyspace.playerVolume","storyspace.playerMuted","function syncVolume()","aria-valuetext","volumechange"])if(!read("player-settings.js").includes(token))throw Error("Player volume persistence/sync missing: "+token);
-if(!c.includes(".player-volume-control")||!c.includes(".player-mute-toggle"))throw Error("Player volume control styling missing");
+if(!read("player-settings.css").includes(".player-volume-control")||!read("player-settings.css").includes(".player-mute-toggle"))throw Error("Player volume control styling missing");
