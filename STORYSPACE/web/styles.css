@@ -200,3 +200,6 @@ html.tv-mode .movie-card:focus-visible{transform:scale(1.06);z-index:8}
 
 /* Genre-based recommendations inside title details */
 .details-recommendations{padding:0 24px 24px}.details-recommendations h3{font:600 1.1rem var(--display);margin:4px 0 14px}.details-recommendations .movie-row{gap:12px}.details-recommendations .movie-card{min-width:132px;width:132px}@media(max-width:600px){.details-recommendations{padding:0 16px 18px}.details-recommendations .movie-card{min-width:112px;width:112px}}
+
+/* Save action in story details */
+.details-save-button{border:1px solid var(--line);background:var(--surface2);color:var(--white);border-radius:999px;padding:7px 12px;font:inherit;font-size:11px;cursor:pointer}.details-save-button[aria-pressed="true"]{border-color:var(--aqua);color:var(--aqua)}.details-save-button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
