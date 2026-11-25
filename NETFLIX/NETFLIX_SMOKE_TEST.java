@@ -270,6 +270,31 @@ public class NETFLIX_SMOKE_TEST {
         require(subscription.getRefundedAmount() == 700.0, "refund total should track one refund");
         require("Refunded".equals(subscription.getBillingStatus()),
                 "refund should update the overall billing status");
+        require(subscription.getNetPaid() == 0.0,
+                "net paid should subtract the refunded amount");
+
+        Subscription trial = new Subscription("Pro");
+        require(trial.startTrial(7), "bounded trial should start");
+        for (int day = 0; day < 7; day++) {
+            require(trial.consumeTrialDay(), "trial day should be consumed");
+        }
+        require(!trial.isInTrial() && !trial.startTrial(3),
+                "an expired trial should not be restarted");
+        require(!trial.startTrial(3651), "trial duration should be bounded");
+        Subscription cancelledTrial = new Subscription("Pro");
+        require(cancelledTrial.startTrial(14), "cancellation trial should start");
+        cancelledTrial.cancel();
+        require(!cancelledTrial.isInTrial() && cancelledTrial.getTrialDaysRemaining() == 0
+                && "Cancelled".equals(cancelledTrial.getBillingStatus()),
+                "cancel should clear trial state and set billing status");
+        Subscription cancelled = new Subscription("Pro");
+        cancelled.cancel();
+        require(!cancelled.isActive() && "Cancelled".equals(cancelled.getBillingStatus()),
+                "cancel should update status for non-trial subscriptions");
+        cancelled.renew();
+        require(cancelled.isActive() && cancelled.isAutoRenew() && !cancelled.isPaused()
+                && "Current".equals(cancelled.getBillingStatus()),
+                "renew should restore a consistent subscription state");
 
         Subscription fullInvoices = new Subscription("Pro");
         fullInvoices.setPaymentMethod("Visa");
