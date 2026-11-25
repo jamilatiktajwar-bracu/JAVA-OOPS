@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Storyspace · Platform Preview</title>
+<style>
+:root{color-scheme:dark;--bg:#080d19;--panel:#111a2b;--line:#273650;--text:#eef4ff;--muted:#9eafc8;--accent:#7ce8d9}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17253c 0,#080d19 55%);color:var(--text);font:15px/1.55 system-ui,sans-serif}a{color:var(--accent)}.wrap{max-width:1200px;margin:auto;padding:30px 22px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand{font-weight:900;letter-spacing:.18em}.brand span{color:var(--accent)}.back{border:1px solid var(--line);border-radius:999px;padding:10px 14px;text-decoration:none}.hero{padding:28px 0 20px}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}.hero h1{font-size:clamp(28px,5vw,50px);letter-spacing:-.04em;margin:8px 0}.hero p{color:var(--muted);max-width:750px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.controls button{border:1px solid var(--line);background:#111a2b;color:var(--text);border-radius:999px;padding:10px 16px;cursor:pointer}.controls button[aria-pressed=true]{border-color:var(--accent);background:#19363a;color:var(--accent)}.stage{min-height:720px;display:grid;place-items:center;background:linear-gradient(135deg,#111a2b,#080d19);border:1px solid var(--line);border-radius:24px;padding:20px;overflow:hidden}.device{position:relative;flex:none;background:#000;border:8px solid #303b4e;border-radius:26px;box-shadow:0 30px 80px #0009;overflow:hidden;transform-origin:top center}.device.phone{border-radius:38px;border-width:10px}.device.tablet{border-radius:28px}.device.desktop{border-radius:16px;border-width:8px}.device iframe{display:block;border:0;background:#080d19;width:390px;height:844px}.device.phone iframe{width:390px;height:844px}.device.tablet iframe{width:820px;height:1180px}.device.desktop iframe{width:1440px;height:900px}.device-label{position:absolute;bottom:12px;left:12px;background:#080d19e8;border:1px solid #273650;border-radius:999px;padding:5px 10px;font-size:11px;color:#c4d2e6;z-index:2}.stage-note{margin:12px 0;color:var(--muted);font-size:12px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}.card{border:1px solid var(--line);background:#111a2b;border-radius:16px;padding:16px}.card h2{font-size:16px;margin:6px 0}.card p{font-size:13px;color:var(--muted);margin:0}.status{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}.features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.features .card{min-height:116px}.foot{margin-top:30px;border-top:1px solid var(--line);padding-top:20px;color:var(--muted);font-size:12px}
+@media(max-width:720px){.wrap{padding:18px 12px 40px}.stage{min-height:600px;padding:8px;overflow:auto}.grid,.features{grid-template-columns:1fr}.controls button{flex:1}.card{padding:14px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div class="brand">STORY<span>SPACE</span></div><a class="back" href="./index.html">← Open app</a></header>
+<section class="hero"><div class="eyebrow">Responsive preview · WebView sizing</div><h1>See Storyspace on different screens.</h1><p>These previews load the real Storyspace app inside responsive device frames. They are web-layout previews—not screenshots of Android/iOS system UI, and not a claim that a physical device has been tested.</p></section>
+<div class="controls" role="group" aria-label="Choose preview size"><button type="button" data-size="phone" aria-pressed="true">Phone · 390 × 844</button><button type="button" data-size="tablet" aria-pressed="false">Tablet · 820 × 1180</button><button type="button" data-size="desktop" aria-pressed="false">Desktop / TV · 1440 × 900</button></div>
+<section class="stage" id="stage" aria-label="Responsive app preview">
+<div class="device phone" id="device"><span class="device-label" id="deviceLabel">Phone preview</span><iframe id="preview" title="Storyspace responsive preview" src="./index.html" loading="lazy" allow="fullscreen; picture-in-picture"></iframe></div>
+</section>
+<p class="stage-note">The iframe uses the actual app page. Try search, profile, cards, and browse controls. Local app state may be shared with the main app in this browser.</p>
+<section class="grid" aria-label="Platform build overview">
+<article class="card"><div class="status">Android</div><h2>APK packaging</h2><p>Android WebView/native wrapper. CI builds a debug APK; installing and testing on a real phone is a separate step.</p></article>
+<article class="card"><div class="status">iOS</div><h2>Simulator build</h2><p>iOS wrapper builds for Simulator. This is not an App Store release or physical iPhone QA.</p></article>
+<article class="card"><div class="status">Desktop</div><h2>Windows · macOS · Linux</h2><p>Desktop packaging workflows target the three desktop platforms. Package install and runtime QA remain separate.</p></article>
+</section>
+<section class="hero"><div class="eyebrow">Feature tour</div><h1>What is in the prototype?</h1></section>
+<section class="features">
+<article class="card"><h2>Discover & search</h2><p>Featured hero, genre rails, search, filters, personalized recommendations and My Universe.</p></article>
+<article class="card"><h2>Player experience</h2><p>Preview player controls, captions and audio settings, keyboard shortcuts, touch gestures, theater/fullscreen and recovery UI.</p></article>
+<article class="card"><h2>Continue watching</h2><p>Resume progress, player timeline, recommendations and Up Next/queue flows where their branches are merged.</p></article>
+<article class="card"><h2>Family & profiles</h2><p>Local profiles, Kids Mode and family controls are prototype features; validate their persistence and limits before relying on them.</p></article>
+<article class="card"><h2>Sample videos</h2><p>Demo Cinema uses sample/stream footage for testing. It is not a commercial licensed movie catalog.</p></article>
+<article class="card"><h2>Self-hosted uploads</h2><p>Community media requires the backend media host to be configured and running; uploads are not a free cloud service.</p></article>
+</section>
+<footer class="foot"><p>Storyspace is an original student prototype. This preview describes responsive layouts and current project intent. Platform packages, device compatibility, playback quality and media rights must be verified separately.</p><p><a href="https://github.com/jamilatiktajwar-bracu/JAVA-OOPS/actions">GitHub Actions build artifacts</a> · <a href="https://github.com/jamilatiktajwar-bracu/JAVA-OOPS">Repository</a></p></footer>
+</main>
+<script>
+(() => {
+const stage=document.getElementById("stage"),device=document.getElementById("device"),frame=document.getElementById("preview"),label=document.getElementById("deviceLabel");
+const presets={phone:{w:390,h:844,cls:"phone",label:"Phone preview"},tablet:{w:820,h:1180,cls:"tablet",label:"Tablet preview"},desktop:{w:1440,h:900,cls:"desktop",label:"Desktop / TV preview"}};let active="phone";function fit(){const p=presets[active],available=Math.max(250,stage.clientWidth-28),scale=Math.min(1,available/p.w);device.style.transform="scale("+scale+")";stage.style.minHeight=Math.max(520,p.h*scale+38)+"px";stage.style.height=Math.max(520,p.h*scale+38)+"px"}function show(size){active=size;const p=presets[size];device.className="device "+p.cls;frame.style.width=p.w+"px";frame.style.height=p.h+"px";label.textContent=p.label;document.querySelectorAll("[data-size]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.size===size)));fit()}document.querySelectorAll("[data-size]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.size)));if(window.ResizeObserver)new ResizeObserver(fit).observe(stage);else window.addEventListener("resize",fit,{passive:true});show("phone");
+})();
+</script>
+</body>
+</html>
