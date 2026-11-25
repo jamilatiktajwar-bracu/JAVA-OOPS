@@ -63,5 +63,5 @@ if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth"
 const diagnostics=read("player-playback-diagnostics.js");
 if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
 if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v28"))throw Error("Playback diagnostics cache entry missing");
-for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\""])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
+for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
 if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
