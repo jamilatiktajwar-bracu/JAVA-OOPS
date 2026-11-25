@@ -320,10 +320,10 @@ public class NETFLIX_USER {
     }
 
     public int getFavouriteLimit() {
-        if (Plan.equals("Max")) {
+        if ("Max".equals(Plan)) {
             return 100;
         }
-        if (Plan.equals("Pro")) {
+        if ("Pro".equals(Plan)) {
             return 50;
         }
         return 25;
