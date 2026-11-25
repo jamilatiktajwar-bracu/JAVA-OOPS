@@ -9,6 +9,8 @@ public class PlaybackQueue {
     private int crossfadeSeconds;
     private Movies[] history;
     private int historyCount;
+    private Movies[] shufflePlayed;
+    private int shufflePlayedCount;
     private boolean autoplayEnabled;
     private String audioLanguage;
     private String subtitleLanguage;
@@ -26,6 +28,8 @@ public class PlaybackQueue {
         crossfadeSeconds = 0;
         history = new Movies[capacity > 0 ? capacity : 100];
         historyCount = 0;
+        shufflePlayed = new Movies[capacity > 0 ? capacity : 100];
+        shufflePlayedCount = 0;
         autoplayEnabled = true;
         audioLanguage = "English";
         subtitleLanguage = "English";
@@ -57,6 +61,9 @@ public class PlaybackQueue {
         }
         queue[insertIndex] = movie;
         queueCount++;
+        if (currentIndex < 0) {
+            currentIndex = 0;
+        }
         touch();
         return true;
     }
@@ -68,12 +75,16 @@ public class PlaybackQueue {
                     queue[j] = queue[j + 1];
                 }
                 queue[--queueCount] = null;
+                removeFromShufflePlayed(movie);
                 if (queueCount == 0) {
                     currentIndex = 0;
                 } else if (i < currentIndex) {
                     currentIndex--;
                 } else if (i == currentIndex) {
+                    // Keep the next item at the same slot, or select the new last item.
                     currentIndex = Math.min(i, queueCount - 1);
+                } else if (currentIndex >= queueCount) {
+                    currentIndex = queueCount - 1;
                 }
                 touch();
                 return true;
@@ -94,7 +105,7 @@ public class PlaybackQueue {
             return null;
         }
         Movies current = getCurrent();
-        if (current != null) {
+        if (current != null && !repeatOne) {
             addToHistory(current);
         }
         if (repeatOne && current != null) {
@@ -102,9 +113,21 @@ public class PlaybackQueue {
             return current;
         }
         if (shuffleEnabled) {
-            currentIndex = (int) (Math.random() * queueCount);
-        } else if (currentIndex >= 0) {
-            currentIndex++;
+            markShufflePlayed(current);
+            int selected = chooseUnplayedShuffleIndex();
+            if (selected < 0 && repeatAll) {
+                resetShufflePlayed();
+                markShufflePlayed(current);
+                selected = queueCount == 1 ? 0 : chooseUnplayedShuffleIndex();
+            }
+            if (selected < 0) {
+                currentIndex = -1;
+                touch();
+                return null;
+            }
+            currentIndex = selected;
+        } else {
+            currentIndex = currentIndex < 0 ? 0 : currentIndex + 1;
         }
         if (currentIndex >= queueCount) {
             if (repeatAll) {
@@ -143,6 +166,7 @@ public class PlaybackQueue {
         }
         queueCount = 0;
         currentIndex = 0;
+        resetShufflePlayed();
         clearHistory();
         touch();
     }
@@ -163,6 +187,10 @@ public class PlaybackQueue {
 
     public void setRepeatAll(boolean repeatAll) {
         this.repeatAll = repeatAll;
+        if (repeatAll) {
+            repeatOne = false;
+        }
+        touch();
     }
 
     public boolean isRepeatAll() {
@@ -170,7 +198,69 @@ public class PlaybackQueue {
     }
 
     public void setShuffleEnabled(boolean shuffleEnabled) {
-        this.shuffleEnabled = shuffleEnabled;
+        if (this.shuffleEnabled != shuffleEnabled) {
+            this.shuffleEnabled = shuffleEnabled;
+            resetShufflePlayed();
+            if (shuffleEnabled) {
+                markShufflePlayed(getCurrent());
+            }
+        }
+        touch();
+    }
+
+    private void markShufflePlayed(Movies movie) {
+        if (movie == null || isShufflePlayed(movie)
+                || shufflePlayedCount >= shufflePlayed.length) {
+            return;
+        }
+        shufflePlayed[shufflePlayedCount++] = movie;
+    }
+
+    private boolean isShufflePlayed(Movies movie) {
+        for (int i = 0; i < shufflePlayedCount; i++) {
+            if (shufflePlayed[i] == movie) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int chooseUnplayedShuffleIndex() {
+        int available = 0;
+        for (int i = 0; i < queueCount; i++) {
+            if (!isShufflePlayed(queue[i])) {
+                available++;
+            }
+        }
+        if (available == 0) {
+            return -1;
+        }
+        int target = (int) (Math.random() * available);
+        for (int i = 0; i < queueCount; i++) {
+            if (!isShufflePlayed(queue[i]) && target-- == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void resetShufflePlayed() {
+        for (int i = 0; i < shufflePlayedCount; i++) {
+            shufflePlayed[i] = null;
+        }
+        shufflePlayedCount = 0;
+    }
+
+    private void removeFromShufflePlayed(Movies movie) {
+        for (int i = 0; i < shufflePlayedCount; i++) {
+            if (shufflePlayed[i] == movie) {
+                for (int j = i; j < shufflePlayedCount - 1; j++) {
+                    shufflePlayed[j] = shufflePlayed[j + 1];
+                }
+                shufflePlayed[--shufflePlayedCount] = null;
+                return;
+            }
+        }
     }
 
     public boolean isShuffleEnabled() {
@@ -210,7 +300,7 @@ public class PlaybackQueue {
         if (index < 0) {
             return false;
         }
-        int target = Math.min(currentIndex + 1, queueCount - 1);
+        int target = currentIndex < 0 ? 0 : Math.min(currentIndex + 1, queueCount - 1);
         return move(index, target);
     }
 
@@ -231,10 +321,14 @@ public class PlaybackQueue {
     }
 
     public void setRepeatOne(boolean repeatOne) {
+        if (this.repeatOne == repeatOne) {
+            return;
+        }
         this.repeatOne = repeatOne;
         if (repeatOne) {
             repeatAll = false;
         }
+        touch();
     }
 
     public boolean isRepeatOne() {
@@ -242,7 +336,8 @@ public class PlaybackQueue {
     }
 
     public boolean setPlaybackSpeed(double speed) {
-        if (!Double.isFinite(speed) || speed < 0.25 || speed > 4.0) {
+        if (Double.isNaN(speed) || Double.isInfinite(speed)
+                || speed < 0.25 || speed > 4.0) {
             return false;
         }
         playbackSpeed = speed;
@@ -347,9 +442,9 @@ public class PlaybackQueue {
     }
 
     public int getTotalDuration() {
-        long total = 0;
+        long total = 0L;
         for (int i = 0; i < queueCount; i++) {
-            total += queue[i].getDuration();
+            total += Math.max(0, queue[i].getDuration());
         }
         return total > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) total;
     }
