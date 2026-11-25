@@ -448,10 +448,10 @@ public class NETFLIX_SMOKE_TEST {
         require(!party.sendChat(outsider, "hello"), "outsider chat should be rejected");
         require(party.sendChat(guest, "hello"), "participant chat should be accepted");
         require(!party.sendChat(guest, "spam message"), "moderation should reject spam");
-        String longChat = new String(new char[501]).replace('\\0', 'x');
+        String longChat = new String(new char[501]).replace((char) 0, 'x');
         require(!party.sendChat(guest, longChat), "chat length should be capped");
         require(party.sendReaction(guest, "👍"), "short reaction should be accepted");
-        String longReaction = new String(new char[33]).replace('\\0', 'x');
+        String longReaction = new String(new char[33]).replace((char) 0, 'x');
         require(!party.sendReaction(guest, longReaction), "reaction length should be capped");
         require(!party.muteGuest(host), "host should not be muteable as a guest");
         require(!party.muteGuest(outsider), "outsider should not be muteable");
