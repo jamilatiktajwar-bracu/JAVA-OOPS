@@ -20,3 +20,8 @@ if(!c.includes(".details-save-button")||!sw.includes("storyspace-shell-v11"))thr
 if(!h.includes("modalResumeProgress")||!h.includes("modalResumeFill")||!h.includes("modalResumeLabel"))throw Error("Details resume UI missing");
 if(!a.includes("const progress=Math.max(0,Math.min(100,Number(m.progress)||0))")||!a.includes("Continue where you left off"))throw Error("Details resume state rendering missing");
 if(!c.includes(".modal-resume-track")||!sw.includes("storyspace-shell-v12"))throw Error("Details resume styling/cache missing");
+
+// Surprise featured story picker
+if(!h.includes("id=\"heroSurprise\"")||!h.includes("aria-label=\"Choose a random featured story\""))throw Error("Accessible surprise story button missing");
+if(!a.includes("function surpriseHero()")||!a.includes("pool[Math.floor(Math.random()*pool.length)]")||!a.includes("state.featured"))throw Error("Surprise featured story selection missing");
+if(!c.includes(".hero-surprise")||!sw.includes("storyspace-shell-v13"))throw Error("Surprise picker style/cache missing");
