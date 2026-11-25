@@ -67,3 +67,5 @@
 @media(prefers-reduced-motion:reduce){
   .player-gesture-feedback{transition:none}
 }
+
+.player-gesture-feedback{white-space:pre-line}
