@@ -42,16 +42,28 @@
     moodBar.setAttribute("role", "group");
     moodBar.setAttribute("aria-label", "Choose a viewing mood");
 
+    const tastePanel=element("section","taste-panel");
+    tastePanel.setAttribute("aria-label","Personalized taste controls");
+    const tasteHeading=element("div","taste-heading");
+    tasteHeading.append(element("span","taste-label","YOUR TASTE PROFILE"),element("strong","taste-title","Tune your mix"));
+    const balanceGroup=element("div","taste-balance");
+    balanceGroup.setAttribute("role","group");balanceGroup.setAttribute("aria-label","Recommendation balance");
+    const modes=[{id:"comfort",label:"Comfort picks",desc:"More familiar stories"},{id:"balanced",label:"Balanced",desc:"Your taste plus variety"},{id:"explore",label:"Explore",desc:"More new genres and discoveries"}];
+    const tasteInsight=element("p","taste-insight","Your mix learns from preferences and viewing activity.");
+    const tasteGenres=element("div","taste-genres");
+    modes.forEach(mode=>{const btn=element("button","taste-mode",mode.label);btn.type="button";btn.dataset.balance=mode.id;btn.setAttribute("aria-label",mode.desc);btn.addEventListener("click",()=>{if(typeof personalized==="undefined")return;personalized.preferences=Object.assign({},personalized.preferences,{balance:mode.id});try{localStorage.setItem("storyspace.preferences",JSON.stringify(personalized.preferences))}catch{}if(typeof persistLocalProfiles==="function")persistLocalProfiles();document.dispatchEvent(new CustomEvent("storyspace:interest-updated",{detail:{balance:mode.id}}));render(false)});balanceGroup.append(btn)});
+    tastePanel.append(tasteHeading,balanceGroup,tasteInsight,tasteGenres);
+    const restore=element("button","discovery-restore","↺ Show hidden stories");restore.type="button";restore.hidden=true;restore.setAttribute("aria-label","Restore stories hidden from recommendations");
     const results = element("div", "discovery-results");
     results.setAttribute("aria-live", "polite");
     results.setAttribute("aria-label", "Recommended stories");
 
-    root.append(top, moodBar, results);
+    root.append(top, moodBar, tastePanel, restore, results);
     const welcome = document.getElementById("welcomeLine");
     if (welcome) welcome.insertAdjacentElement("afterend", root);
     else content.prepend(root);
 
-    let activeMood = "feel-good";
+    let activeMood = "feel-good";\n    const dismissed=new Set();\n    try{const saved=JSON.parse(localStorage.getItem("storyspace.discoveryDismissed")||"[]");if(Array.isArray(saved))saved.slice(0,300).forEach(id=>{if(typeof id==="string"||typeof id==="number")dismissed.add(String(id))})}catch{}\n    function persistDismissed(){try{localStorage.setItem("storyspace.discoveryDismissed",JSON.stringify([...dismissed].slice(0,300)))}catch{}}
     try {
       const savedMood = localStorage.getItem("storyspace.discoveryMood");
       if (moods.some(mood => mood.id === savedMood)) activeMood = savedMood;
@@ -175,7 +187,7 @@
       save.type = "button";
       save.dataset.mixAction = "save";
       save.setAttribute("aria-label", (saved ? "Remove " : "Save ") + title + (saved ? " from" : " to") + " My Universe");
-      actions.append(details, save);
+      const hide=element("button","discovery-action discovery-dismiss","Not for me");hide.type="button";hide.dataset.mixAction="dismiss";hide.setAttribute("aria-label","Hide "+title+" from future recommendations");\n      actions.append(details, save, hide);
       body.append(actions);
       article.append(poster, body);
 
@@ -209,11 +221,11 @@
       const chosen = selectDiverse(ranked, 4).map(item => Object.assign({}, item.movie, { __storyspaceReason: item.reason }));
       results.replaceChildren();
       if (!chosen.length) {
-        results.append(element("p", "discovery-empty", "No stories match this mood yet. Try another feeling."));
+        results.append(element("p", "discovery-empty", dismissed.size?"You hid these stories. Restore them or choose another mood.":"No stories match this mood yet. Try another feeling."));
       } else {
         chosen.forEach(movie => results.append(buildCard(movie)));
       }
-      moodBar.querySelectorAll(".discovery-mood").forEach(button => {
+      restore.hidden=dismissed.size===0;\n      moodBar.querySelectorAll(".discovery-mood").forEach(button => {
         button.setAttribute("aria-pressed", String(button.dataset.mood === activeMood));
       });
     }
@@ -231,7 +243,7 @@
       moodBar.append(button);
     });
 
-    shuffle.addEventListener("click", () => render(true));
+    shuffle.addEventListener("click", () => render(true));\n    restore.addEventListener("click",()=>{dismissed.clear();persistDismissed();render(false)});
 
     function syncVisibility() {
       const currentView = typeof state !== "undefined" ? state.view : "home";
