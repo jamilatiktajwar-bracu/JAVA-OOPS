@@ -179,3 +179,7 @@ if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explor
 // Player reconnect/resume recovery regression guard
 for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
 if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes("storyspace-shell-v46"))throw Error("Player recovery module/cache wiring missing");
+
+// Live gesture preview regression checks
+for(const token of ['function previewGesture(event)','Seek preview · ','Brightness preview · ','Volume preview · ','pointermove'])if(!read('player-gestures.js').includes(token))throw Error('Gesture preview missing: '+token);
+if(!sw.includes('storyspace-shell-v47'))throw Error('Gesture preview shell cache not bumped');
