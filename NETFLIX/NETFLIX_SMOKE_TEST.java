@@ -156,6 +156,17 @@ public class NETFLIX_SMOKE_TEST {
         require(session.setBandwidthMbps(Integer.MAX_VALUE), "bandwidth should accept nonnegative values");
         require(session.getEstimatedBufferSeconds() == Integer.MAX_VALUE,
                 "buffer estimate should saturate rather than overflow");
+        session.setLowDataMode(true);
+        require(session.getQuality().equals("480p"), "low-data mode should force SD quality");
+        require(session.setBandwidthMbps(Integer.MAX_VALUE) && session.getQuality().equals("480p"),
+                "bandwidth changes should not override low-data mode");
+        session.setQuality("4K");
+        require(session.getQuality().equals("480p"), "quality selection should respect low-data mode");
+        session.setLowDataMode(false);
+        session.setQuality("4K");
+        require(session.getQuality().equals("4K"), "supported quality should be selectable when low-data mode is off");
+        session.setQuality("8K");
+        require(session.getQuality().equals("4K"), "unsupported quality should be ignored");
     }
 
     private static void testSystemHealthCounterSafety() {
