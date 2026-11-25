@@ -152,9 +152,7 @@
     function buildCard(movie) {
       const title = String(movie.title || movie.name || "Untitled story");
       const article = element("article", "mix-card");
-      article.tabIndex = 0;
-      article.setAttribute("role", "button");
-      article.setAttribute("aria-label", "Explore " + title);
+      article.setAttribute("aria-label", title + " recommendation");
 
       const poster = element("div", "mix-poster");
       const src = imageUrl(movie);
@@ -199,13 +197,6 @@
       article.addEventListener("click", event => {
         if (event.target.closest("button")) return;
         if (typeof openDetails === "function") openDetails(movie);
-      });
-      article.addEventListener("keydown", event => {
-        if (event.target !== article) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          if (typeof openDetails === "function") openDetails(movie);
-        }
       });
       actions.addEventListener("click", event => {
         const button = event.target.closest("[data-mix-action]");
