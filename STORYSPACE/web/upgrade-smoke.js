@@ -160,3 +160,5 @@ if(!read('../platforms/check-platform-config.js').includes('quick-discovery.js')
 
 // Watch Later event wiring guard
 if(!read("watch-later.js").includes("storyspace:watchlater-updated"))throw Error("Watch Later change event missing");
+
+if(!a.includes("refreshProfileWelcome();"))throw Error("Profile welcome invocation missing");
