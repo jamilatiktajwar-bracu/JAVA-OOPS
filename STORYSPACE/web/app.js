@@ -644,6 +644,7 @@ function updateAccountUI(){
   }
   if(profile)document.documentElement.dataset.profileTheme=PROFILE_THEMES.includes(profile.theme)?profile.theme:"nebula";
   const action=$("accountAction");if(action)action.textContent=acc?"Sign out":"Sign in / create account";
+  refreshProfileWelcome();
 }
 function openAuth(mode="register"){if(personalized.account){signOut();return}state.authMode=mode;$("authBackdrop").hidden=false;document.body.style.overflow="hidden";drawAuthMode();$("authEmail").focus()}
 function closeAuth(){ $("authBackdrop").hidden=true;document.body.style.overflow=""}
