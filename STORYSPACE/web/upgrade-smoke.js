@@ -177,5 +177,5 @@ if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explor
 
 
 // Player reconnect/resume recovery regression guard
-for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","playerRetry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
+for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
 if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes("storyspace-shell-v46"))throw Error("Player recovery module/cache wiring missing");
