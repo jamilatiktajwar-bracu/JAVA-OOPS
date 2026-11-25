@@ -65,3 +65,8 @@ if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics
 if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v28"))throw Error("Playback diagnostics cache entry missing");
 for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
 if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
+
+// Playback diagnostics accessibility + state mapping guards
+if(!h.includes('id="playerPlaybackHealth" role="status" aria-live="off"'))throw Error("Playback diagnostics must not spam live announcements");
+if(!diagnostics.includes('label.toLowerCase().includes("seek")?"seeking"')||!diagnostics.includes('label.toLowerCase().includes("ready")?"ready"'))throw Error("Seeking/ready diagnostics state mapping missing");
+if(!c.includes('data-state="seeking"')||!c.includes('data-state="ready"'))throw Error("Seeking/ready diagnostics style missing");
