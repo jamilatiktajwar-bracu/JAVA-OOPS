@@ -326,3 +326,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 /* Player media metadata readout */
 .player-media-info{margin:7px 0 0;color:var(--muted);font-size:12px;letter-spacing:.025em;font-variant-numeric:tabular-nums}.player-media-info[hidden]{display:none}
+
+/* Player media metadata readout */
+.player-media-info{margin:7px 0 0;color:var(--muted);font-size:12px;letter-spacing:.025em;font-variant-numeric:tabular-nums}.player-media-info[hidden]{display:none}
