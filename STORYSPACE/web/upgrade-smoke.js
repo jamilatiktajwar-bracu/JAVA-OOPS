@@ -10,3 +10,8 @@ if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Er
 if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Genre-based recommendation logic missing");
 if(!c.includes(".details-recommendations"))throw Error("Similar-story responsive styles missing");
 if(!sw.includes("storyspace-shell-v10"))throw Error("Similar-story shell cache version missing");
+
+// Details watchlist action
+if(!h.includes("id=\"modalSave\"")||!h.includes("aria-pressed=\"false\""))throw Error("Details save button missing or not accessible");
+if(!a.includes("saveButton.onclick=()=>{toggleList(m);syncSave();}")&&!a.includes("saveButton.onclick=()=>{toggleList(m);syncSave();}"))throw Error("Details watchlist action not wired");
+if(!c.includes(".details-save-button")||!sw.includes("storyspace-shell-v11"))throw Error("Details save styling/cache missing");
