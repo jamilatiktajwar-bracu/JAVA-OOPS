@@ -157,7 +157,7 @@ async function unlockProfileAccessGate(){
  const gate=$("profileAccessGate"),profile=localProfiles.find(p=>p.id===gate?.dataset.profileId);
  if(!profile?.profileLock){closeProfileAccessGate();return}
  const entered=$("profileAccessGatePin").value;
- if(!/^\\d{4,8}$/.test(entered)){$("profileAccessGateError").textContent="Enter the 4–8 digit profile PIN.";return}
+ if(!/^\d{4,8}$/.test(entered)){$("profileAccessGateError").textContent="Enter the 4–8 digit profile PIN.";return}
  try{
   const candidate=await deriveParentPin(entered,profile.profileLock.salt,profile.profileLock.iterations);
   if(!samePinHash(candidate,profile.profileLock.hash)){$("profileAccessGateError").textContent="That PIN is not correct. Try again."; $("profileAccessGatePin").select();return}
