@@ -63,3 +63,10 @@ if(!q.includes("repeatAll&&played.length"))throw Error("Repeat-all loop missing"
 if(!q.includes("queuePrefs"))throw Error("Queue preferences not persisted");
 if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up-next autoplay suppression missing");
 if(!sw.includes("storyspace-shell-v29"))throw Error("Queue controls shell cache not bumped");
+
+// Smart Queue playlist backup/restore checks
+if(!q.includes("format:"storyspace-playlist"")||!q.includes("exportedAt"))throw Error("Queue export payload missing");
+if(!q.includes("function importPlaylist(data)")||!q.includes("data.version!==1"))throw Error("Playlist import validation missing");
+if(!q.includes("queue.length>=100"))throw Error("Playlist import size guard missing");
+if(!h.includes("id="queueExport"")||!h.includes("id="queueImportFile""))throw Error("Queue backup controls missing");
+if(!sw.includes("storyspace-shell-v30"))throw Error("Playlist backup shell cache not bumped");
