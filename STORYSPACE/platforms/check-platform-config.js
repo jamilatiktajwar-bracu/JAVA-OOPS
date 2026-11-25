@@ -4,7 +4,7 @@ const root = path.join(__dirname, "..");
 const read = p => fs.readFileSync(path.join(root, p), "utf8");
 for (const p of ["web/manifest.webmanifest", "platforms/desktop/package.json", "platforms/mobile/package.json"]) JSON.parse(read(p));
 const html = read("web/index.html");
-for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "enhancements.css", "enhancements.js", "native-bridge.js", "assets/storyspace-icon.svg"]) if (!html.includes(asset)) throw new Error("Missing HTML reference: " + asset);
+for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "enhancements.css", "enhancements.js", "quick-discovery.js", "native-bridge.js", "assets/storyspace-icon.svg"]) if (!html.includes(asset)) throw new Error("Missing HTML reference: " + asset);
 if (!html.includes('rel="manifest"')) throw new Error("PWA manifest not linked");
 if (!html.includes('name="storyspace-api-root"')) throw new Error("CSP-compatible API root setting missing");
 if (!html.includes("connect-src") || !html.includes("https:")) throw new Error("CSP does not allow HTTPS API connections");
