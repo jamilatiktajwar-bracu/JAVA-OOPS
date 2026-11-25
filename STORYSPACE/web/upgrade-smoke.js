@@ -100,10 +100,10 @@ if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.inc
 if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
 if(!h.includes('id="queueShuffle"')||!queue.includes("Queue shuffled")||!queue.includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
-if(!sw.includes("storyspace-shell-v36"))throw Error("Shell cache v35 not bumped");
+if(!sw.includes("storyspace-shell-v36"))throw Error("Shell cache v36 not bumped");
 
 // Full Smart Queue controls: auto-advance, repeat, playlist import/export, direct actions and demo bulk-add.
-for(const id of ["queueExport","queueImport","queueImportFile","queueRepeat","queueShuffle","demoQueueAll"])if(!html.includes('id="'+id+'"'))throw Error("Missing queue control: "+id);
+for(const id of ["queueExport","queueImport","queueImportFile","queueRepeat","queueShuffle","demoQueueAll"])if(!h.includes('id="'+id+'"'))throw Error("Missing queue control: "+id);
 for(const token of ["storyspace-playlist","version:1","queue.length>=100","queuePlay","autoPlayQueue","repeatAll","queueExport","queueImportFile","queue-play-item","queue-play-next","aria-label","Queue limit reached","demoQueueAll"])if(!queue.includes(token))throw Error("Smart Queue behavior missing: "+token);
 if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up Next must not conflict with active queue autoplay");
 if(!css.includes(".queue-import-export")||!css.includes(".queue-play-next")||!css.includes(".demo-queue-all"))throw Error("Queue extended styles missing");
