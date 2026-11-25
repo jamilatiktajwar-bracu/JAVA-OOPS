@@ -90,6 +90,27 @@
     };
   }
 
+  function previewGesture(event) {
+    if (!pointer || event.pointerId !== pointer.id || !enabled || !isOpen()) return;
+    const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;
+    if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.15&&Number.isFinite(video.duration)&&video.duration>0&&video.readyState>=1){
+      const maxSwipeSeconds=Math.max(20,Math.min(120,video.duration*0.28));
+      const delta=clamp((dx/pointer.rect.width)*maxSwipeSeconds,-90,90);
+      const target=clamp(video.currentTime+delta,0,video.duration);
+      showFeedback("Seek preview · "+formatGestureTime(target)+" ("+(target>=video.currentTime?"+":"−")+Math.round(Math.abs(target-video.currentTime))+"s)");
+      return;
+    }
+    if(Math.abs(dy)>=24&&Math.abs(dy)>Math.abs(dx)*1.15){
+      if(pointer.zone==="left"){
+        const value=clamp(brightness-dy/pointer.rect.height*0.75,0.45,1.4);
+        showFeedback("Brightness preview · "+Math.round(value*100)+"%");
+      }else if(pointer.zone==="right"){
+        const value=clamp(video.volume-dy/pointer.rect.height*0.75,0,1);
+        showFeedback("Volume preview · "+Math.round(value*100)+"%");
+      }
+    }
+  }
+
   function finishGesture(event) {
     if (!pointer || event.pointerId !== pointer.id) return;
     const start = pointer;
@@ -148,6 +169,7 @@
   }
 
   stage.addEventListener("pointerdown", startGesture, { passive: true });
+  stage.addEventListener("pointermove", previewGesture, { passive: true });
   window.addEventListener("pointerup", finishGesture, { passive: false, capture: true });
   window.addEventListener("pointercancel", cancelGesture, { passive: true, capture: true });
   player.addEventListener("transitionend", () => {
