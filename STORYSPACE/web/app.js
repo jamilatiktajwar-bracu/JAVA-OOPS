@@ -103,9 +103,9 @@ function legacySearch(q){
   ["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);
   $("welcomeLine").hidden=true;$("searchResultsSection").hidden=false;
   const rawTokens=state.search.match(/"[^"]+"|\S+/g)||[];
-  const filters={genre:[],mood:[],language:[],type:[]},terms=[];
+  const filters={genre:[],mood:[],language:[],type:[],year:[]},terms=[];
   rawTokens.forEach(token=>{
-    const match=token.match(/^(genre|mood|language|type):(.+)$/i);
+    const match=token.match(/^(genre|mood|language|type|year):(.+)$/i);
     if(match&&filters[match[1].toLowerCase()])filters[match[1].toLowerCase()].push(match[2].replace(/^"|"$/g,"").toLowerCase());
     else terms.push(token.replace(/^"|"$/g,"").toLowerCase());
   });
@@ -116,7 +116,8 @@ function legacySearch(q){
     const matchesMood=filters.mood.every(term=>titleTokens(m.moods).some(v=>v.includes(term)));
     const matchesLanguage=filters.language.every(term=>String(m.language||"").toLowerCase().includes(term));
     const matchesType=filters.type.every(term=>String(m.type||m.format||"").toLowerCase().includes(term));
-    return matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType;
+    const matchesYear=filters.year.every(term=>String(m.year||m.releaseYear||"").includes(term));
+    return matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType&&matchesYear;
   }));
   $("searchHeading").textContent=results.length+" stories matching “"+state.search+"”";
   renderGrid(results);
@@ -333,6 +334,7 @@ function openDetails(m){recordInterest(m,"details");state.selected=m;const image
 const profileFresh=$("profileButton").cloneNode(true);$("profileButton").replaceWith(profileFresh);profileFresh.onclick=()=> $("profileMenu").classList.toggle("open");
 function showView(view){legacyShowView(view);const personal=$("personalSection");if(personal)personal.hidden=view!=="home";if(view==="home")renderHome()}
 function search(q){if($("personalSection"))$("personalSection").hidden=true;legacySearch(q)}
+document.addEventListener("click",event=>{const button=event.target.closest("[data-discovery]");if(!button)return;const query=button.dataset.discovery,input=$("searchInput");input.value=query;$("searchBox").classList.add("has-value");search(query);input.focus()});
 updateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
 loadServerCatalog().then(()=>{renderHome();setHero(chooseHero());if(personalized.token)syncAccount()});
 if(!storage.get("storyspace.onboarded")){setTimeout(()=>openPreferences(),600)}
