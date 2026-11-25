@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v50"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes("storyspace-shell-v51"))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
@@ -195,7 +195,7 @@ for(const token of ["storyspace.playerSegments.v1.","introEnd","creditsStart","t
 if(!h.includes(">Skip intro</button>")||!h.includes(">Skip credits</button>"))throw Error("Custom skip labels missing from player UI");
 if(!read("player-shortcuts.css").includes(".player-segment-button")||!sw.includes("storyspace-shell-v50"))throw Error("Player skip control styles/cache missing");
 
-// Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
+// Theater-mode keyboard/button control must have a defined handler and synchronized state.\nif(!read("player-shortcuts.js").includes("function setTheater(open)")||!read("player-shortcuts.js").includes("playerTheater"))throw Error("Theater mode control handler missing");\nif(!h.includes("playerTheater")||!h.includes("<kbd>T</kbd> theater mode"))throw Error("Theater mode button/shortcut help missing");\nif(!sw.includes("storyspace-shell-v51"))throw Error("Theater mode shell cache not bumped");\n\n// Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
 if(!settings.includes("toggleCaptionsShortcut")||!settings.includes("event.altKey")||!settings.includes("storyspace.captionLastEnabled"))throw Error("Caption on/off shortcut missing");
 if(!h.includes("Alt+C</kbd> captions on/off"))throw Error("Caption shortcut help text missing");
 for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","preferredTrack(tracks,language,fallback)","trackKey(track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
