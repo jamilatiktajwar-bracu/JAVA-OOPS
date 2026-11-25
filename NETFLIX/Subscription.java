@@ -406,6 +406,7 @@ public class Subscription {
         }
         refundedAmount += invoiceAmount[index];
         invoiceStatus[index] = "Refunded";
+        billingStatus = "Refunded";
         return true;
     }
 
