@@ -434,16 +434,25 @@ public class NETFLIX_SMOKE_TEST {
     private static void testWatchPartyParticipationAndBoundaries() {
         NETFLIX_USER host = new NETFLIX_USER("party-host");
         NETFLIX_USER guest = new NETFLIX_USER("party-guest");
+        NETFLIX_USER secondGuest = new NETFLIX_USER("party-guest-two");
         NETFLIX_USER outsider = new NETFLIX_USER("party-outsider");
         Movies movie = new Movies("Party boundary", "Drama", 90);
         WatchParty party = new WatchParty("Test Party", movie, host);
 
         require(!party.invite(host), "host should not be invited as a guest");
         require(party.invite(guest), "party should accept guest");
+        require(party.invite(secondGuest), "party should accept another guest");
+        require(!party.setMaxGuests(1), "guest capacity cannot be reduced below membership");
+        require(party.setMaxGuests(2), "guest capacity may match current membership");
         require(!party.invite(guest), "duplicate guest should be rejected");
         require(!party.sendChat(outsider, "hello"), "outsider chat should be rejected");
         require(party.sendChat(guest, "hello"), "participant chat should be accepted");
         require(!party.sendChat(guest, "spam message"), "moderation should reject spam");
+        String longChat = new String(new char[501]).replace('\\0', 'x');
+        require(!party.sendChat(guest, longChat), "chat length should be capped");
+        require(party.sendReaction(guest, "👍"), "short reaction should be accepted");
+        String longReaction = new String(new char[33]).replace('\\0', 'x');
+        require(!party.sendReaction(guest, longReaction), "reaction length should be capped");
         require(!party.muteGuest(host), "host should not be muteable as a guest");
         require(!party.muteGuest(outsider), "outsider should not be muteable");
         require(party.muteGuest(guest), "active guest should be muteable");
@@ -453,9 +462,13 @@ public class NETFLIX_SMOKE_TEST {
 
         require(party.setPlaybackPosition(5400), "position at movie end should be valid in seconds");
         require(!party.setPlaybackPosition(5401), "position beyond movie duration should be rejected");
+        party.setPlaybackPosition(20);
         party.play();
         require(!party.syncGuestPosition(-1), "negative sync position should be rejected");
         require(!party.syncGuestPosition(5401), "sync position beyond movie should be rejected");
+        require(!party.syncGuestPosition(45) && party.getPlaybackPosition() == 20,
+                "out-of-sync guest must not move the host timeline");
+        require(party.syncGuestPosition(21), "guest within sync tolerance should be accepted");
         party.endParty();
         require(!party.invite(outsider), "ended party should not accept invitations");
         require(!party.sendChat(host, "after end"), "ended party should reject chat");
@@ -465,7 +478,8 @@ public class NETFLIX_SMOKE_TEST {
         party.play();
         require(!party.isPlaying(), "ended party should not restart playback implicitly");
         party.restartParty();
-        require(party.isPartyActive(), "restart should reactivate party");
+        require(party.isPartyActive() && !party.isPlaying() && party.getStartedAt() == 0,
+                "restart should reset party playback state and start timestamp");
     }
 
     private static void require(boolean condition, String message) {
