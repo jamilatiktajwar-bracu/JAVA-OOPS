@@ -1,7 +1,14 @@
 # Storyspace platform preview and build status
 
-## Live preview (free GitHub Pages)\nAfter the repository owner enables **Settings → Pages → Build and deployment → GitHub Actions**, the web demo and showcase will be published at:\n- App: https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/\n- Responsive showcase: https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/platform-showcase.html\n\nA deployment workflow is included. The first deployment requires that Pages be switched to GitHub Actions in repository settings; no domain or paid hosting is required. This is a static front-end demo, so backend sign-in/media-host features need a separately configured backend.\n\n## What this page is
-Open \`web/platform-showcase.html\` in a browser to preview the **real web app** at phone, tablet, and desktop/TV viewport sizes. These are responsive web layouts in a device frame—not native OS screenshots and not proof of physical-device testing.
+## Live preview (free GitHub Pages)
+After the repository owner enables **Settings → Pages → Build and deployment → GitHub Actions**, the web demo and showcase will be published at:
+- App: https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/
+- Responsive showcase: https://jamilatiktajwar-bracu.github.io/JAVA-OOPS/platform-showcase.html
+
+A deployment workflow is included. The first deployment requires that Pages be switched to GitHub Actions in repository settings; no domain or paid hosting is required. This is a static front-end demo, so backend sign-in/media-host features need a separately configured backend.
+
+## What this page is
+Open `web/platform-showcase.html` in a browser to preview the **real web app** at phone, tablet, and desktop/TV viewport sizes. These are responsive web layouts in a device frame—not native OS screenshots and not proof of physical-device testing.
 
 ## Platform build targets
 | Platform | Current project target | What CI build proves | What still needs hands-on QA |
@@ -20,7 +27,7 @@ Open \`web/platform-showcase.html\` in a browser to preview the **real web app**
 - Self-hosted media upload/streaming requires the backend host to be configured and online.
 
 ## Sample media disclaimer
-The Demo Cinema clips are test/sample streams. They do not constitute a licensed commercial movie catalog. A PC-hosted media server is user-managed and needs suitable storage, bandwidth, and security.
+The 13 Demo Cinema entries are test/sample streams. They do not constitute a licensed commercial movie catalog. The sample entry **Tears of Steel** is identified as Blender Foundation material under CC BY 3.0; attribution must be retained when redistributed. Other sample clips should remain clearly labeled and be checked against their source terms before redistribution or commercial use. A PC-hosted media server is user-managed and needs suitable storage, bandwidth, and security.
 
 ## Downloading build artifacts
 1. Open the repository's [GitHub Actions](https://github.com/jamilatiktajwar-bracu/JAVA-OOPS/actions).
