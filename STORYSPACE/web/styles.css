@@ -326,3 +326,6 @@ html.profile-switching .app-shell{animation:storyspaceProfileSwap .48s cubic-bez
 
 /* Demo cinema playlist action */
 .demo-cinema-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.demo-queue-all{font-size:12px;padding:8px 12px;border-radius:999px}@media(max-width:600px){.demo-cinema-actions{gap:6px}.demo-queue-all{padding:7px 10px}}
+
+/* Smart Queue controls */
+.queue-modes{display:flex;gap:8px;margin:8px 0}.queue-modes button{flex:1;font-size:12px;padding:8px}.queue-modes button.is-active{border-color:var(--cyan);background:#39d6ff20;color:var(--cyan)}.queue-footer{align-items:center}.queue-footer #queuePlay{min-width:112px}
