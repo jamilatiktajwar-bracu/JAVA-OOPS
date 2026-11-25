@@ -30,3 +30,6 @@ if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Erro
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
 if(!h.includes("Not commercial films"))throw Error("Demo Cinema sample-content disclaimer missing");
 if(!sw.includes("storyspace-shell-v24"))throw Error("Demo Cinema shell cache version not bumped");
+
+// Visible demo tag on sample video cards.
+if(!a.includes('demoBadge.textContent="DEMO"')||!c.includes(".card-demo-badge"))throw Error("Demo card badge styling/markup missing");
