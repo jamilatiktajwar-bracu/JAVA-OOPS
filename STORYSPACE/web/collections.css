@@ -47,3 +47,13 @@
 .collection-sort-label{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:#aebfd3;font-size:12px}
 .collection-sort-label select{min-height:36px;padding:7px 10px;border:1px solid #ffffff24;border-radius:9px;background:#14253b;color:#f3f7ff}
 .collection-sort-label select:focus-visible{outline:2px solid #91dfff;outline-offset:2px}
+
+.collection-order-controls{display:flex;gap:5px;position:absolute;z-index:4;top:8px;left:8px;padding:4px;border:1px solid #ffffff28;border-radius:999px;background:#07101dcc;backdrop-filter:blur(10px)}
+.collection-order-button{display:grid;place-items:center;width:30px;height:30px;border:1px solid #ffffff26;border-radius:50%;background:#162a40;color:#eaf6ff;font-weight:800;cursor:pointer}
+.collection-order-button:disabled{opacity:.35;cursor:not-allowed}
+.collection-order-button:focus-visible{outline:2px solid #91dfff;outline-offset:2px}
+.collection-reorder-draggable{position:relative}
+.collection-reorder-draggable[draggable=true]{cursor:grab}
+.collection-is-dragging{opacity:.48;outline:2px dashed #91dfff;outline-offset:3px}
+.collection-reorder-draggable:has(.collection-order-controls) .collection-card-remove{z-index:5}
+@media(prefers-reduced-motion:reduce){.collection-is-dragging{transition:none}}
