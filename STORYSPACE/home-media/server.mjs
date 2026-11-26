@@ -277,7 +277,7 @@ async function handle(req,res) {
     }catch(error){fs.rmSync(destination,{force:true});return json(res,error.statusCode||400,{error:error.statusCode===413?"Upload exceeds configured size limit":"Upload failed"});}
   }
 
-  const match=url.pathname.match(/^\\/media\\/([a-f0-9-]{36})$/i);
+  const match=url.pathname.match(/^\/media\/([a-f0-9-]{36})$/i);
   if(match&&(req.method==="GET"||req.method==="HEAD")){
     const item=readCatalog().find(x=>x.id===match[1]&&x.published===true);
     if(!item)return json(res,404,{error:"Media not found"});
@@ -285,13 +285,13 @@ async function handle(req,res) {
     try{stat=fs.statSync(file);}catch{return json(res,404,{error:"Media file is offline"});}
     if(!stat.isFile()||path.basename(file)!==item.fileName)return json(res,404,{error:"Media not found"});
     const etag='"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
-    const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\\""+item.fileName+"\\"","x-content-type-options":"nosniff"};
+    const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
     if(req.headers["if-none-match"]===etag){res.writeHead(304,headers);return res.end();}
     let range=req.headers.range;
     if(range&&req.headers["if-range"]&&req.headers["if-range"]!==etag&&req.headers["if-range"]!==headers["last-modified"]) range=null;
     let start=0,end=stat.size-1,status=200;
     if(range){
-      const parsed=/^bytes=(\\d*)-(\\d*)$/.exec(range.trim());
+      const parsed=/^bytes=(\d*)-(\d*)$/.exec(range.trim());
       if(!parsed||stat.size===0){res.writeHead(416,{"content-range":"bytes */"+stat.size,"cache-control":"no-store"});return res.end();}
       const first=parsed[1],last=parsed[2];
       if(!first&&!last){res.writeHead(416,{"content-range":"bytes */"+stat.size,"cache-control":"no-store"});return res.end();}
