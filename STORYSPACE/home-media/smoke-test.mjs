@@ -92,6 +92,9 @@ try{
  const staleOffset=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"7"},body:Buffer.from("x")});
  assert.equal(staleOffset.status,409,"stale chunk offsets are rejected");
  assert.equal((await staleOffset.json()).offset,8,"offset conflict reports the authoritative position");
+ const emptyChunk=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.alloc(0)});
+ assert.equal(emptyChunk.status,400,"zero-byte chunks are rejected before opening the staging file");
+ assert.equal((await (await fetch(base+"/api/uploads/"+session.uploadId,{headers})).json()).offset,8,"empty chunks cannot move or corrupt the resume offset");
  assert.equal((await fetch(base+"/admin/pending")).status,401,"pending queue requires owner authorization");
  const incompleteInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Incomplete",filename:"incomplete.mp4",size:4})});
  assert.equal(incompleteInit.status,201);const incompleteSession=await incompleteInit.json();
