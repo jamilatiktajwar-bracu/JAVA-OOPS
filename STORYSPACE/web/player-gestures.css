@@ -86,3 +86,10 @@
   .player-theater-mode .player-gesture-row{margin:4px 0}
   .player-theater-mode .player-tools{gap:6px}
 }
+
+/* Seek preview polish: readable hover/focus time bubble, clamped inside timeline. */
+.player-timeline{position:relative;isolation:isolate}
+.player-seek-preview{position:absolute;left:var(--seek-preview-offset,50%);top:0;transform:translate(-50%,-115%);z-index:5;min-width:48px;padding:5px 8px;border:1px solid #ffffff25;border-radius:7px;background:#081221f2;color:#e8fbff;font:700 11px/1.2 var(--font, sans-serif);text-align:center;white-space:nowrap;box-shadow:0 6px 18px #0008;opacity:0;visibility:hidden;pointer-events:none}
+.player-timeline.is-previewing .player-seek-preview{opacity:1;visibility:visible}
+.player-timeline:focus-within .player-seek-preview{border-color:#8af4e58a}
+@media(prefers-reduced-motion:reduce){.player-seek-preview{transition:none}}
