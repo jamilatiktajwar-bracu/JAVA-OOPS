@@ -1,0 +1,39 @@
+.custom-collections-section{position:relative}
+.collections-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:14px;margin-top:16px}
+.collections-grid[hidden],.collection-detail[hidden],.collection-create-form[hidden],.modal-collections-panel[hidden]{display:none}
+.collection-tile{position:relative;display:flex;align-items:center;gap:13px;min-height:104px;padding:12px;border:1px solid #ffffff20;border-radius:16px;background:linear-gradient(135deg,#18243a,#101a2a);color:#f3f7ff;text-align:left;cursor:pointer;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.collection-tile:hover,.collection-tile:focus-visible{transform:translateY(-3px);border-color:#91dfff88;outline:none}
+.collection-tile[data-theme="ocean"]{background:linear-gradient(135deg,#123548,#101c2e)}
+.collection-tile[data-theme="ember"]{background:linear-gradient(135deg,#4a2a26,#181b2b)}
+.collection-tile[data-theme="forest"]{background:linear-gradient(135deg,#1d4037,#111d2a)}
+.collection-mosaic{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;flex:0 0 82px;width:82px;height:78px;border-radius:10px;overflow:hidden;background:#0b1422}
+.collection-mosaic img{width:100%;height:100%;min-height:0;object-fit:cover}
+.collection-mosaic-empty{grid-area:1/1/3/3;display:grid;place-items:center;font-size:32px;color:#91dfff}
+.collection-tile-copy{display:grid;gap:5px;min-width:0}
+.collection-tile-copy strong{font:600 15px "Space Grotesk",sans-serif;overflow-wrap:anywhere}
+.collection-tile-copy small{font-size:11px;color:#aabbd0}
+.collection-tile-arrow{margin-left:auto;align-self:flex-start;color:#92ddff;font-size:18px}
+.collection-create-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(125px,170px) auto auto;align-items:end;gap:10px;margin:16px 0;padding:14px;border:1px solid #ffffff20;border-radius:14px;background:#0d1929}
+.collection-create-form label{display:grid;gap:6px;color:#bdcce0;font-size:12px}
+.collection-create-form input,.collection-create-form select{width:100%;min-height:42px;padding:10px 12px;border:1px solid #ffffff25;border-radius:9px;background:#14253b;color:#f3f7ff}
+.collection-create-form input:focus-visible,.collection-create-form select:focus-visible{outline:2px solid #91dfff;outline-offset:2px}
+.collection-create-status{grid-column:1/-1;margin:0;color:#b7d7eb;font-size:12px}
+.collection-detail{margin-top:18px;padding:16px;border:1px solid #ffffff1c;border-radius:16px;background:#081321}
+.collection-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.collection-detail-heading{display:grid;gap:3px;min-width:0}
+.collection-detail-heading h3{margin:0;font:600 21px "Space Grotesk",sans-serif;color:#f5f8ff}
+.collection-detail-heading small{color:#9eb2c9}
+.collection-detail-actions{display:flex;gap:8px;margin-left:auto}
+.collection-card-remove{position:absolute;z-index:4;right:9px;top:9px;padding:6px 9px;border:1px solid #ffffff50;border-radius:999px;background:#071321dd;color:#fff;font-size:11px;cursor:pointer;opacity:0;transition:opacity .18s ease}
+.movie-card:hover .collection-card-remove,.collection-card-remove:focus-visible{opacity:1}
+.collection-detail-empty{padding:24px;color:#9eb2c9;text-align:center}
+.modal-collections-toggle{margin:12px 0 0}
+.modal-collections-panel{margin:10px 0 14px;padding:12px;border:1px solid #ffffff22;border-radius:12px;background:#0b1727}
+.modal-collections-panel>p{margin:0 0 10px;color:#b6c7d9;font-size:12px}
+.modal-collections-choices{display:flex;flex-wrap:wrap;gap:8px}
+.collection-choice{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:8px 11px;border:1px solid #ffffff24;border-radius:999px;background:#15243a;color:#e8f4ff;font-size:12px;cursor:pointer}
+.collection-choice.is-selected{border-color:#83d7ff;background:#12394a}
+.collection-choice small{color:#9cb4ca}
+.collection-inline-create{margin-top:6px}
+@media(max-width:760px){.collection-create-form{grid-template-columns:1fr 1fr}.collection-create-form label:first-child{grid-column:1/-1}.collection-detail-head{align-items:flex-start;flex-wrap:wrap}.collection-detail-actions{margin-left:0}.collection-card-remove{opacity:1}}
+@media(prefers-reduced-motion:reduce){.collection-tile,.collection-card-remove{transition:none}}

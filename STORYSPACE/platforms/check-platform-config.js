@@ -1,9 +1,15 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 const root = path.join(__dirname, "..");
 const read = p => fs.readFileSync(path.join(root, p), "utf8");
 for (const p of ["web/manifest.webmanifest", "platforms/desktop/package.json", "platforms/mobile/package.json"]) JSON.parse(read(p));
 const html = read("web/index.html");
+if (!html.includes("collections.css") || !html.includes("collections.js")) throw new Error("Custom Collections assets missing from shared web client");
+if (!read("web/sw.js").includes("./collections.css") || !read("web/sw.js").includes("./collections.js")) throw new Error("Custom Collections assets missing from offline shell");
+const collectionsClient = read("web/collections.js");
+if (!collectionsClient.includes("storyspace.collections.v1.") || !collectionsClient.includes("storyspace:profile-updated")) throw new Error("Profile-aware Custom Collections persistence missing");
+execFileSync(process.execPath, ["--check", path.join(root, "web", "collections.js")], { stdio: "pipe" });
 for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "enhancements.css", "enhancements.js", "quick-discovery.js", "native-bridge.js", "assets/storyspace-icon.svg"]) if (!html.includes(asset)) throw new Error("Missing HTML reference: " + asset);
 if (!html.includes('rel="manifest"')) throw new Error("PWA manifest not linked");
 if (!html.includes('name="storyspace-api-root"')) throw new Error("CSP-compatible API root setting missing");
@@ -20,7 +26,6 @@ const desktop = JSON.parse(read("platforms/desktop/package.json"));
 if (!desktop.devDependencies["electron-builder"] || !desktop.scripts.dist) throw new Error("Desktop package scripts are missing");
 if (!desktop.build.extraResources?.some(resource => resource.from === "../../web")) throw new Error("Desktop build must bundle the shared web client");
 
-const { execFileSync } = require("node:child_process");
 const os = require("node:os");
 const nativeBridgePath = path.join(root, "web", "native-bridge.js");
 execFileSync(process.execPath, ["--check", nativeBridgePath], { stdio: "pipe" });
