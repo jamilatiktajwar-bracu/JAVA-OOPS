@@ -61,6 +61,7 @@
       collections: collections.map(item => ({
         name: item.name,
         theme: item.theme,
+        sort: item.sort || "custom",
         items: [...item.items]
       }))
     };
@@ -97,6 +98,7 @@
       return [{
         name,
         theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+        sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
         items
       }];
     });
@@ -115,7 +117,7 @@
         return;
       }
       if (collections.length >= MAX_COLLECTIONS) { skipped++; return; }
-      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,createdAt:Date.now(),items:item.items});
+      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,sort:item.sort,createdAt:Date.now(),items:item.items});
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
@@ -252,7 +254,7 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", createdAt:Date.now(), items:[]});
+    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", sort:"custom", createdAt:Date.now(), items:[]});
     saveCollections();
     render();
     return {ok:true, id};
