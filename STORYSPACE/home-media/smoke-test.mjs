@@ -59,6 +59,13 @@ try{
  assert.equal((await fetch(base+"/api/uploads/init",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:"Denied",filename:"x.mp4",size:16})})).status,401);
  const init=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Review Me",filename:"demo.mp4",size:16})});
  assert.equal(init.status,201);const session=await init.json();
+ const runtimeExpiredInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Expire At Runtime",filename:"stale.mp4",size:4})});
+ assert.equal(runtimeExpiredInit.status,201);const runtimeExpired=await runtimeExpiredInit.json();
+ const runtimeExpiredTime=new Date(Date.now()-8*24*60*60*1000);
+ for(const suffix of [".json",".part"]){const file=path.join(staging,runtimeExpired.uploadId+suffix);await utimes(file,runtimeExpiredTime,runtimeExpiredTime);}
+ const runtimeExpiredStatus=await fetch(base+"/api/uploads/"+runtimeExpired.uploadId,{headers});
+ assert.equal(runtimeExpiredStatus.status,404,"expired sessions are rejected while the server remains running");
+ for(const suffix of [".json",".part"]){await assert.rejects(access(path.join(staging,runtimeExpired.uploadId+suffix)),"runtime expiry removes stale session artifacts");}
  const concurrentChunks=await Promise.all(["01234567","ABCDEFGH"].map(payload=>fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"0"},body:Buffer.from(payload)})));
  const concurrentStatuses=concurrentChunks.map(response=>response.status).sort((a,b)=>a-b);
  assert.deepEqual(concurrentStatuses,[200,409],"parallel chunks at the same offset cannot both append");
