@@ -42,4 +42,8 @@
 .collection-backup-status{flex:1 1 100%;margin:0;color:#a8c5dc;font-size:12px;text-align:right}
 .collection-toolbar input[type=file]{display:none}
 @media(max-width:760px){.collection-toolbar{justify-content:flex-start}.collection-backup-status{text-align:left}}
-\n.collection-detail-actions{flex-wrap:wrap}\n.collection-sort-label{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:#aebfd3;font-size:12px}\n.collection-sort-label select{min-height:36px;padding:7px 10px;border:1px solid #ffffff24;border-radius:9px;background:#14253b;color:#f3f7ff}\n.collection-sort-label select:focus-visible{outline:2px solid #91dfff;outline-offset:2px}\n
+
+.collection-detail-actions{flex-wrap:wrap}
+.collection-sort-label{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:#aebfd3;font-size:12px}
+.collection-sort-label select{min-height:36px;padding:7px 10px;border:1px solid #ffffff24;border-radius:9px;background:#14253b;color:#f3f7ff}
+.collection-sort-label select:focus-visible{outline:2px solid #91dfff;outline-offset:2px}
