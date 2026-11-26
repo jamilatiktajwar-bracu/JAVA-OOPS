@@ -273,3 +273,7 @@ for(const token of ["collectionSearchQuery","collectionMoveSelected","collection
 for(const token of [".collection-search-label",".collection-bulk-toolbar select"])if(!css.includes(token))throw Error("Collection search/move styles missing: "+token);
 \n// Smart genre suggestions derive from current catalog data and create prefilled shelves.
 if(!html.includes('id="smartCollectionChips"'))throw Error("Smart collection suggestions UI missing");for(const token of ["renderSmartSuggestions","smartCollectionChips","genres","Created "])if(!js.includes(token))throw Error("Smart collection suggestion logic missing: "+token);for(const token of [".smart-collection-chip",".smart-collection-chips"])if(!css.includes(token))throw Error("Smart collection suggestion styling missing: "+token);
+
+// Continue Watching resume polish: recent-first ordering and remaining-time labels.
+for(const token of ["refreshContinueRow();","resume-time-label","updatedAt","min left"])if(!app.includes(token))throw Error("Continue Watching resume polish missing: "+token);
+if(!css.includes(".resume-time-label"))throw Error("Continue Watching resume-time style missing");
