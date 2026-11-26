@@ -294,6 +294,7 @@ async function handle(req,res) {
     const file=path.join(mediaDir,item.fileName);let stat;
     try{stat=fs.statSync(file);}catch{return json(res,404,{error:"Media file is offline"});}
     if(!stat.isFile()||path.basename(file)!==item.fileName)return json(res,404,{error:"Media not found"});
+    if(stat.size!==item.size)return json(res,503,{error:"Media file failed its catalog size integrity check"});
     const etag='"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
     const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
     if(req.headers["if-none-match"]===etag){res.writeHead(304,headers);return res.end();}
