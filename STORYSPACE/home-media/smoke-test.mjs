@@ -57,6 +57,14 @@ try{
  assert.equal((await fetch(base+"/api/auth/verify/admin",{method:"POST",headers})).status,401,"uploader key cannot authenticate as admin");
  assert.equal((await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers:adminHeaders})).status,401,"admin key cannot authenticate as uploader");
  assert.equal((await fetch(base+"/api/uploads/init",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:"Denied",filename:"x.mp4",size:16})})).status,401);
+ const malformedInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Tamper Check",filename:"tamper.mp4",size:4})});
+ assert.equal(malformedInit.status,201);const malformedSession=await malformedInit.json();
+ const malformedMeta=path.join(staging,malformedSession.uploadId+".json");
+ const malformedValue=JSON.parse(await readFile(malformedMeta,"utf8"));malformedValue.extension="../../outside";
+ await writeFile(malformedMeta,JSON.stringify(malformedValue));
+ const malformedStatus=await fetch(base+"/api/uploads/"+malformedSession.uploadId,{headers});
+ assert.equal(malformedStatus.status,404,"tampered session metadata is rejected before filesystem paths are built");
+ await assert.rejects(access(path.join(staging,malformedSession.uploadId+".part")),"invalid session artifacts are removed");
  const init=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Review Me",filename:"demo.mp4",size:16})});
  assert.equal(init.status,201);const session=await init.json();
  const runtimeExpiredInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Expire At Runtime",filename:"stale.mp4",size:4})});
