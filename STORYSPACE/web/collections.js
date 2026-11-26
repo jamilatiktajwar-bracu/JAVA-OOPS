@@ -47,6 +47,83 @@
     }
   }
 
+  function newCollectionId() {
+    return typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  function exportBackup() {
+    const backup = {
+      format: "storyspace-collections",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      collections: collections.map(item => ({
+        name: item.name,
+        theme: item.theme,
+        items: [...item.items]
+      }))
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "storyspace-collections-" + new Date().toISOString().slice(0,10) + ".json";
+    link.hidden = true;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return backup.collections.length;
+  }
+
+  async function importBackup(file) {
+    if (!file) return {ok:false,reason:"Choose a backup file first"};
+    if (file.size > 1024 * 1024) return {ok:false,reason:"Backup file is too large (1 MB maximum)"};
+    let parsed;
+    try { parsed = JSON.parse(await file.text()); }
+    catch { return {ok:false,reason:"That file is not valid JSON"}; }
+    if (!parsed || parsed.format !== "storyspace-collections" || parsed.version !== 1 || !Array.isArray(parsed.collections)) {
+      return {ok:false,reason:"This is not a supported Storyspace Collections backup"};
+    }
+    const incoming = parsed.collections.slice(0, 100).flatMap((item, index) => {
+      if (!item || typeof item !== "object" || !Array.isArray(item.items)) return [];
+      const name = cleanName(item.name);
+      if (!name) return [];
+      return [{
+        name,
+        theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+        items: [...new Set(item.items.filter(id => typeof id === "string" || typeof id === "number").map(String))].slice(0, MAX_ITEMS)
+      }];
+    });
+    if (!incoming.length) return {ok:false,reason:"No usable collections were found in that backup"};
+    if (!confirm("Import " + incoming.length + " collection(s)? Matching names will merge stories; existing shelves will not be replaced.")) {
+      return {ok:false,reason:"Import cancelled"};
+    }
+    let added = 0, merged = 0, skipped = 0;
+    incoming.forEach(item => {
+      const existing = collections.find(c => c.name.toLowerCase() === item.name.toLowerCase());
+      if (existing) {
+        const combined = [...new Set([...existing.items, ...item.items])].slice(0, MAX_ITEMS);
+        existing.items = combined;
+        merged++;
+        return;
+      }
+      if (collections.length >= MAX_COLLECTIONS) { skipped++; return; }
+      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,createdAt:Date.now(),items:item.items});
+      added++;
+    });
+    if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
+    if (!saveCollections()) return {ok:false,reason:"Could not save imported collections"};
+    render();
+    return {ok:true,added,merged,skipped};
+  }
+
+  function setBackupStatus(message) {
+    const status = $("collectionBackupStatus");
+    if (status) status.textContent = message;
+  }
+
   function movieFor(id) {
     return catalog().find(movie => identify(movie) === String(id));
   }
@@ -228,6 +305,22 @@
     });
   }
 
+  $("collectionExport")?.addEventListener("click", () => {
+    const count = exportBackup();
+    setBackupStatus("Backup downloaded · " + count + (count === 1 ? " collection" : " collections"));
+    if (typeof showToast === "function") showToast("Collections backup downloaded");
+  });
+  $("collectionImportToggle")?.addEventListener("click", () => $("collectionImportFile")?.click());
+  $("collectionImportFile")?.addEventListener("change", async event => {
+    const file = event.target.files?.[0];
+    const result = await importBackup(file);
+    if (result.ok) {
+      setBackupStatus("Imported " + result.added + " new · merged " + result.merged + " · skipped " + result.skipped);
+      if (typeof showToast === "function") showToast("Collections backup restored");
+    } else setBackupStatus(result.reason);
+    event.target.value = "";
+  });
+
   const createToggle = $("collectionCreateToggle");
   const createForm = $("collectionCreateForm");
   const createName = $("collectionName");
@@ -293,6 +386,8 @@
   window.storyspaceCollections = Object.freeze({
     list: () => collections.map(item => ({...item, items:[...item.items]})),
     create: createCollection,
+    exportBackup,
+    importBackup,
     add(collectionId, movieId) {
       const collection = collections.find(item => item.id === String(collectionId));
       if (!collection || collection.items.includes(String(movieId)) || collection.items.length >= MAX_ITEMS) return false;
