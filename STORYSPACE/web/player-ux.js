@@ -4,14 +4,17 @@ if(!backdrop||!panel||!video||!seek||!timeline||!close)return;
 const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const fmt=s=>{s=Math.max(0,Math.floor(Number(s)||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;return h?h+":"+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0"):m+":"+String(sec).padStart(2,"0")};
 let tip=timeline.querySelector(".player-seek-preview");if(!tip){tip=document.createElement("output");tip.className="player-seek-preview";tip.setAttribute("aria-hidden","true");timeline.append(tip)}
-function updatePreview(event){if(!Number.isFinite(video.duration)||video.duration<=0)return;const rect=seek.getBoundingClientRect(),x=Math.max(0,Math.min(rect.width,event.clientX-rect.left)),ratio=x/Math.max(1,rect.width),time=ratio*video.duration;tip.textContent=fmt(time);tip.style.left=(ratio*100)+"%";timeline.classList.add("is-previewing")}
+function updatePreviewAt(ratio){if(!Number.isFinite(video.duration)||video.duration<=0)return;ratio=Math.max(0,Math.min(1,ratio));const time=ratio*video.duration;tip.textContent=fmt(time);tip.style.left=(ratio*100)+"%";tip.style.setProperty("--seek-preview-offset",Math.max(18,Math.min(timeline.clientWidth-18,ratio*timeline.clientWidth))+"px");timeline.classList.add("is-previewing");seek.setAttribute("aria-valuetext",fmt(time)+" of "+fmt(video.duration));}
+function updatePreview(event){const rect=seek.getBoundingClientRect(),x=Math.max(0,Math.min(rect.width,event.clientX-rect.left));updatePreviewAt(x/Math.max(1,rect.width))}
+timeline.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"||e.pointerType==="pen")updatePreview(e)});
 seek.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"||e.pointerType==="pen")updatePreview(e)});
 seek.addEventListener("pointerdown",e=>{updatePreview(e);timeline.classList.add("is-previewing")});
 seek.addEventListener("pointerup",()=>timeline.classList.remove("is-previewing"));
-seek.addEventListener("pointerleave",()=>timeline.classList.remove("is-previewing"));
-seek.addEventListener("focus",()=>{if(video.duration>0){tip.textContent=fmt(Number(seek.value)/1000*video.duration);tip.style.left=(Number(seek.value)/10)+"%";timeline.classList.add("is-previewing")}});
+timeline.addEventListener("pointerleave",e=>{if(!seek.matches(":focus"))timeline.classList.remove("is-previewing")});
+seek.addEventListener("focus",()=>{if(video.duration>0)updatePreviewAt(Number(seek.value)/1000)});
 seek.addEventListener("blur",()=>timeline.classList.remove("is-previewing"));
-seek.addEventListener("input",()=>{if(video.duration>0){tip.textContent=fmt(Number(seek.value)/1000*video.duration);tip.style.left=(Number(seek.value)/10)+"%";timeline.classList.add("is-previewing")}});
+seek.addEventListener("input",()=>{if(video.duration>0)updatePreviewAt(Number(seek.value)/1000)});
+seek.addEventListener("change",()=>{if(video.duration>0)updatePreviewAt(Number(seek.value)/1000)});
 function fullscreenState(){const active=document.fullscreenElement===backdrop||document.fullscreenElement===panel;backdrop.classList.toggle("player-fullscreen-active",active);const b=document.getElementById("playerFullscreen");if(b){b.setAttribute("aria-pressed",String(active));b.textContent=active?"Exit fullscreen":"Fullscreen"}}
 document.addEventListener("fullscreenchange",fullscreenState);document.addEventListener("webkitfullscreenchange",fullscreenState);fullscreenState();
 let start=null;
