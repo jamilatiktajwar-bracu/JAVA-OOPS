@@ -42,14 +42,23 @@
       item.offset=status.offset;await storeItem(item);
     }
     const chunkSize=8*1024*1024;
+    setProgress(item.offset,item.size,"Resuming upload · "+fmt(item.offset)+" / "+fmt(item.size));
     while(item.offset<item.size){
       const end=Math.min(item.size,item.offset+chunkSize),blob=file.slice(item.offset,end);
-      const response=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob});
-      item.offset=response.offset;item.status="uploading";await storeItem(item);
+      const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),120000);
+      let response;
+      try{
+        response=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob,signal:controller.signal});
+      }catch(error){
+        if(error.name==="AbortError")throw new Error("Upload chunk timed out after 2 minutes. Resume to continue from the server-confirmed position.");
+        throw error;
+      }finally{clearTimeout(timeout)}
+      if(!Number.isFinite(response.offset)||response.offset<item.offset||response.offset>end)throw new Error("Media server returned an invalid upload position. Refresh the queue before retrying.");
+      item.offset=response.offset;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
       setProgress(item.offset,item.size,"Uploading "+fmt(item.offset)+" / "+fmt(item.size)+" · "+Math.floor(item.offset/item.size*100)+"%");
     }
     await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/complete",token,{method:"POST",headers:headers(token)});
-    item.status="Pending owner approval";item.completedAt=Date.now();item.handle=null;await storeItem(item);
+    item.status="Pending owner approval";item.completedAt=Date.now();item.updatedAt=item.completedAt;item.handle=null;await storeItem(item);
     setProgress(item.size,item.size,"Upload complete · waiting for owner approval");
     await renderQueue();
   }
@@ -64,8 +73,9 @@
   }
   async function resumeOne(id){
     if(active)return;active=true;
-    try{const items=await getItems(),item=items.find(x=>x.id===id);if(!item)return;const file=await getFile(item);await runUpload(item,file);showToast("Upload sent for owner approval")}
-    catch(error){setProgress(0,1,error.message);showToast(error.message)}
+    let item=null;
+    try{const items=await getItems();item=items.find(x=>x.id===id);if(!item)return;const file=await getFile(item);await runUpload(item,file);showToast("Upload sent for owner approval")}
+    catch(error){if(item){item.status="Paused · "+error.message;item.updatedAt=Date.now();try{await storeItem(item)}catch{}}setProgress(item?.offset||0,item?.size||1,error.message);showToast(error.message)}
     finally{active=false;await renderQueue()}
   }
   async function resumeAll(){
@@ -172,12 +182,14 @@
       catch(error){if(error.name==="AbortError")return}
     }
     if(!file){showToast("Choose a movie file first");return}
+    if(!Number.isFinite(file.size)||file.size<=0){showToast("The selected video file is empty or unreadable");return}
+    if(file.size>15*1024*1024*1024){showToast("This video exceeds the 15 GB media server limit");return}
     const ext=file.name.split(".").pop().toLowerCase();if(!["mp4","m4v","webm","mov"].includes(ext)){showToast("Supported formats: MP4, M4V, WebM, MOV");return}
     const item={id:crypto.randomUUID(),title,filename:file.name,size:file.size,offset:0,status:"Queued",createdAt:Date.now(),updatedAt:Date.now(),handle};
     try{await storeItem(item)}catch(error){showToast("Could not save queue metadata: "+error.message);return}
     $("mediaUploadStart").disabled=true;active=true;
     try{await runUpload(item,file);$("mediaMovieTitle").value="";showToast("Upload complete · awaiting approval")}
-    catch(error){item.status="Paused · "+error.message;await storeItem(item);setProgress(item.offset||0,item.size,error.message);showToast("Upload paused; resume when connected")}
+    catch(error){item.status="Paused · "+error.message;item.updatedAt=Date.now();await storeItem(item);setProgress(item.offset||0,item.size,error.message);showToast("Upload paused; resume when connected")}
     finally{active=false;$("mediaUploadStart").disabled=false;await renderQueue()}
   });
   window.addEventListener("online",resumeAll);
