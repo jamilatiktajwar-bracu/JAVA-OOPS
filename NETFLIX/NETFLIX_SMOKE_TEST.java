@@ -556,6 +556,20 @@ public class NETFLIX_SMOKE_TEST {
         require(playlist.getTotalDuration() == 500, "playlist duration should sum movie lengths");
         require(playlist.getRemainingCapacity() == 2, "capacity should track additions");
         require(!playlist.addMovie(null), "null movie should not be accepted");
+
+        NetflixPlaylist boundary = new NetflixPlaylist("Cursor boundary", 4);
+        Movies a = new Movies("Boundary A", "Drama", 10);
+        Movies b = new Movies("Boundary B", "Drama", 10);
+        Movies c = new Movies("Boundary C", "Drama", 10);
+        Movies d = new Movies("Boundary D", "Drama", 10);
+        require(boundary.addMovies(new Movies[] {a, b, c, d}) == 4,
+                "boundary playlist should accept all four movies");
+        require(boundary.getNextMovie() == a && boundary.getNextMovie() == b,
+                "boundary cursor should advance to third movie");
+        require(boundary.moveMovie(3, 2),
+                "moving a later movie into the next slot should succeed");
+        require(boundary.getNextMovie() == c,
+                "moving into the cursor index must not skip the current next movie");
     }
 
 
