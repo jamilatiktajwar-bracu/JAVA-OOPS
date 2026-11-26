@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v53"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes("storyspace-shell-v54"))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
@@ -26,7 +26,7 @@ for(const marker of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo
 if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source mapping missing");
 
 // Demo Cinema row: sample titles must be rendered separately and never confused with licensed catalog items.
-if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");
+if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");if(!a.includes("function ranked(items=movies.filter(m=>!m.demo))"))throw Error("Curated ranking must exclude demo streams by default");if(!a.includes("const ordered=ranked(movies.filter(m=>!m.demo));"))throw Error("Home curated rows must use the non-demo catalog");if(!a.includes("function chooseHero(){const available=visibleCatalog(movies.filter(m=>!m.demo))"))throw Error("Featured hero must exclude demo streams");if(!a.includes("pool=movies.filter(m=>!m.demo&&kidsSafe(m)&&m.id!==current?.id)"))throw Error("Surprise hero must respect demo and Kids Mode filters");if(!a.includes('if(view==="movies")filtered=movies.filter(m=>m.type==="movie"&&!m.demo);'))throw Error("Films browse must keep sample streams in Demo Cinema");if(!a.includes('if(view==="top")filtered=ranked(movies.filter(m=>!m.demo));'))throw Error("Top picks browse must exclude demo streams");
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
 if(!h.includes("13 sample streams")||!h.includes("Not a commercial film catalog"))throw Error("Demo Cinema sample-content disclaimer/count missing");
 if(!sw.includes("storyspace-shell-v52"))throw Error("Demo Cinema shell cache version not bumped");
@@ -210,4 +210,4 @@ const theaterCss=read("player-gestures.css");
 for(const token of ["100dvh","72dvh","55dvh","env(safe-area-inset-top)","env(safe-area-inset-bottom)","overscroll-behavior:contain"])if(!theaterCss.includes(token))throw Error("Mobile theater viewport/safe-area polish missing: "+token);
 if(!sw.includes("storyspace-shell-v52"))throw Error("Mobile theater polish shell cache missing");
 if(!theaterCss.includes("orientation:landscape")||!theaterCss.includes("100dvh - 150px"))throw Error("Short landscape theater layout missing");
-if(!sw.includes("storyspace-shell-v53"))throw Error("Short landscape theater shell cache missing");
+if(!sw.includes("storyspace-shell-v54"))throw Error("Short landscape theater shell cache missing");
