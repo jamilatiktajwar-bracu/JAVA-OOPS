@@ -70,7 +70,7 @@ Do not commit local Cloudflare credentials or config files. A named tunnel is op
 1. Open Storyspace and choose **Upload**.
 2. Enter the public HTTPS address printed by Cloudflared (Quick Tunnel) or your named hostname.
 3. Enter the `uploadToken` value from the private `media-host.json` file and save the connection.
-4. Enter a title, select an MP4/M4V/WebM/MOV file, and start the upload. The server accepts files up to 15 GB in 8 MiB resumable chunks. Incomplete upload sessions and abandoned staging files are automatically removed after 7 days by default; set `STORYSPACE_MEDIA_SESSION_TTL_MS` to a value of at least `3600000` milliseconds to change this retention period.
+4. Enter a title, select an MP4/M4V/WebM/MOV file, and start the upload. The server accepts files up to 15 GB in 8 MiB resumable chunks. Incomplete upload sessions and abandoned staging files are swept at startup and expired sessions are also removed when accessed during runtime; the default retention is 7 days. Set `STORYSPACE_MEDIA_SESSION_TTL_MS` to an integer of at least `3600000` milliseconds to change this retention period.
 5. Open the owner approval section in Upload, enter the private `adminToken`, load pending uploads, then approve or reject each item.
 6. Approved items appear in the Community Library and stream through the HTTPS tunnel.
 
