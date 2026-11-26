@@ -47,3 +47,24 @@
 .collection-sort-label{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:#aebfd3;font-size:12px}
 .collection-sort-label select{min-height:36px;padding:7px 10px;border:1px solid #ffffff24;border-radius:9px;background:#14253b;color:#f3f7ff}
 .collection-sort-label select:focus-visible{outline:2px solid #91dfff;outline-offset:2px}
+
+.collection-order-controls{display:flex;gap:5px;position:absolute;z-index:4;top:8px;left:8px;padding:4px;border:1px solid #ffffff28;border-radius:999px;background:#07101dcc;backdrop-filter:blur(10px)}
+.collection-order-button{display:grid;place-items:center;width:30px;height:30px;border:1px solid #ffffff26;border-radius:50%;background:#162a40;color:#eaf6ff;font-weight:800;cursor:pointer}
+.collection-order-button:disabled{opacity:.35;cursor:not-allowed}
+.collection-order-button:focus-visible{outline:2px solid #91dfff;outline-offset:2px}
+.collection-reorder-draggable{position:relative}
+.collection-reorder-draggable[draggable=true]{cursor:grab}
+.collection-is-dragging{opacity:.48;outline:2px dashed #91dfff;outline-offset:3px}
+.collection-reorder-draggable:has(.collection-order-controls) .collection-card-remove{z-index:5}
+@media(prefers-reduced-motion:reduce){.collection-is-dragging{transition:none}}
+
+.collection-cover-icon{position:absolute;z-index:2;right:4px;bottom:4px;display:grid;place-items:center;width:25px;height:25px;border:1px solid #ffffff40;border-radius:50%;background:#071321d9;box-shadow:0 2px 10px #0005;font-size:14px;backdrop-filter:blur(8px)}
+.collection-mosaic{position:relative}
+.collection-detail-heading h3{display:flex;align-items:center;gap:8px}
+#collectionDetailIcon{font-size:22px}
+.collection-create-form{grid-template-columns:minmax(0,1fr) minmax(125px,170px) minmax(115px,150px) auto auto}
+@media(max-width:760px){.collection-create-form{grid-template-columns:1fr 1fr}.collection-create-form label:first-child{grid-column:1/-1}}
+
+.collection-tile-description{display:block;max-width:22ch;color:#8fa9c3;font-size:10px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#collectionDetailDescription{margin:3px 0 0;color:#9db4ca;font-size:12px;line-height:1.5;max-width:65ch}
+.collection-description-field{grid-column:1/-1}

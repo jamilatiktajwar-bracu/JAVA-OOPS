@@ -7,7 +7,10 @@
   const catalog = () => typeof movies !== "undefined" && Array.isArray(movies) ? movies : [];
   const identify = movie => String(movie?.apiId || movie?.id);
   const cleanName = value => String(value || "").replace(/\s+/g, " ").trim().slice(0, 28);
+  const cleanDescription = value => String(value || "").replace(/\s+/g, " ").trim().slice(0, 72);
   const themes = ["violet", "ocean", "ember", "forest"];
+  const coverIcons = ["✧","🎬","🍿","🌙","❤️","⚡","🧭","🌿","🔥","🪐","👑","🎭"];
+  const validIcon = value => coverIcons.includes(value) ? value : "✧";
   const themeLabel = theme => ({violet:"Nebula",ocean:"Ocean",ember:"Ember",forest:"Forest"}[theme] || "Nebula");
   let collections = [];
   let activeCollectionId = null;
@@ -26,7 +29,9 @@
         return [{
           id: String(item.id || ("collection-" + index)),
           name,
+          description: cleanDescription(item.description),
           theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+          icon: validIcon(item.icon),
           sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
           createdAt: Math.max(0, Number(item.createdAt) || Date.now()),
           items
@@ -61,7 +66,9 @@
       exportedAt: new Date().toISOString(),
       collections: collections.map(item => ({
         name: item.name,
+        description: cleanDescription(item.description),
         theme: item.theme,
+        icon: validIcon(item.icon),
         sort: item.sort || "custom",
         items: [...item.items]
       }))
@@ -98,7 +105,9 @@
       skipped += uniqueItems.length - items.length;
       return [{
         name,
+        description: cleanDescription(item.description),
         theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+        icon: validIcon(item.icon),
         sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
         items
       }];
@@ -118,7 +127,7 @@
         return;
       }
       if (collections.length >= MAX_COLLECTIONS) { skipped++; return; }
-      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,sort:item.sort,createdAt:Date.now(),items:item.items});
+      collections.push({id:newCollectionId(),name:item.name,description:item.description,theme:item.theme,icon:item.icon,sort:item.sort,createdAt:Date.now(),items:item.items});
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
@@ -159,7 +168,7 @@
       if (!samples.length) {
         const emptyMark = document.createElement("span");
         emptyMark.className = "collection-mosaic-empty";
-        emptyMark.textContent = "✧";
+        emptyMark.textContent = validIcon(collection.icon);
         mosaic.append(emptyMark);
       } else {
         samples.forEach(movie => {
@@ -172,13 +181,20 @@
           mosaic.append(image);
         });
       }
+      const iconBadge = document.createElement("span");
+      iconBadge.className = "collection-cover-icon";
+      iconBadge.textContent = validIcon(collection.icon);
+      mosaic.append(iconBadge);
       const copy = document.createElement("span");
       copy.className = "collection-tile-copy";
       const title = document.createElement("strong");
       title.textContent = collection.name;
       const meta = document.createElement("small");
       meta.textContent = collection.items.length + (collection.items.length === 1 ? " story" : " stories") + " · " + themeLabel(collection.theme);
-      copy.append(title, meta);
+      const description = document.createElement("small");
+      description.className = "collection-tile-description";
+      description.textContent = collection.description || "A personal shelf of stories";
+      copy.append(title, meta, description);
       const arrow = document.createElement("span");
       arrow.className = "collection-tile-arrow";
       arrow.textContent = "↗";
@@ -186,6 +202,20 @@
       button.addEventListener("click", () => openCollection(collection.id));
       grid.append(button);
     });
+  }
+
+  function reorderVisibleItems(collection, visibleIds, from, to) {
+    if (!collection || from === to || from < 0 || to < 0 || from >= visibleIds.length || to >= visibleIds.length) return false;
+    const nextVisible = [...visibleIds];
+    const [moved] = nextVisible.splice(from, 1);
+    nextVisible.splice(to, 0, moved);
+    const visibleSet = new Set(visibleIds);
+    let cursor = 0;
+    collection.items = collection.items.map(id => visibleSet.has(id) ? nextVisible[cursor++] : id);
+    collection.sort = "custom";
+    saveCollections();
+    render();
+    return true;
   }
 
   function renderCollectionDetail() {
@@ -201,6 +231,10 @@
     detail.hidden = false;
     grid.hidden = true;
     $("collectionDetailTitle").textContent = collection.name;
+    const detailIcon = $("collectionDetailIcon");
+    if (detailIcon) detailIcon.textContent = validIcon(collection.icon);
+    const detailDescription = $("collectionDetailDescription");
+    if (detailDescription) { detailDescription.textContent = collection.description; detailDescription.hidden = !collection.description; }
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
@@ -221,8 +255,45 @@
       row.append(empty);
       return;
     }
-    found.forEach(movie => {
+    found.forEach((movie, index) => {
       const tile = typeof card === "function" ? card(movie) : document.createElement("article");
+      tile.dataset.collectionItemId = identify(movie);
+      tile.draggable = sortMode === "custom";
+      if (sortMode === "custom") {
+        tile.classList.add("collection-reorder-draggable");
+        tile.addEventListener("dragstart", event => {
+          event.dataTransfer?.setData("text/plain", identify(movie));
+          if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+          tile.classList.add("collection-is-dragging");
+        });
+        tile.addEventListener("dragend", () => tile.classList.remove("collection-is-dragging"));
+        tile.addEventListener("dragover", event => { event.preventDefault(); if (event.dataTransfer) event.dataTransfer.dropEffect = "move"; });
+        tile.addEventListener("drop", event => {
+          event.preventDefault();
+          const fromId = event.dataTransfer?.getData("text/plain");
+          const from = found.findIndex(item => identify(item) === fromId);
+          if (from >= 0 && from !== index) reorderVisibleItems(collection, found.map(identify), from, index);
+        });
+        const orderControls = document.createElement("div");
+        orderControls.className = "collection-order-controls";
+        orderControls.setAttribute("aria-label", "Reorder " + (movie.title || movie.name || "story"));
+        const moveUp = document.createElement("button");
+        moveUp.type = "button";
+        moveUp.className = "collection-order-button";
+        moveUp.textContent = "↑";
+        moveUp.setAttribute("aria-label", "Move " + (movie.title || movie.name || "story") + " earlier");
+        moveUp.disabled = index === 0;
+        moveUp.addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); reorderVisibleItems(collection, found.map(identify), index, index - 1); });
+        const moveDown = document.createElement("button");
+        moveDown.type = "button";
+        moveDown.className = "collection-order-button";
+        moveDown.textContent = "↓";
+        moveDown.setAttribute("aria-label", "Move " + (movie.title || movie.name || "story") + " later");
+        moveDown.disabled = index === found.length - 1;
+        moveDown.addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); reorderVisibleItems(collection, found.map(identify), index, index + 1); });
+        orderControls.append(moveUp, moveDown);
+        tile.append(orderControls);
+      }
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "collection-card-remove";
@@ -254,7 +325,7 @@
     renderCollectionDetail();
   }
 
-  function createCollection(name, theme) {
+  function createCollection(name, theme, icon, description) {
     const clean = cleanName(name);
     if (!clean) return {ok:false, reason:"Enter a collection name"};
     if (collections.length >= MAX_COLLECTIONS) return {ok:false, reason:"You can create up to " + MAX_COLLECTIONS + " collections"};
@@ -262,7 +333,7 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", sort:"custom", createdAt:Date.now(), items:[]});
+    collections.unshift({id, name:clean, description:cleanDescription(description), theme:themes.includes(theme)?theme:"violet", icon:validIcon(icon), sort:"custom", createdAt:Date.now(), items:[]});
     saveCollections();
     render();
     return {ok:true, id};
@@ -350,7 +421,7 @@
   });
   createForm?.addEventListener("submit", event => {
     event.preventDefault();
-    const result = createCollection(createName.value, $("collectionTheme").value);
+    const result = createCollection(createName.value, $("collectionTheme").value, $("collectionIcon").value, $("collectionDescription").value);
     $("collectionCreateStatus").textContent = result.ok ? "Collection created. Open a story to add it." : result.reason;
     if (result.ok) {
       createForm.reset();
