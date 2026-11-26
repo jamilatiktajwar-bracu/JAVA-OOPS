@@ -62,6 +62,17 @@ function writeCatalog(items) {
   fs.writeFileSync(temp, JSON.stringify(items, null, 2) + "\n", { flag:"w", mode:0o600 });
   fs.renameSync(temp, catalogFile);
 }
+
+// Serialize catalog read-modify-write transactions across different uploads.
+let catalogQueue=Promise.resolve();
+async function withCatalogLock(task) {
+  const previous=catalogQueue;
+  let release;
+  catalogQueue=new Promise(resolve=>{release=resolve;});
+  await previous.catch(()=>{});
+  try { return await task(); }
+  finally { release(); }
+}
 function json(res, status, value) {
   res.writeHead(status, { "content-type":"application/json; charset=utf-8", "cache-control":"no-store", "x-content-type-options":"nosniff" });
   res.end(JSON.stringify(value));
@@ -219,12 +230,16 @@ async function handle(req,res) {
     const session=readSession(completeMatch[1]);if(!session)return json(res,404,{error:"Upload session not found"});
     const files=sessionPaths(session.id),actual=fs.statSync(files.part).size;
     if(actual!==session.size||session.offset!==session.size)return json(res,409,{error:"Upload is incomplete",offset:actual,size:session.size});
-    const fileName=session.id+session.extension,destination=path.join(mediaDir,fileName);
-    fs.renameSync(files.part,destination);
-    const item={id:session.id,title:session.title,fileName,contentType:session.contentType,size:session.size,addedAt:new Date().toISOString(),published:false,uploadedBy:"invite"};
-    const items=readCatalog();items.push(item);writeCatalog(items);
-    fs.rmSync(files.data,{force:true});
-    return json(res,201,{id:item.id,title:item.title,size:item.size,status:"pending_approval"});
+    return withCatalogLock(async()=>{
+      const fileName=session.id+session.extension,destination=path.join(mediaDir,fileName);
+      if(fs.existsSync(destination)) return json(res,409,{error:"Media destination already exists"});
+      fs.renameSync(files.part,destination);
+      const item={id:session.id,title:session.title,fileName,contentType:session.contentType,size:session.size,addedAt:new Date().toISOString(),published:false,uploadedBy:"invite"};
+      try { const items=readCatalog();items.push(item);writeCatalog(items); }
+      catch(error) { try { fs.renameSync(destination,files.part); } catch {} throw error; }
+      fs.rmSync(files.data,{force:true});
+      return json(res,201,{id:item.id,title:item.title,size:item.size,status:"pending_approval"});
+    });
     });
   }
 
@@ -237,11 +252,13 @@ async function handle(req,res) {
     if(!isAdmin(req))return json(res,401,{error:"Admin authorization required"});
     const body=await readJson(req),action=String(body.action||"");
     if(!["approve","reject"].includes(action))return json(res,400,{error:"Action must be approve or reject"});
-    const items=readCatalog(),index=items.findIndex(x=>x.id===reviewMatch[1]);
-    if(index<0||items[index].published===true)return json(res,404,{error:"Pending upload not found"});
-    if(action==="approve"){items[index].published=true;items[index].approvedAt=new Date().toISOString();writeCatalog(items);return json(res,200,{id:items[index].id,status:"published"});}
-    const item=items[index];items.splice(index,1);writeCatalog(items);fs.rmSync(path.join(mediaDir,item.fileName),{force:true});
-    return json(res,200,{id:item.id,status:"rejected"});
+    return withCatalogLock(async()=>{
+      const items=readCatalog(),index=items.findIndex(x=>x.id===reviewMatch[1]);
+      if(index<0||items[index].published===true)return json(res,404,{error:"Pending upload not found"});
+      if(action==="approve"){items[index].published=true;items[index].approvedAt=new Date().toISOString();writeCatalog(items);return json(res,200,{id:items[index].id,status:"published"});}
+      const item=items[index];items.splice(index,1);writeCatalog(items);fs.rmSync(path.join(mediaDir,item.fileName),{force:true});
+      return json(res,200,{id:item.id,status:"rejected"});
+    });
   }
 
   if(url.pathname==="/admin/upload"&&req.method==="POST"){
@@ -255,7 +272,7 @@ async function handle(req,res) {
       await pipeline(req,limiter,fs.createWriteStream(destination,{flags:"wx",mode:0o600}));
       if(!bytes){fs.rmSync(destination,{force:true});return json(res,400,{error:"Empty upload"});}
       const item={id,title,fileName,contentType,size:bytes,addedAt:new Date().toISOString(),published:false,uploadedBy:"admin"};
-      const items=readCatalog();items.push(item);writeCatalog(items);
+      await withCatalogLock(async()=>{const items=readCatalog();items.push(item);writeCatalog(items);});
       return json(res,201,{...publicItem(item),status:"pending_approval"});
     }catch(error){fs.rmSync(destination,{force:true});return json(res,error.statusCode||400,{error:error.statusCode===413?"Upload exceeds configured size limit":"Upload failed"});}
   }
