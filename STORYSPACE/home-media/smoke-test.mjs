@@ -29,6 +29,8 @@ await assertStartupRejected({STORYSPACE_MEDIA_PORT:"70000"},/STORYSPACE_MEDIA_PO
 await assertStartupRejected({STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"not-a-number"},/STORYSPACE_MEDIA_MAX_UPLOAD_BYTES must be an integer/,"upload-limit");
 await assertStartupRejected({STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"0"},/STORYSPACE_MEDIA_MAX_CHUNK_BYTES must be an integer/,"chunk-limit");
 await assertStartupRejected({STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"4",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8"},/MAX_CHUNK_BYTES cannot exceed/,"chunk-over-upload");
+await assertStartupRejected({STORYSPACE_MEDIA_SESSION_TTL_MS:"not-a-number"},/STORYSPACE_MEDIA_SESSION_TTL_MS must be an integer/,"session-ttl-nan");
+await assertStartupRejected({STORYSPACE_MEDIA_SESSION_TTL_MS:"3599999"},/STORYSPACE_MEDIA_SESSION_TTL_MS must be an integer/,"session-ttl-too-short");
 
 const portProbe=createServer();
 await new Promise((resolve,reject)=>{portProbe.once("error",reject);portProbe.listen(0,"127.0.0.1",resolve);});
