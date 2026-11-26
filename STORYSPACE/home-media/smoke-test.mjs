@@ -33,6 +33,17 @@ try{
  assert.equal(init.status,201);const session=await init.json();
  const part1=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"0"},body:Buffer.from("01234567")});
  assert.equal(part1.status,200);assert.equal((await part1.json()).offset,8);
+
+ const staleOffset=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"7"},body:Buffer.from("x")});
+ assert.equal(staleOffset.status,409,"stale chunk offsets are rejected");
+ assert.equal((await staleOffset.json()).offset,8,"offset conflict reports the authoritative position");
+ assert.equal((await fetch(base+"/admin/pending")).status,401,"pending queue requires owner authorization");
+ const incompleteInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Incomplete",filename:"incomplete.mp4",size:4})});
+ assert.equal(incompleteInit.status,201);const incompleteSession=await incompleteInit.json();
+ const prematureComplete=await fetch(base+"/api/uploads/"+incompleteSession.uploadId+"/complete",{method:"POST",headers});
+ assert.equal(prematureComplete.status,409,"incomplete upload cannot enter moderation");
+ const incompleteStatus=await (await fetch(base+"/api/uploads/"+incompleteSession.uploadId,{headers})).json();
+ assert.equal(incompleteStatus.offset,0);assert.equal(incompleteStatus.size,4);
  const resumed=await fetch(base+"/api/uploads/"+session.uploadId,{headers});assert.equal((await resumed.json()).offset,8);
  const part2=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.from("89abcdef")});
  assert.equal(part2.status,200);
