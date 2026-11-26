@@ -744,16 +744,24 @@ function persistPlayerProgress(force=false){
     api("/library/"+encodeURIComponent(title.apiId)+"/progress",{method:"PATCH",body:{progressPercent:percent,currentTime,duration:video.duration}}).catch(()=>{});
   }
 }
+function getPlayerSeekWindow(){
+  const duration=Number(playerVideo.duration);
+  if(Number.isFinite(duration)&&duration>0)return {start:0,end:duration,live:false};
+  const ranges=playerVideo.seekable;
+  if(ranges&&ranges.length){try{const i=ranges.length-1,start=ranges.start(i),end=ranges.end(i);if(Number.isFinite(start)&&Number.isFinite(end)&&end>start)return {start,end,live:true}}catch{}}
+  return null;
+}
 function updatePlayerTimeline(){
-  const duration=Number.isFinite(playerVideo.duration)?playerVideo.duration:0;
-  const current=Number.isFinite(playerVideo.currentTime)?playerVideo.currentTime:0;
+  const windowRange=getPlayerSeekWindow(),current=Number.isFinite(playerVideo.currentTime)?playerVideo.currentTime:0;
   const seek=$("playerSeek"),currentLabel=$("playerCurrentTime"),durationLabel=$("playerDuration");
+  const span=windowRange?windowRange.end-windowRange.start:0;
+  const position=windowRange?Math.max(0,Math.min(span,current-windowRange.start)):0;
   if(currentLabel)currentLabel.textContent=formatPlayerTime(current);
-  if(durationLabel)durationLabel.textContent=formatPlayerTime(duration);
+  if(durationLabel)durationLabel.textContent=windowRange?.live?"LIVE":formatPlayerTime(windowRange?.end||0);
   if(seek){
-    seek.disabled=duration<=0;
-    if(document.activeElement!==seek)seek.value=String(duration>0?Math.round(current/duration*1000):0);
-    seek.setAttribute("aria-valuetext",formatPlayerTime(current)+" of "+formatPlayerTime(duration));
+    seek.disabled=!windowRange||span<=0;
+    if(document.activeElement!==seek)seek.value=String(span>0?Math.round(position/span*1000):0);
+    seek.setAttribute("aria-valuetext",windowRange?(formatPlayerTime(current)+" of "+(windowRange.live?"live window":" "+formatPlayerTime(windowRange.end))):"Seeking unavailable");
   }
 }
 function formatPlayerTime(seconds){
@@ -850,16 +858,17 @@ playerVideo.addEventListener("seeked",()=>{persistPlayerProgress(true);updatePla
 playerVideo.addEventListener("pause",()=>{stopScreenTimeTicker();persistPlayerProgress(true)});
 playerVideo.addEventListener("ended",()=>{stopScreenTimeTicker();persistPlayerProgress(true)});
 $("playerSeek").addEventListener("input",()=>{
-  if(!Number.isFinite(playerVideo.duration)||playerVideo.duration<=0)return;
-  const fraction=Math.max(0,Math.min(1,Number($("playerSeek").value)/1000));
-  const target=fraction*playerVideo.duration;
+  const range=getPlayerSeekWindow(),raw=Number($("playerSeek").value);
+  if(!range||!Number.isFinite(raw))return;
+  const fraction=Math.max(0,Math.min(1,raw/1000)),target=range.start+fraction*(range.end-range.start);
   $("playerCurrentTime").textContent=formatPlayerTime(target);
-  $("playerSeek").setAttribute("aria-valuetext",formatPlayerTime(target)+" of "+formatPlayerTime(playerVideo.duration));
+  $("playerSeek").setAttribute("aria-valuetext",formatPlayerTime(target)+" of "+(range.live?"live window":formatPlayerTime(range.end)));
 });
 $("playerSeek").addEventListener("change",()=>{
-  if(!Number.isFinite(playerVideo.duration)||playerVideo.duration<=0)return;
-  playerVideo.currentTime=(Math.max(0,Math.min(1000,Number($("playerSeek").value)))/1000)*playerVideo.duration;
-  persistPlayerProgress(true);
+  const range=getPlayerSeekWindow(),raw=Number($("playerSeek").value);
+  if(!range||!Number.isFinite(raw))return;
+  const fraction=Math.max(0,Math.min(1,raw/1000)),target=range.start+fraction*(range.end-range.start);
+  try{playerVideo.currentTime=Math.max(range.start,Math.min(range.end,target));persistPlayerProgress(true)}catch{}
   updatePlayerTimeline();
 });
 document.addEventListener("visibilitychange",()=>{if(document.hidden){accrueScreenTime();persistPlayerProgress(true)}});
