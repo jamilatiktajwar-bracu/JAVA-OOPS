@@ -278,3 +278,9 @@ if(!h.includes('id="smartCollectionChips"'))throw Error("Smart collection sugges
 // Continue Watching resume polish: recent-first ordering and remaining-time labels.
 for(const token of ["refreshContinueRow();","resume-time-label","updatedAt","min left","const items=movies.filter(m=>Number(m.progress)>0).sort"])if(!a.includes(token))throw Error("Continue Watching resume polish missing: "+token);
 if(!css.includes(".resume-time-label"))throw Error("Continue Watching resume-time style missing");
+
+
+// Guarded VOD and live/DVR seeking regression checks
+for(const token of ["function getPlayerSeekWindow()","playerVideo.seekable","Number.isFinite(raw)","Math.max(range.start,Math.min(range.end,target))","Seeking unavailable","live window"])if(!a.includes(token))throw Error("Missing guarded seek behavior: "+token);
+const seekUx=read("player-ux.js");
+for(const token of ["function seekWindow()","video.seekable","range.live?\"live window\"","pointercancel"])if(!seekUx.includes(token))throw Error("Missing seek preview range behavior: "+token);
