@@ -120,6 +120,9 @@ if(!h.includes('id="demoCinemaFilters"')||!h.includes('data-demo-filter="open"')
 if(!h.includes('id="demoCinemaStatus"')||!h.includes('id="modalDemoSourceCard"')||!h.includes('id="modalDemoLicenseLink"'))throw Error("Demo source/credit detail panel missing");
 for(const token of ["function renderDemoCinema()","demoCinemaFilter===","demoRuntimeSec","demoOpenMovie","CC BY 4.0","Spring · Open Movie","https://upload.wikimedia.org/wikipedia/commons/a/a5/Spring_-_Blender_Open_Movie.webm"])if(!a.includes(token))throw Error("Open-movie catalog/filter metadata missing: "+token);
 if(!a.includes('m.demoOpenMovie&&m.demoLicense&&m.demoCredit'))throw Error("Open-movie attribution missing in playback notice");
+if(!a.includes('$("demoCinemaFilters")?.addEventListener')||!a.includes('$("demoCinemaFilters").querySelectorAll'))throw Error("Demo Cinema filter controls are not wired by ID");
+if(!a.includes('demoRuntimeSec:540,demo:true},\n{id:114,title:"Spring · Open Movie"'))throw Error("Demo catalog item separator missing");
+
 for(const token of [".demo-filter-bar",".demo-filter[aria-pressed=\"true\"]",".demo-source-card",".demo-source-links"])if(!c.includes(token))throw Error("Demo filter/source styles missing: "+token);
 if(!sw.includes("storyspace-shell-v54"))throw Error("Demo Cinema shell cache not bumped");
 // Local profile identity and theme persistence guards
