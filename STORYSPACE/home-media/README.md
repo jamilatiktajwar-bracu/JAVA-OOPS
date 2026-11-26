@@ -93,6 +93,8 @@ Paste each key only into its matching field. Never interchange the two keys. If 
 ## Security and operating limits
 
 - The upload invitation key is shared among invited uploaders. It does not provide individual user identity, per-user quotas, or per-user revocation. Do not embed either secret in the public app bundle. A secure registered-user integration needs the production Storyspace account backend and short-lived per-user upload credentials.
+- This prototype runs as a single Node.js server process. Upload-session and catalog locks serialize concurrent requests within that process; they are not distributed locks and do not protect multiple server instances sharing the same files. Run one media-server instance per storage directory.
+- Catalog updates use serialized read-modify-write transactions and atomic file replacement. If catalog persistence fails during chunked-upload completion, the completed media file is moved back into staging so the upload can be retried rather than silently orphaned.
 - Owner admin requests use a separate admin header. The web client omits ambient browser credentials and does not send the admin key as the uploader key.
 - If the PC is off, asleep, offline, or either process stops, remote upload and playback stop. Configure Windows power settings so the PC does not sleep during hosting.
 - Home upload bandwidth limits concurrent viewers. This is a prototype origin, not a CDN or reliable global streaming service. Large files may use substantial upstream bandwidth and data allowance.
