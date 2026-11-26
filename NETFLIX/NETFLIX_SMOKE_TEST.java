@@ -6,6 +6,7 @@ public class NETFLIX_SMOKE_TEST {
         testCinemaAnalyticsConsistency();
         testOfflineDownloads();
         testViewingSession();
+        testPlaybackSessionStopAndRestart();
         testMovieReview();
         testLocaleIndependentMovieSearch();
         testSubscriptionPlanNormalization();
@@ -43,6 +44,8 @@ public class NETFLIX_SMOKE_TEST {
                 "queue should advance through items");
         require(endedQueue.next() == null && endedQueue.getCurrent() == null,
                 "queue should represent its ended state");
+        require(endedQueue.getRemainingCount() == 0,
+                "ended queue should report no remaining items");
         require(endedQueue.next() == first && endedQueue.getCurrentIndex() == 0,
                 "next after end should restart at the first item");
         require(endedQueue.addNext(first) == false,
@@ -168,6 +171,31 @@ public class NETFLIX_SMOKE_TEST {
         require(session.getQuality().equals("4K"), "supported quality should be selectable when low-data mode is off");
         session.setQuality("8K");
         require(session.getQuality().equals("4K"), "unsupported quality should be ignored");
+    }
+
+    private static void testPlaybackSessionStopAndRestart() {
+        Movies movie = new Movies("Stop restart test", "Drama", 120);
+        ViewingSession stopped = new ViewingSession(movie, null);
+        stopped.stopPlayback();
+        long durationAtStop = stopped.getSessionDurationMillis();
+        try {
+            Thread.sleep(20L);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Smoke test interrupted", interrupted);
+        }
+        stopped.stopPlayback();
+        require(stopped.getSessionDurationMillis() <= durationAtStop + 5L,
+                "repeated stop should not count paused time as active playback");
+
+        ViewingSession completed = new ViewingSession(movie, null);
+        require(completed.pauseAt(movie.getDuration()),
+                "session should accept completion at the movie end");
+        require(completed.isCompleted(), "session should be completed at the end");
+        completed.startPlayback();
+        require(completed.isPlaybackActive() && !completed.isCompleted()
+                && completed.getWatchedMinutes() == 0,
+                "starting a completed session should restart progress at zero");
     }
 
     private static void testSystemHealthCounterSafety() {

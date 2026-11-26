@@ -323,6 +323,10 @@ public class ViewingSession {
     }
 
     public void startPlayback() {
+        if (completed) {
+            watchedMinutes = 0;
+            completed = false;
+        }
         if (!playbackActive && pausedAt > 0) {
             totalPausedMillis += Math.max(0, System.currentTimeMillis() - pausedAt);
         }
@@ -332,8 +336,10 @@ public class ViewingSession {
     }
 
     public void stopPlayback() {
-        playbackActive = false;
-        pausedAt = System.currentTimeMillis();
+        if (playbackActive) {
+            playbackActive = false;
+            pausedAt = System.currentTimeMillis();
+        }
         addEvent("PLAYBACK_STOPPED");
     }
 
