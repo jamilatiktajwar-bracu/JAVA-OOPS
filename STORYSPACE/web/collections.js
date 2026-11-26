@@ -213,6 +213,8 @@
     return true;
   }
 
+  const collectionBulkSelection=new Set();let collectionBulkMode=false;
+  function syncCollectionBulkToolbar(found){const toolbar=$("collectionBulkToolbar"),selected=[...collectionBulkSelection].filter(id=>found.some(m=>identify(m)===id));if(toolbar)toolbar.hidden=!collectionBulkMode;const count=$("collectionBulkCount");if(count)count.textContent=selected.length;const remove=$("collectionRemoveSelected");if(remove)remove.disabled=!selected.length;const all=$("collectionSelectAll");if(all)all.textContent=found.length&&found.every(m=>collectionBulkSelection.has(identify(m)) )?"Deselect all":"Select all";}
   function renderCollectionDetail() {
     const detail = $("collectionDetail"), grid = $("collectionsGrid");
     if (!detail || !grid) return;
@@ -234,13 +236,14 @@
     const row = $("collectionItemsRow");
     row.replaceChildren();
     const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
-    const sortMode = collection.sort || "custom";
+    const sortMode = collection.sort || "custom";const bulkToggle=$("collectionBulkToggle");if(bulkToggle){bulkToggle.setAttribute("aria-pressed",String(collectionBulkMode));bulkToggle.textContent=collectionBulkMode?"Done selecting":"Select stories"}
     if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
     else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(a))-collection.items.indexOf(identify(b)));
     else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating??b.voteAverage??b.vote_average??b.score)||0)-(Number(a.rating??a.voteAverage??a.vote_average??a.score)||0));
     else if (sortMode === "year") found.sort((a,b) => (Number(String(b.year||b.releaseYear||b.release_date||"").slice(0,4))||0)-(Number(String(a.year||a.releaseYear||a.release_date||"").slice(0,4))||0));
     const sortControl = $("collectionSort");
     if (sortControl) sortControl.value = sortMode;
+    syncCollectionBulkToolbar(found);
     if (!found.length) {
       const empty = document.createElement("p");
       empty.className = "collection-detail-empty";
@@ -251,7 +254,7 @@
       return;
     }
     found.forEach((movie, index) => {
-      const tile = typeof card === "function" ? card(movie) : document.createElement("article");
+      const tile = typeof card === "function" ? card(movie) : document.createElement("article");if(collectionBulkMode){tile.classList.toggle("collection-bulk-selected",collectionBulkSelection.has(identify(movie)));tile.addEventListener("click",event=>{if(event.target.closest("button[data-action],.collection-card-remove,.collection-order-controls"))return;event.preventDefault();event.stopPropagation();if(collectionBulkSelection.has(identify(movie)))collectionBulkSelection.delete(identify(movie));else collectionBulkSelection.add(identify(movie));renderCollectionDetail()})}
       tile.dataset.collectionItemId = identify(movie);
       tile.draggable = sortMode === "custom";
       if (sortMode === "custom") {
@@ -426,6 +429,7 @@
     }
   });
 
+  $("collectionBulkToggle")?.addEventListener("click",()=>{collectionBulkMode=!collectionBulkMode;if(!collectionBulkMode)collectionBulkSelection.clear();renderCollectionDetail()});$("collectionSelectAll")?.addEventListener("click",()=>{const found=collections.find(x=>x.id===activeCollectionId)?.items.map(movieFor).filter(Boolean)||[];if(found.length&&found.every(m=>collectionBulkSelection.has(identify(m))))found.forEach(m=>collectionBulkSelection.delete(identify(m)));else found.forEach(m=>collectionBulkSelection.add(identify(m)));renderCollectionDetail()});$("collectionClearSelection")?.addEventListener("click",()=>{collectionBulkSelection.clear();renderCollectionDetail()});$("collectionRemoveSelected")?.addEventListener("click",()=>{const collection=collections.find(x=>x.id===activeCollectionId);if(!collection)return;const ids=[...collectionBulkSelection].filter(id=>collection.items.includes(id));if(!ids.length)return;collection.items=collection.items.filter(id=>!ids.includes(id));collectionBulkSelection.clear();saveCollections();render();if(typeof showToast==="function")showToast("Removed "+ids.length+" from "+collection.name)});
   $("collectionSort")?.addEventListener("change", event => {
     const collection = collections.find(item => item.id === activeCollectionId);
     if (!collection) return;
@@ -499,6 +503,7 @@
       if (!collection) return false;
       collection.items = collection.items.filter(id => id !== String(movieId)); saveCollections(); render(); return true;
     },
+    bulkAdd(collectionId,movieIds) { const collection=collections.find(item=>item.id===String(collectionId));if(!collection||!Array.isArray(movieIds))return {ok:false,added:0};let added=0;for(const id of movieIds.map(String)){if(collection.items.includes(id))continue;if(collection.items.length>=MAX_ITEMS)break;collection.items.unshift(id);added++;}if(added){saveCollections();render()}return {ok:true,added,remaining:MAX_ITEMS-collection.items.length}; },
     open: openCollection
   });
 })();
