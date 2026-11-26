@@ -103,6 +103,33 @@ function writeSession(session) {
   fs.renameSync(temp,files.data);
 }
 
+// Reconcile durable staging files after an unclean process exit.
+function recoverUploadSessions() {
+  for (const entry of fs.readdirSync(stagingDir,{withFileTypes:true})) {
+    if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+    const id=entry.name.slice(0,-5), files=sessionPaths(id);
+    if (!files) continue;
+    let session;
+    try { session=JSON.parse(fs.readFileSync(files.data,"utf8")); } catch { session=null; }
+    const valid=session && session.id===id && safeTitle(session.title) && types.has(session.extension) &&
+      types.get(session.extension)===session.contentType && Number.isSafeInteger(session.size) && session.size>0 &&
+      session.size<=maxUploadBytes && Number.isSafeInteger(session.offset) && session.offset>=0;
+    if (!valid || !fs.existsSync(files.part)) {
+      fs.rmSync(files.data,{force:true});
+      fs.rmSync(files.part,{force:true});
+      continue;
+    }
+    const actual=fs.statSync(files.part).size;
+    if (actual>session.size) {
+      fs.rmSync(files.data,{force:true});
+      fs.rmSync(files.part,{force:true});
+      continue;
+    }
+    if (session.offset!==actual) { session.offset=actual; writeSession(session); }
+  }
+}
+recoverUploadSessions();
+
 // Serialize mutations and offset reads for each upload within this server process.
 const sessionLocks = new Map();
 async function withSessionLock(id, task) {
