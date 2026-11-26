@@ -2,7 +2,7 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const DB_NAME="storyspace-media-uploads",STORE="queue",CONFIG_KEY="storyspace.mediaHost";
-  let dbPromise=null,active=false,selectedFile=null,selectedHandle=null;
+  let dbPromise=null,active=false,activeItemId=null,cancelRequested=false,selectedFile=null,selectedHandle=null;
   const readConfig=()=>{try{return JSON.parse(sessionStorage.getItem(CONFIG_KEY)||"{}")}catch{return {}}};
   const saveConfig=value=>sessionStorage.setItem(CONFIG_KEY,JSON.stringify(value));
   const cleanRoot=value=>String(value||"").trim().replace(/\/+$/,"");
@@ -37,7 +37,7 @@
     if(!item.uploadId){
       const init=await request(root,"/api/uploads/init",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:item.title,filename:item.filename,size:item.size})});
       if(!init||typeof init.uploadId!=="string"||!init.uploadId.trim()||init.uploadId.length>200)throw new Error("Media server did not return a valid upload session. Retry after checking the server.");
-      item.uploadId=init.uploadId;item.offset=0;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
+      item.uploadId=init.uploadId;item.offset=0;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);await renderQueue();
     }else{
       const status=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token);
       if(!status||!Number.isSafeInteger(status.offset)||status.offset<0||status.offset>item.size)throw new Error("Media server returned an invalid saved upload position. Your local queue was left unchanged.");
@@ -46,6 +46,7 @@
     const chunkSize=8*1024*1024;
     setProgress(item.offset,item.size,"Resuming upload · "+fmt(item.offset)+" / "+fmt(item.size));
     while(item.offset<item.size){
+      if(cancelRequested)throw Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"});
       const end=Math.min(item.size,item.offset+chunkSize),blob=file.slice(item.offset,end);
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),120000);
       let response;
@@ -87,17 +88,30 @@
     try{const items=await getItems();target.replaceChildren();if(!items.length){target.textContent="No queued uploads yet.";target.className="media-muted";return}
       items.sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).forEach(item=>{
         const row=document.createElement("div");row.className="media-queue-item";const info=document.createElement("div");const title=document.createElement("b");title.textContent=item.title;const meta=document.createElement("small");meta.textContent=(item.status||"Queued")+" · "+fmt(item.offset||0)+" / "+fmt(item.size);info.append(title,meta);row.append(info);
-        if(!isTerminalQueueStatus(item.status)){const retry=document.createElement("button");retry.type="button";retry.className="secondary-button";retry.textContent="Resume";retry.disabled=active;retry.addEventListener("click",()=>resumeOne(item.id));row.append(retry)}
+        if(active&&activeItemId===item.id){
+          const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary-button";cancel.textContent="Cancel upload";cancel.disabled=!item.uploadId||cancelRequested;
+          cancel.addEventListener("click",async()=>{
+            if(!active||activeItemId!==item.id||!item.uploadId||cancelRequested)return;
+            const cfg=readConfig(),root=cleanRoot(cfg.root),token=cfg.uploadToken;
+            if(!window.confirm("Cancel this upload and delete its unfinished server-side video data?"))return;
+            cancelRequested=true;cancel.disabled=true;showToast("Cancelling upload safely…");
+            try{
+              await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token,{method:"DELETE",headers:headers(token)});
+              await removeItem(item.id);showToast("Upload cancelled and partial server data removed");
+            }catch(error){cancelRequested=false;showToast("Could not cancel server upload: "+error.message)}
+            await renderQueue();
+          });row.append(cancel);
+        }else if(!isTerminalQueueStatus(item.status)){const retry=document.createElement("button");retry.type="button";retry.className="secondary-button";retry.textContent="Resume";retry.disabled=active;retry.addEventListener("click",()=>resumeOne(item.id));row.append(retry)}
         const remove=document.createElement("button");remove.type="button";remove.className="secondary-button";remove.textContent="Remove";remove.setAttribute("aria-label","Remove "+item.title+" from this device's upload queue");remove.disabled=active;remove.addEventListener("click",async()=>{if(active)return;const pending=item.status==="Pending owner approval";const message=pending?"Remove this completed upload from this device's queue? The server copy and owner approval status will not be changed.":"Remove this upload from this device's queue? Any server-side partial upload may remain until the media host cleans it up.";if(!window.confirm(message))return;remove.disabled=true;try{await removeItem(item.id);showToast("Removed from this device's upload queue");await renderQueue()}catch(error){showToast("Could not remove queue item: "+error.message);remove.disabled=false}});row.append(remove);target.append(row);
       });
     }catch(error){target.textContent=error.message;target.className="media-muted"}
   }
   async function resumeOne(id){
-    if(active)return;active=true;
+    if(active)return;active=true;activeItemId=id;cancelRequested=false;
     let item=null;
     try{const items=await getItems();item=items.find(x=>x.id===id);if(!item)return;const file=await getFile(item);await runUpload(item,file);showToast("Upload sent for owner approval")}
-    catch(error){if(item){item.status="Paused · "+error.message;item.updatedAt=Date.now();try{await storeItem(item)}catch{}}setProgress(item?.offset||0,item?.size||1,error.message);showToast(error.message)}
-    finally{active=false;await renderQueue()}
+    catch(error){if(error.code!=="UPLOAD_CANCELLED"){if(item){item.status="Paused · "+error.message;item.updatedAt=Date.now();try{await storeItem(item)}catch{}}setProgress(item?.offset||0,item?.size||1,error.message);showToast(error.message)}}
+    finally{active=false;activeItemId=null;cancelRequested=false;await renderQueue()}
   }
   async function resumeAll(){
     if(active||!navigator.onLine)return;
@@ -209,10 +223,10 @@
     const ext=file.name.split(".").pop().toLowerCase();if(!["mp4","m4v","webm","mov"].includes(ext)){showToast("Supported formats: MP4, M4V, WebM, MOV");return}
     const item={id:crypto.randomUUID(),title,filename:file.name,size:file.size,offset:0,status:"Queued",createdAt:Date.now(),updatedAt:Date.now(),handle};
     try{await storeItem(item)}catch(error){showToast("Could not save queue metadata: "+error.message);return}
-    $("mediaUploadStart").disabled=true;active=true;
+    $("mediaUploadStart").disabled=true;active=true;activeItemId=item.id;cancelRequested=false;
     try{await runUpload(item,file);$("mediaMovieTitle").value="";showToast("Upload complete · awaiting approval")}
-    catch(error){item.status="Paused · "+error.message;item.updatedAt=Date.now();await storeItem(item);setProgress(item.offset||0,item.size,error.message);showToast("Upload paused; resume when connected")}
-    finally{active=false;$("mediaUploadStart").disabled=false;await renderQueue()}
+    catch(error){if(error.code!=="UPLOAD_CANCELLED"){item.status="Paused · "+error.message;item.updatedAt=Date.now();await storeItem(item);setProgress(item.offset||0,item.size,error.message);showToast("Upload paused; resume when connected")}}
+    finally{active=false;activeItemId=null;cancelRequested=false;$("mediaUploadStart").disabled=false;await renderQueue()}
   });
   window.addEventListener("online",resumeAll);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)resumeAll()});
