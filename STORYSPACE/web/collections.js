@@ -8,6 +8,8 @@
   const identify = movie => String(movie?.apiId || movie?.id);
   const cleanName = value => String(value || "").replace(/\s+/g, " ").trim().slice(0, 28);
   const themes = ["violet", "ocean", "ember", "forest"];
+  const coverIcons = ["✧","🎬","🍿","🌙","❤️","⚡","🧭","🌿","🔥","🪐","👑","🎭"];
+  const validIcon = value => coverIcons.includes(value) ? value : "✧";
   const themeLabel = theme => ({violet:"Nebula",ocean:"Ocean",ember:"Ember",forest:"Forest"}[theme] || "Nebula");
   let collections = [];
   let activeCollectionId = null;
@@ -61,6 +63,7 @@
       collections: collections.map(item => ({
         name: item.name,
         theme: item.theme,
+        icon: validIcon(item.icon),
         sort: item.sort || "custom",
         items: [...item.items]
       }))
@@ -98,6 +101,7 @@
       return [{
         name,
         theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+        icon: validIcon(item.icon),
         sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
         items
       }];
@@ -117,7 +121,7 @@
         return;
       }
       if (collections.length >= MAX_COLLECTIONS) { skipped++; return; }
-      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,sort:item.sort,createdAt:Date.now(),items:item.items});
+      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,icon:item.icon,sort:item.sort,createdAt:Date.now(),items:item.items});
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
@@ -158,7 +162,7 @@
       if (!samples.length) {
         const emptyMark = document.createElement("span");
         emptyMark.className = "collection-mosaic-empty";
-        emptyMark.textContent = "✧";
+        emptyMark.textContent = validIcon(collection.icon);
         mosaic.append(emptyMark);
       } else {
         samples.forEach(movie => {
@@ -171,6 +175,10 @@
           mosaic.append(image);
         });
       }
+      const iconBadge = document.createElement("span");
+      iconBadge.className = "collection-cover-icon";
+      iconBadge.textContent = validIcon(collection.icon);
+      mosaic.append(iconBadge);
       const copy = document.createElement("span");
       copy.className = "collection-tile-copy";
       const title = document.createElement("strong");
@@ -214,6 +222,8 @@
     detail.hidden = false;
     grid.hidden = true;
     $("collectionDetailTitle").textContent = collection.name;
+    const detailIcon = $("collectionDetailIcon");
+    if (detailIcon) detailIcon.textContent = validIcon(collection.icon);
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
@@ -304,7 +314,7 @@
     renderCollectionDetail();
   }
 
-  function createCollection(name, theme) {
+  function createCollection(name, theme, icon) {
     const clean = cleanName(name);
     if (!clean) return {ok:false, reason:"Enter a collection name"};
     if (collections.length >= MAX_COLLECTIONS) return {ok:false, reason:"You can create up to " + MAX_COLLECTIONS + " collections"};
@@ -312,7 +322,7 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", sort:"custom", createdAt:Date.now(), items:[]});
+    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", icon:validIcon(icon), sort:"custom", createdAt:Date.now(), items:[]});
     saveCollections();
     render();
     return {ok:true, id};
@@ -400,7 +410,7 @@
   });
   createForm?.addEventListener("submit", event => {
     event.preventDefault();
-    const result = createCollection(createName.value, $("collectionTheme").value);
+    const result = createCollection(createName.value, $("collectionTheme").value, $("collectionIcon").value);
     $("collectionCreateStatus").textContent = result.ok ? "Collection created. Open a story to add it." : result.reason;
     if (result.ok) {
       createForm.reset();
