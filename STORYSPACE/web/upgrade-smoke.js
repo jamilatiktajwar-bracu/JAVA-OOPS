@@ -252,6 +252,6 @@ for(const token of [".collection-shelf-card",".collection-shelf-controls",".coll
 if(!sw.includes("storyspace-shell-v62"))throw Error("Collection hub cache version missing");
 
 // Quick-create directly from the story save-to-collection modal.
-for(const token of ["collection-quick-create-toggle","collection-quick-create","Create & save","createCollection(nameInput.value","created.items.unshift(identify(movie))","aria-expanded"])if(!collections.includes(token))throw Error("Quick-create collection modal missing: "+token);
+for(const token of ["collection-quick-create-toggle","collection-quick-create","Create & save","createCollection(nameInput.value","created.items.unshift(identify(movie))","aria-expanded","querySelector(\".collection-quick-create-toggle\")?.focus()"])if(!collections.includes(token))throw Error("Quick-create collection modal missing: "+token);
 for(const token of [".collection-quick-create-toggle",".collection-quick-create",".collection-quick-create-status"])if(!collectionsCss.includes(token))throw Error("Quick-create modal styles missing: "+token);
 if(!sw.includes("storyspace-shell-v62"))throw Error("Quick-create collections cache version missing");
