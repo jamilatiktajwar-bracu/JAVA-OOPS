@@ -86,26 +86,31 @@
     if (!parsed || parsed.format !== "storyspace-collections" || parsed.version !== 1 || !Array.isArray(parsed.collections)) {
       return {ok:false,reason:"This is not a supported Storyspace Collections backup"};
     }
+    let skipped = Math.max(0, parsed.collections.length - 100);
     const incoming = parsed.collections.slice(0, 100).flatMap((item, index) => {
-      if (!item || typeof item !== "object" || !Array.isArray(item.items)) return [];
+      if (!item || typeof item !== "object" || !Array.isArray(item.items)) { skipped++; return []; }
       const name = cleanName(item.name);
-      if (!name) return [];
+      if (!name) { skipped++; return []; }
+      const uniqueItems = [...new Set(item.items.filter(id => typeof id === "string" || typeof id === "number").map(String))];
+      const items = uniqueItems.slice(0, MAX_ITEMS);
+      skipped += uniqueItems.length - items.length;
       return [{
         name,
         theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
-        items: [...new Set(item.items.filter(id => typeof id === "string" || typeof id === "number").map(String))].slice(0, MAX_ITEMS)
+        items
       }];
     });
     if (!incoming.length) return {ok:false,reason:"No usable collections were found in that backup"};
     if (!confirm("Import " + incoming.length + " collection(s)? Matching names will merge stories; existing shelves will not be replaced.")) {
       return {ok:false,reason:"Import cancelled"};
     }
-    let added = 0, merged = 0, skipped = 0;
+    let added = 0, merged = 0;
     incoming.forEach(item => {
       const existing = collections.find(c => c.name.toLowerCase() === item.name.toLowerCase());
       if (existing) {
-        const combined = [...new Set([...existing.items, ...item.items])].slice(0, MAX_ITEMS);
-        existing.items = combined;
+        const combined = [...new Set([...existing.items, ...item.items])];
+        existing.items = combined.slice(0, MAX_ITEMS);
+        skipped += combined.length - existing.items.length;
         merged++;
         return;
       }
@@ -315,7 +320,7 @@
     const file = event.target.files?.[0];
     const result = await importBackup(file);
     if (result.ok) {
-      setBackupStatus("Imported " + result.added + " new · merged " + result.merged + " · skipped " + result.skipped);
+      setBackupStatus("Imported " + result.added + " new · merged " + result.merged + " · skipped " + result.skipped + " items/collections (limits or invalid data)");
       if (typeof showToast === "function") showToast("Collections backup restored");
     } else setBackupStatus(result.reason);
     event.target.value = "";
