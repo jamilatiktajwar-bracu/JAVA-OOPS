@@ -9,6 +9,8 @@ if (!html.includes("collections.css") || !html.includes("collections.js")) throw
 if (!read("web/sw.js").includes("./collections.css") || !read("web/sw.js").includes("./collections.js")) throw new Error("Custom Collections assets missing from offline shell");
 const collectionsClient = read("web/collections.js");
 if (!collectionsClient.includes("storyspace.collections.v1.") || !collectionsClient.includes("storyspace:profile-updated")) throw new Error("Profile-aware Custom Collections persistence missing");
+if (!["exportBackup", "importBackup", "storyspace-collections"].every(token => collectionsClient.includes(token))) throw new Error("Collections backup and restore logic is missing");
+if (!["collectionExport", "collectionImportToggle", "collectionImportFile", "collectionBackupStatus"].every(token => html.includes(token))) throw new Error("Collections backup and restore controls are missing");
 execFileSync(process.execPath, ["--check", path.join(root, "web", "collections.js")], { stdio: "pipe" });
 for (const asset of ["manifest.webmanifest", "styles.css", "app.js", "enhancements.css", "enhancements.js", "quick-discovery.js", "native-bridge.js", "assets/storyspace-icon.svg"]) if (!html.includes(asset)) throw new Error("Missing HTML reference: " + asset);
 if (!html.includes('rel="manifest"')) throw new Error("PWA manifest not linked");
