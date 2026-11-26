@@ -203,7 +203,14 @@
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
-    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));\n    const sortMode = collection.sort || "custom";\n    if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));\n    else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(b))-collection.items.indexOf(identify(a)));\n    else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating||b.voteAverage||b.score)||0)-(Number(a.rating||a.voteAverage||a.score)||0));\n    else if (sortMode === "year") found.sort((a,b) => (Number(b.year||b.releaseYear)||0)-(Number(a.year||a.releaseYear)||0));\n    const sortControl = $("collectionSort");\n    if (sortControl) sortControl.value = sortMode;
+    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
+    const sortMode = collection.sort || "custom";
+    if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
+    else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(b))-collection.items.indexOf(identify(a)));
+    else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating||b.voteAverage||b.score)||0)-(Number(a.rating||a.voteAverage||a.score)||0));
+    else if (sortMode === "year") found.sort((a,b) => (Number(b.year||b.releaseYear)||0)-(Number(a.year||a.releaseYear)||0));
+    const sortControl = $("collectionSort");
+    if (sortControl) sortControl.value = sortMode;
     if (!found.length) {
       const empty = document.createElement("p");
       empty.className = "collection-detail-empty";
