@@ -212,7 +212,8 @@ if(!sw.includes("storyspace-shell-v55"))throw Error("Mobile theater polish shell
 if(!theaterCss.includes("orientation:landscape")||!theaterCss.includes("100dvh - 150px"))throw Error("Short landscape theater layout missing");
 if(!sw.includes("storyspace-shell-v55"))throw Error("Short landscape theater shell cache missing");
 
-\n// Profile-aware My Collections studio
+
+// Profile-aware My Collections studio
 for(const id of ["collectionsSection","collectionCreateToggle","collectionCreateForm","collectionName","collectionTheme","collectionsGrid","collectionsEmpty","collectionDetail","collectionDetailTitle","collectionDetailCount","collectionBack","collectionDelete","collectionItemsRow","modalCollectionsToggle","modalCollectionsPanel","modalCollectionsChoices"])if(!h.includes('id="'+id+'"'))throw Error("Missing collections UI: "+id);
 for(const token of ["storyspace.collections.v1.","MAX_COLLECTIONS = 20","MAX_ITEMS = 100","cleanName","readCollections","saveCollections","renderCollectionGrid","renderCollectionDetail","storyspace:profile-updated","modalCollectionsToggle","storyspace:collections-updated","aria-pressed"])if(!collections.includes(token))throw Error("Custom collections behavior missing: "+token);
 for(const token of [".collections-grid",".collection-tile",".collection-mosaic",".collection-create-form",".collection-detail",".collection-card-remove",".modal-collections-panel",".collection-choice","prefers-reduced-motion"])if(!collectionsCss.includes(token))throw Error("Custom collections styling missing: "+token);
