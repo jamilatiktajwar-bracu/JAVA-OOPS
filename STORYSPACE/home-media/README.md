@@ -106,6 +106,7 @@ Paste each key only into its matching field. Never interchange the two keys. If 
 - A successful CI build does not prove a 5–10 GB upload or playback from another country. Test with a small authorized file first, then a large file, and verify from a separate network before inviting viewers.
 
 ### Startup configuration validation
+- `STORYSPACE_MEDIA_CORS_ORIGIN` defaults to `*` for compatibility. Set it to the exact Storyspace web-app origin (for example, `https://app.example.com`) to restrict browser preflights; paths and non-HTTP(S) origins are rejected at startup, and other browser origins receive HTTP 403 for preflight requests.
 - The media listener accepts only loopback hostnames/addresses and validates the port as an integer from 0 through 65535 (port 0 is useful for automated tests).
 - Upload and chunk byte limits must be positive safe integers, and a chunk limit larger than the total upload limit is rejected at startup. Invalid values fail fast with a setting-specific error instead of silently disabling limits or creating confusing runtime failures.
 - The upload-session retention TTL is also validated before storage initialization: it must be an integer of at least one hour. The default remains seven days.
