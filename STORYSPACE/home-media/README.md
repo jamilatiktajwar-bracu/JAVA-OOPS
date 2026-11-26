@@ -74,7 +74,7 @@ Do not commit local Cloudflare credentials or config files. A named tunnel is op
 5. Open the owner approval section in Upload, enter the private `adminToken`, load pending uploads, then approve or reject each item.
 6. Approved items appear in the Community Library and stream through the HTTPS tunnel.
 
-The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified.
+The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified. An uploader can explicitly cancel an unfinished server-side session with `DELETE /api/uploads/{uploadId}` using the `x-storyspace-upload-token` header; this removes both its partial data and session metadata. Cancellation does not delete completed or owner-approved media.
 
 ## 5. Verify keys and troubleshoot authorization
 
