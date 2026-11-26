@@ -21,6 +21,7 @@ public class NETFLIX_SMOKE_TEST {
         testRecommendationEngineSafety();
         testRecommendationEngineNullUserPaths();
         testColdStartRecommendationLimit();
+        testRecommendationHistoryEviction();
         testPlaylistCursorAndDurationSafety();
         testWatchPartyParticipationAndBoundaries();
         System.out.println("Netflix smoke tests passed.");
@@ -566,6 +567,29 @@ public class NETFLIX_SMOKE_TEST {
                 Movies.removeMovie(title);
             }
         }
+    }
+
+    private static void testRecommendationHistoryEviction() {
+        NETFLIX_USER user = new NETFLIX_USER("recommendation-history-user");
+        RecommendationEngine engine = new RecommendationEngine(user);
+        Movies oldest = null;
+        for (int i = 0; i < 101; i++) {
+            Movies movie = new Movies("Recommendation history " + i, "Drama", 90);
+            if (i == 0) {
+                oldest = movie;
+            }
+            NETFLIX_USER source = new NETFLIX_USER("recommendation-source-" + i);
+            require(source.addFavouriteMovie(movie),
+                    "collaborative source should accept its test movie");
+            Movies[] result = engine.getCollaborativeRecommendations(source, 1);
+            require(result.length == 1 && result[0] == movie,
+                    "unique recommendations should be returned and remembered");
+        }
+        NETFLIX_USER oldestSource = new NETFLIX_USER("recommendation-oldest-source");
+        require(oldestSource.addFavouriteMovie(oldest),
+                "oldest source should accept its movie");
+        require(engine.getCollaborativeRecommendations(oldestSource, 1).length == 1,
+                "oldest recommendation should become eligible after history eviction");
     }
 
     private static void testPlaylistCursorAndDurationSafety() {

@@ -232,10 +232,33 @@ public class RecommendationEngine {
     }
 
     private void rememberRecommendations(Movies[] recommendations) {
+        if (recommendations == null) {
+            return;
+        }
         for (Movies movie : recommendations) {
-            if (recentRecommendationCount < recentlyRecommended.length) {
-                recentlyRecommended[recentRecommendationCount++] = movie;
+            if (movie == null) {
+                continue;
             }
+            int existingIndex = -1;
+            for (int i = 0; i < recentRecommendationCount; i++) {
+                if (recentlyRecommended[i] == movie) {
+                    existingIndex = i;
+                    break;
+                }
+            }
+            if (existingIndex >= 0) {
+                for (int i = existingIndex; i < recentRecommendationCount - 1; i++) {
+                    recentlyRecommended[i] = recentlyRecommended[i + 1];
+                }
+                recentlyRecommended[--recentRecommendationCount] = null;
+            }
+            if (recentRecommendationCount == recentlyRecommended.length) {
+                for (int i = 0; i < recentRecommendationCount - 1; i++) {
+                    recentlyRecommended[i] = recentlyRecommended[i + 1];
+                }
+                recentlyRecommended[--recentRecommendationCount] = null;
+            }
+            recentlyRecommended[recentRecommendationCount++] = movie;
         }
     }
 
