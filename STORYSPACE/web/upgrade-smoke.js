@@ -270,10 +270,10 @@ for(const token of [".collection-bulk-toolbar",".collection-bulk-selected",".uni
 // Collection search, move and duplicate smoke checks.
 for(const id of ["collectionSearch","collectionDuplicate","collectionMoveTarget","collectionMoveSelected"])if(!h.includes('id="'+id+'"'))throw Error("Collection search/move/duplicate UI missing: "+id);
 for(const token of ["collectionSearchQuery","collectionMoveSelected","collectionMoveTarget","collectionDuplicate","newCollectionId","Moved ","Duplicated collection"])if(!collections.includes(token))throw Error("Collection search/move/duplicate behavior missing: "+token);
-for(const token of [".collection-search-label",".collection-bulk-toolbar select"])if(!css.includes(token))throw Error("Collection search/move styles missing: "+token);
+for(const token of [".collection-search-label",".collection-bulk-toolbar select"])if(!collectionsCss.includes(token))throw Error("Collection search/move styles missing: "+token);
 
 // Smart genre suggestions derive from current catalog data and create prefilled shelves.
-if(!h.includes('id="smartCollectionChips"'))throw Error("Smart collection suggestions UI missing");for(const token of ["renderSmartSuggestions","smartCollectionChips","genres","Created "])if(!collections.includes(token))throw Error("Smart collection suggestion logic missing: "+token);for(const token of [".smart-collection-chip",".smart-collection-chips"])if(!css.includes(token))throw Error("Smart collection suggestion styling missing: "+token);
+if(!h.includes('id="smartCollectionChips"'))throw Error("Smart collection suggestions UI missing");for(const token of ["renderSmartSuggestions","smartCollectionChips","genres","Created "])if(!collections.includes(token))throw Error("Smart collection suggestion logic missing: "+token);for(const token of [".smart-collection-chip",".smart-collection-chips"])if(!collectionsCss.includes(token))throw Error("Smart collection suggestion styling missing: "+token);
 
 // Continue Watching resume polish: recent-first ordering and remaining-time labels.
 for(const token of ["refreshContinueRow();","resume-time-label","updatedAt","min left","const items=movies.filter(m=>Number(m.progress)>0).sort"])if(!a.includes(token))throw Error("Continue Watching resume polish missing: "+token);
