@@ -86,5 +86,12 @@ try{
  const stillPublished=await (await fetch(base+"/api/catalog")).json();
  assert.equal(stillPublished.length,1,"rejecting another item does not remove approved media");
  assert.equal((await fetch(base+"/media/"+rejectedSession.uploadId)).status,404,"rejected media cannot be streamed");
+ // Concurrent direct uploads must not overwrite each other in the shared catalog.
+ const directUploads=await Promise.all(["Admin A","Admin B"].map(title=>fetch(base+"/admin/upload?title="+encodeURIComponent(title)+"&filename=admin.mp4",{method:"POST",headers:adminHeaders,body:Buffer.from(title)})));
+ assert.deepEqual(directUploads.map(response=>response.status),[201,201],"parallel admin uploads both complete");
+ const directResults=await Promise.all(directUploads.map(response=>response.json()));
+ assert.equal(new Set(directResults.map(item=>item.id)).size,2,"parallel admin uploads receive distinct media IDs");
+ const pendingAfterParallel=await (await fetch(base+"/admin/pending",{headers:adminHeaders})).json();
+ assert.equal(pendingAfterParallel.length,2,"catalog lock preserves both parallel admin uploads");
  console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges.");
 }finally{if(server.exitCode===null&&server.signalCode===null)server.kill("SIGTERM");await serverExit;await rm(temp,{recursive:true,force:true});}
