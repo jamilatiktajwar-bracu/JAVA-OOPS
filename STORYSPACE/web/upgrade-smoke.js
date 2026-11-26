@@ -236,3 +236,6 @@ for(const token of ["coverIcons","validIcon(item.icon)","icon:validIcon(item.ico
 if(!h.includes('id="collectionIcon"')||!h.includes('id="collectionDetailIcon"'))throw Error("Collection icon controls missing");
 for(const token of [".collection-cover-icon","#collectionDetailIcon"])if(!collectionsCss.includes(token))throw Error("Collection icon styles missing: "+token);
 if(!sw.includes("storyspace-shell-v59"))throw Error("Collection cover cache version missing");
+
+// Per-profile storage schema retains sort and cover personalization across reloads.
+if(!collections.includes("icon: validIcon(item.icon)")||!collections.includes('sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom"'))throw Error("Collection cover/sort profile persistence missing");
