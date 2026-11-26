@@ -43,3 +43,11 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - The preview player shows a buffering/recovery overlay for delayed media data and provides a manual retry action when a source fails.
 - A prolonged `stalled` event triggers one automatic source reload after 8.5 seconds, preserving the current playback position and attempting to resume playback.
 - Automatic stall recovery is rate-limited to one attempt per 25 seconds to avoid repeated reload loops. If recovery fails, the manual retry remains available.
+
+
+## Player seeking safeguards
+
+- The timeline clamps seek input to a finite, valid seek window and ignores non-numeric slider values.
+- Finite VOD media seeks from zero to its duration; live/DVR media uses the latest browser-reported seekable range and labels the timeline as LIVE.
+- Seek previews use the same seek window as the player, so preview time and committed seek position stay aligned.
+- Pointer cancellation clears the transient seek-preview state.
