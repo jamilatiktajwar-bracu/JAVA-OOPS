@@ -36,3 +36,10 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - Search: filter by genre, format, maturity rating and year; reset filters and result counts are available.
 - Preview player: ±10-second skips, playback speed, PiP (where supported), fullscreen and shortcut hints.
 - Local profiles are not backend accounts and do not sync across devices. Preview media remains sample content only.
+
+
+## Playback recovery
+
+- The preview player shows a buffering/recovery overlay for delayed media data and provides a manual retry action when a source fails.
+- A prolonged `stalled` event triggers one automatic source reload after 8.5 seconds, preserving the current playback position and attempting to resume playback.
+- Automatic stall recovery is rate-limited to one attempt per 25 seconds to avoid repeated reload loops. If recovery fails, the manual retry remains available.
