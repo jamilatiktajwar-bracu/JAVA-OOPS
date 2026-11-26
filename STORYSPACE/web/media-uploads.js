@@ -27,7 +27,7 @@
   function fmt(bytes){if(!Number.isFinite(bytes))return "—";const units=["B","KB","MB","GB","TB"];let n=bytes,i=0;while(n>=1024&&i<units.length-1){n/=1024;i++}return n.toFixed(i?1:0)+" "+units[i]}
   function setProgress(done,total,message){$("mediaProgress").hidden=false;$("mediaProgressFill").style.width=(total?Math.min(100,done/total*100):0)+"%";$("mediaProgressText").textContent=message}
   async function getFile(item){
-    if(item.handle){try{let permission=await item.handle.queryPermission({mode:"read"});if(permission!=="granted")permission=await item.handle.requestPermission({mode:"read"});if(permission==="granted")return await item.handle.getFile()}catch{}}
+    if(item.handle){try{let permission=await item.handle.queryPermission({mode:"read"});if(permission!=="granted")permission=await item.handle.requestPermission({mode:"read"});if(permission==="granted"){const file=await item.handle.getFile();if(file.name!==item.filename||file.size!==item.size)throw new Error("The selected file has changed since this upload was queued. Choose the original video.");return file}}catch(error){if(error.message.includes("has changed"))throw error}}
     if(selectedFile&&selectedFile.name===item.filename&&selectedFile.size===item.size)return selectedFile;
     throw new Error("Select the original file again to resume this upload.");
   }
@@ -55,7 +55,7 @@
         if(error.name==="AbortError")throw new Error("Upload chunk timed out after 2 minutes. Resume to continue from the server-confirmed position.");
         throw error;
       }finally{clearTimeout(timeout)}
-      if(!Number.isFinite(response.offset)||response.offset<item.offset||response.offset>end)throw new Error("Media server returned an invalid upload position. Refresh the queue before retrying.");
+      if(!Number.isSafeInteger(response.offset)||response.offset<=item.offset||response.offset>end)throw new Error("Media server returned an invalid or non-advancing upload position. Refresh the queue before retrying.");
       item.offset=response.offset;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
       setProgress(item.offset,item.size,"Uploading "+fmt(item.offset)+" / "+fmt(item.size)+" · "+Math.floor(item.offset/item.size*100)+"%");
     }
