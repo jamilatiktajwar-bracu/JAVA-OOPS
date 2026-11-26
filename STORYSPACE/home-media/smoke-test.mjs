@@ -69,6 +69,14 @@ try{
  assert.equal((await fetch(base+"/admin/review/"+session.uploadId,{method:"POST",headers:{"x-storyspace-admin-token":admin,"content-type":"application/json"},body:JSON.stringify({action:"approve"})})).status,200);
  const catalog=await (await fetch(base+"/api/catalog")).json();assert.equal(catalog.length,1);
  const ranged=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=3-7"}});assert.equal(ranged.status,206);assert.equal(await ranged.text(),"34567");
+ const suffixRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=-4"}});assert.equal(suffixRange.status,206);assert.equal(await suffixRange.text(),"cdef","suffix byte ranges return the final bytes");
+ const openRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=12-"}});assert.equal(openRange.status,206);assert.equal(await openRange.text(),"cdef","open-ended byte ranges reach EOF");
+ const invalidRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1,4-5"}});assert.equal(invalidRange.status,416,"unsupported multi-range requests are rejected explicitly");
+ assert.match(invalidRange.headers.get("content-range")||"",/^bytes \\/\\/16$/);
+ const headRange=await fetch(base+catalog[0].streamUrl,{method:"HEAD",headers:{range:"bytes=0-3"}});assert.equal(headRange.status,206);assert.equal(headRange.headers.get("content-length"),"4");assert.equal(await headRange.text(),"","HEAD never streams a body");
+ const etag=headRange.headers.get("etag")||(await fetch(base+catalog[0].streamUrl)).headers.get("etag");
+ const notModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":etag}});assert.equal(notModified.status,304,"matching ETag avoids retransmitting unchanged media");
+ const ignoredRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"\\"stale\\""}});assert.equal(ignoredRange.status,200,"stale If-Range falls back to a full response");assert.equal(await ignoredRange.text(),"0123456789abcdef");
  // A rejected upload must disappear from the pending queue and remain private.
  const rejectedInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Reject Me",filename:"reject.mp4",size:4})});
  assert.equal(rejectedInit.status,201);const rejectedSession=await rejectedInit.json();
