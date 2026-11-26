@@ -36,10 +36,12 @@
     if(!validRoot(root)||!token||token.length<32)throw new Error("Save a valid HTTPS media server address and uploader invitation key first.");
     if(!item.uploadId){
       const init=await request(root,"/api/uploads/init",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:item.title,filename:item.filename,size:item.size})});
-      item.uploadId=init.uploadId;item.offset=0;item.status="uploading";await storeItem(item);
+      if(!init||typeof init.uploadId!=="string"||!init.uploadId.trim()||init.uploadId.length>200)throw new Error("Media server did not return a valid upload session. Retry after checking the server.");
+      item.uploadId=init.uploadId;item.offset=0;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
     }else{
       const status=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token);
-      item.offset=status.offset;await storeItem(item);
+      if(!status||!Number.isSafeInteger(status.offset)||status.offset<0||status.offset>item.size)throw new Error("Media server returned an invalid saved upload position. Your local queue was left unchanged.");
+      item.offset=status.offset;item.updatedAt=Date.now();await storeItem(item);
     }
     const chunkSize=8*1024*1024;
     setProgress(item.offset,item.size,"Resuming upload · "+fmt(item.offset)+" / "+fmt(item.size));
