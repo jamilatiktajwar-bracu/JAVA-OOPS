@@ -11,6 +11,10 @@ const mediaDir = path.resolve(process.env.STORYSPACE_MEDIA_DIR || path.join(root
 const stagingDir = path.resolve(process.env.STORYSPACE_MEDIA_STAGING_DIR || path.join(root, ".uploads"));
 const catalogFile = path.resolve(process.env.STORYSPACE_MEDIA_CATALOG_FILE || path.join(root, "catalog.json"));
 const host = process.env.STORYSPACE_MEDIA_HOST || "127.0.0.1";
+if (!["127.0.0.1","::1","localhost"].includes(host)) {
+  console.error("STORYSPACE_MEDIA_HOST must be a loopback address (127.0.0.1, ::1, or localhost).");
+  process.exit(1);
+}
 const port = Number(process.env.STORYSPACE_MEDIA_PORT || 8787);
 const adminToken = String(process.env.STORYSPACE_MEDIA_ADMIN_TOKEN || "");
 const uploadToken = String(process.env.STORYSPACE_MEDIA_UPLOAD_TOKEN || "");
