@@ -260,3 +260,9 @@ for(const token of [".universe-search-label input",".universe-search-clear",".un
 for(const id of ["universeSelectToggle","universeBulkActions","universeSelectAll","universeClearSelection","universeRemoveSelected","universeSelectedCount"])if(!h.includes('id="'+id+'"'))throw Error("Bulk selection control missing: "+id);
 for(const token of ["universeSelection","universeSelectMode","universeSelectAll","universeClearSelection","universeRemoveSelected","universe-selected","Select all visible","Removed ","syncUniverseBulkControls"])if(!a.includes(token))throw Error("Bulk selection behavior missing: "+token);
 for(const token of [".universe-bulk-actions",".universe-selection-action",".movie-card.universe-selected",".universe-select-toggle"])if(!c.includes(token))throw Error("Bulk selection styling missing: "+token);
+
+// Collection bulk tools regression guards.
+for(const id of ["collectionBulkToggle","collectionBulkToolbar","collectionSelectAll","collectionClearSelection","collectionRemoveSelected","collectionBulkCount","universeCollectionAssign","universeAssignCollection","universeAssignSelected"])if(!h.includes('id="'+id+'"'))throw Error("Collection bulk UI missing: "+id);
+for(const token of ["collectionBulkSelection","collectionBulkMode","collectionSelectAll","collectionRemoveSelected","bulkAdd","collection-bulk-selected","syncCollectionBulkToolbar"])if(!cs.includes(token))throw Error("Collection bulk behavior missing: "+token);
+for(const token of ["universeCollectionAssign","universeAssignCollection","universeAssignSelected","bulkAdd","syncUniverseCollectionAssignment"])if(!a.includes(token))throw Error("Universe-to-collection bulk assignment missing: "+token);
+for(const token of [".collection-bulk-toolbar",".collection-bulk-selected",".universe-collection-assign"])if(!cc.includes(token))throw Error("Collection bulk styles missing: "+token);
