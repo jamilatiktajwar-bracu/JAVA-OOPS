@@ -344,20 +344,66 @@
       choices.append(note);
       return;
     }
+    const quickCreate = document.createElement("button");
+    quickCreate.type = "button";
+    quickCreate.className = "secondary-button collection-quick-create-toggle";
+    quickCreate.textContent = "＋ Create a collection & save";
+    quickCreate.setAttribute("aria-expanded", "false");
+    const form = document.createElement("form");
+    form.className = "collection-quick-create";
+    form.hidden = true;
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.maxLength = 28;
+    nameInput.required = true;
+    nameInput.autocomplete = "off";
+    nameInput.placeholder = "Collection name";
+    nameInput.setAttribute("aria-label", "New collection name");
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.className = "primary-button";
+    submit.textContent = "Create & save";
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "secondary-button";
+    cancel.textContent = "Cancel";
+    const status = document.createElement("p");
+    status.className = "collection-quick-create-status";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    form.append(nameInput, submit, cancel, status);
+    quickCreate.addEventListener("click", () => {
+      form.hidden = !form.hidden;
+      quickCreate.setAttribute("aria-expanded", String(!form.hidden));
+      if (!form.hidden) nameInput.focus();
+    });
+    cancel.addEventListener("click", () => {
+      form.reset();
+      form.hidden = true;
+      quickCreate.setAttribute("aria-expanded", "false");
+      quickCreate.focus();
+      status.textContent = "";
+    });
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const result = createCollection(nameInput.value, "violet", "✧", "");
+      if (!result.ok) {
+        status.textContent = result.reason;
+        nameInput.focus();
+        return;
+      }
+      const created = collections.find(item => item.id === result.id);
+      if (created) created.items.unshift(identify(movie));
+      saveCollections();
+      render();
+      renderModalChoices(movie);
+      if (typeof showToast === "function") showToast("Created " + created.name + " and saved this story");
+    });
+    choices.append(quickCreate, form);
     if (!collections.length) {
       const note = document.createElement("p");
-      note.textContent = "Create your first collection, then return here to save this story.";
-      const create = document.createElement("button");
-      create.type = "button";
-      create.className = "secondary-button collection-inline-create";
-      create.textContent = "＋ Create collection";
-      create.addEventListener("click", () => {
-        $("modalClose").click();
-        $("collectionCreateForm").hidden = false;
-        $("collectionsSection").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
-        $("collectionName").focus();
-      });
-      choices.append(note, create);
+      note.textContent = "No collections yet—create one here and this story will be saved instantly.";
+      choices.append(note);
       return;
     }
     collections.forEach(collection => {
@@ -369,7 +415,7 @@
       const icon = document.createElement("span");
       icon.textContent = included ? "✓" : "＋";
       const name = document.createElement("span");
-      name.textContent = collection.name;
+      name.textContent = collection.icon + " " + collection.name;
       const count = document.createElement("small");
       count.textContent = collection.items.length + " saved";
       button.append(icon, name, count);
