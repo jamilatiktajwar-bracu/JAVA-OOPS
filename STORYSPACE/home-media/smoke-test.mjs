@@ -9,8 +9,12 @@ import { fileURLToPath } from "node:url";
 const root=path.dirname(fileURLToPath(import.meta.url)),temp=await mkdtemp(path.join(os.tmpdir(),"storyspace-media-"));
 const admin="test-admin-secret-with-at-least-32-characters",invite="test-uploader-secret-with-at-least-32-characters";
 const staging=path.join(temp,"staging"),expiredId="11111111-1111-4111-8111-111111111111",expiredTime=new Date(Date.now()-8*24*60*60*1000);
+const activeId="22222222-2222-4222-8222-222222222222";
 await mkdir(staging,{recursive:true});
 for(const suffix of [".json",".part"]){const file=path.join(staging,expiredId+suffix);await writeFile(file,"expired");await utimes(file,expiredTime,expiredTime);}
+const activePart=path.join(staging,activeId+".part"),activeMeta=path.join(staging,activeId+".json");
+await writeFile(activePart,"partial");await utimes(activePart,expiredTime,expiredTime);
+await writeFile(activeMeta,JSON.stringify({id:activeId}));
 const portProbe=createServer();
 await new Promise((resolve,reject)=>{portProbe.once("error",reject);portProbe.listen(0,"127.0.0.1",resolve);});
 const port=portProbe.address().port;
@@ -25,6 +29,7 @@ try{
  let ready=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
  assert.equal(ready,true,"server starts"+(serverError?": "+serverError:""));
  for(const suffix of [".json",".part"]){await assert.rejects(access(path.join(staging,expiredId+suffix)), "stale upload session artifacts are removed on startup");}
+ await access(activeMeta);await access(activePart);
  const uploaderCheck=await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers});
  assert.equal(uploaderCheck.status,200);assert.deepEqual(await uploaderCheck.json(),{ok:true,role:"uploader"});
  const adminHeaders={"x-storyspace-admin-token":admin};
