@@ -51,10 +51,20 @@ function removeExpiredUploadSessions(now=Date.now()) {
 }
 removeExpiredUploadSessions();
 
+function isValidCatalogItem(item) {
+  if (!item || !/^[a-f0-9-]{36}$/i.test(String(item.id || ""))) return false;
+  if (typeof item.fileName !== "string" || path.basename(item.fileName) !== item.fileName) return false;
+  const extension = path.extname(item.fileName).toLowerCase();
+  return item.fileName === item.id + extension &&
+    types.has(extension) && item.contentType === types.get(extension) &&
+    safeTitle(item.title) !== "" &&
+    Number.isSafeInteger(item.size) && item.size > 0 &&
+    typeof item.addedAt === "string";
+}
 function readCatalog() {
   try {
     const data = JSON.parse(fs.readFileSync(catalogFile, "utf8"));
-    return Array.isArray(data) ? data.filter(x => x && /^[a-f0-9-]{36}$/i.test(x.id) && typeof x.fileName === "string") : [];
+    return Array.isArray(data) ? data.filter(isValidCatalogItem) : [];
   } catch { return []; }
 }
 function writeCatalog(items) {
