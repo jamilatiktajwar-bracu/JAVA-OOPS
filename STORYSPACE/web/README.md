@@ -51,3 +51,11 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - Finite VOD media seeks from zero to its duration; live/DVR media uses the latest browser-reported seekable range and labels the timeline as LIVE.
 - Seek previews use the same seek window as the player, so preview time and committed seek position stay aligned.
 - Pointer cancellation clears the transient seek-preview state.
+
+
+## Playback diagnostics
+
+- The player status line reports the currently decoded video dimensions, media duration/live state, and buffered seconds ahead of the playhead.
+- Network and ready-state labels help distinguish loading, metadata-only, frame-ready, and buffered playback states.
+- When supported by the browser, dropped-frame counters expose rendering pressure; playback-rate changes are reflected immediately.
+- Diagnostics use native media element APIs and gracefully omit unsupported frame-quality details.
