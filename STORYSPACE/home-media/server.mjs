@@ -79,6 +79,21 @@ function writeSession(session) {
   fs.writeFileSync(temp,JSON.stringify(session),{mode:0o600});
   fs.renameSync(temp,files.data);
 }
+
+// Serialize mutations and offset reads for each upload within this server process.
+const sessionLocks = new Map();
+async function withSessionLock(id, task) {
+  const previous = sessionLocks.get(id) || Promise.resolve();
+  let release;
+  const current = new Promise(resolve => { release = resolve; });
+  sessionLocks.set(id, current);
+  await previous.catch(() => {});
+  try { return await task(); }
+  finally {
+    release();
+    if (sessionLocks.get(id) === current) sessionLocks.delete(id);
+  }
+}
 async function readJson(req, limit=16*1024) {
   const chunks=[]; let size=0;
   for await (const chunk of req) { size+=chunk.length; if(size>limit) throw Object.assign(new Error("Request too large"),{statusCode:413}); chunks.push(chunk); }
@@ -119,6 +134,7 @@ async function handle(req,res) {
 
   const chunkMatch=url.pathname.match(/^\/api\/uploads\/([a-f0-9-]{36})\/chunk$/i);
   if(chunkMatch&&req.method==="PUT"){
+    return withSessionLock(chunkMatch[1], async () => {
     if(!isUploader(req)) return json(res,401,{error:"Upload invitation required"});
     const session=readSession(chunkMatch[1]); if(!session) return json(res,404,{error:"Upload session not found"});
     const files=sessionPaths(session.id), current=fs.statSync(files.part).size;
@@ -132,19 +148,23 @@ async function handle(req,res) {
       session.offset=current+received;writeSession(session);
       return json(res,200,{uploadId:session.id,offset:session.offset,complete:session.offset===session.size});
     }catch(error){return json(res,error.statusCode||400,{error:error.statusCode===413?"Chunk exceeds limit":"Chunk upload failed",offset:fs.existsSync(files.part)?fs.statSync(files.part).size:0});}
+    });
   }
 
   const statusMatch=url.pathname.match(/^\/api\/uploads\/([a-f0-9-]{36})$/i);
   if(statusMatch&&req.method==="GET"){
+    return withSessionLock(statusMatch[1], async () => {
     if(!isUploader(req)) return json(res,401,{error:"Upload invitation required"});
     const session=readSession(statusMatch[1]);if(!session)return json(res,404,{error:"Upload session not found"});
     const files=sessionPaths(session.id),offset=fs.existsSync(files.part)?fs.statSync(files.part).size:0;
     if(offset!==session.offset){session.offset=offset;writeSession(session);}
     return json(res,200,{uploadId:session.id,offset:session.offset,size:session.size,chunkSize:maxChunkBytes,status:"uploading"});
+    });
   }
 
   const completeMatch=url.pathname.match(/^\/api\/uploads\/([a-f0-9-]{36})\/complete$/i);
   if(completeMatch&&req.method==="POST"){
+    return withSessionLock(completeMatch[1], async () => {
     if(!isUploader(req)) return json(res,401,{error:"Upload invitation required"});
     const session=readSession(completeMatch[1]);if(!session)return json(res,404,{error:"Upload session not found"});
     const files=sessionPaths(session.id),actual=fs.statSync(files.part).size;
@@ -155,6 +175,7 @@ async function handle(req,res) {
     const items=readCatalog();items.push(item);writeCatalog(items);
     fs.rmSync(files.data,{force:true});
     return json(res,201,{id:item.id,title:item.title,size:item.size,status:"pending_approval"});
+    });
   }
 
   if(url.pathname==="/admin/pending"&&req.method==="GET"){
