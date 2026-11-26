@@ -277,6 +277,18 @@ async function handle(req,res) {
     });
   }
 
+  if(statusMatch&&req.method==="DELETE"){
+    return withSessionLock(statusMatch[1], async () => {
+      if(!isUploader(req)) return json(res,401,{error:"Upload invitation required"});
+      const session=readSession(statusMatch[1]);
+      if(!session) return json(res,404,{error:"Upload session not found"});
+      const files=sessionPaths(session.id);
+      fs.rmSync(files.part,{force:true});
+      fs.rmSync(files.data,{force:true});
+      return json(res,200,{uploadId:session.id,status:"cancelled"});
+    });
+  }
+
   const completeMatch=url.pathname.match(/^\/api\/uploads\/([a-f0-9-]{36})\/complete$/i);
   if(completeMatch&&req.method==="POST"){
     return withSessionLock(completeMatch[1], async () => {
