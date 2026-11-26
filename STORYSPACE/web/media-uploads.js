@@ -64,12 +64,30 @@
     setProgress(item.size,item.size,"Upload complete · waiting for owner approval");
     await renderQueue();
   }
+  function isTerminalQueueStatus(status){return status==="Pending owner approval"||status==="Approved · published"||status==="Rejected or removed on server"}
+  async function syncOwnerQueueStatuses(pendingItems){
+    const cfg=readConfig(),root=cleanRoot(cfg.root),token=$("mediaAdminToken")?.value.trim()||sessionStorage.getItem("storyspace.mediaAdmin")||"";
+    if(!validRoot(root)||token.length<32)return;
+    const catalogResponse=await fetch(root+"/api/catalog",{cache:"no-store"});
+    if(!catalogResponse.ok)throw new Error("Could not refresh the published media catalog");
+    const catalog=await catalogResponse.json();if(!Array.isArray(catalog))throw new Error("Media server returned an invalid catalog");
+    const pendingIds=new Set((Array.isArray(pendingItems)?pendingItems:[]).map(item=>String(item.id)));
+    const publishedIds=new Set(catalog.map(item=>String(item.id)));
+    const queued=await getItems();let changed=false;
+    for(const item of queued){
+      if(!item.uploadId||!item.status||!item.status.startsWith("Pending owner approval"))continue;
+      const id=String(item.uploadId);
+      const next=pendingIds.has(id)?"Pending owner approval":publishedIds.has(id)?"Approved · published":"Rejected or removed on server";
+      if(item.status!==next){item.status=next;item.updatedAt=Date.now();changed=true;await storeItem(item)}
+    }
+    if(changed)await renderQueue();
+  }
   async function renderQueue(){
     const target=$("mediaQueueList");if(!target)return;
     try{const items=await getItems();target.replaceChildren();if(!items.length){target.textContent="No queued uploads yet.";target.className="media-muted";return}
       items.sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).forEach(item=>{
         const row=document.createElement("div");row.className="media-queue-item";const info=document.createElement("div");const title=document.createElement("b");title.textContent=item.title;const meta=document.createElement("small");meta.textContent=(item.status||"Queued")+" · "+fmt(item.offset||0)+" / "+fmt(item.size);info.append(title,meta);row.append(info);
-        if(item.status!=="Pending owner approval"){const retry=document.createElement("button");retry.type="button";retry.className="secondary-button";retry.textContent="Resume";retry.disabled=active;retry.addEventListener("click",()=>resumeOne(item.id));row.append(retry)}
+        if(!isTerminalQueueStatus(item.status)){const retry=document.createElement("button");retry.type="button";retry.className="secondary-button";retry.textContent="Resume";retry.disabled=active;retry.addEventListener("click",()=>resumeOne(item.id));row.append(retry)}
         const remove=document.createElement("button");remove.type="button";remove.className="secondary-button";remove.textContent="Remove";remove.setAttribute("aria-label","Remove "+item.title+" from this device's upload queue");remove.disabled=active;remove.addEventListener("click",async()=>{if(active)return;const pending=item.status==="Pending owner approval";const message=pending?"Remove this completed upload from this device's queue? The server copy and owner approval status will not be changed.":"Remove this upload from this device's queue? Any server-side partial upload may remain until the media host cleans it up.";if(!window.confirm(message))return;remove.disabled=true;try{await removeItem(item.id);showToast("Removed from this device's upload queue");await renderQueue()}catch(error){showToast("Could not remove queue item: "+error.message);remove.disabled=false}});row.append(remove);target.append(row);
       });
     }catch(error){target.textContent=error.message;target.className="media-muted"}
@@ -105,6 +123,7 @@
     try{
       await request(root,"/api/auth/verify/admin",token,{method:"POST",headers:{"x-storyspace-admin-token":token}});
       const items=await request(root,"/admin/pending",token,{headers:{"x-storyspace-admin-token":token}});
+      await syncOwnerQueueStatuses(items);
       target.replaceChildren();if(!items.length){target.textContent="No pending uploads.";return}
       items.forEach(item=>{
         const row=document.createElement("div");row.className="media-pending-item";const info=document.createElement("div"),title=document.createElement("b"),meta=document.createElement("small");title.textContent=item.title;meta.textContent=fmt(item.size)+" · "+new Date(item.addedAt).toLocaleString();info.append(title,meta);
