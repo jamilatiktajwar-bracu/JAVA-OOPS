@@ -47,6 +47,7 @@ jobs:
           node --check STORYSPACE/web/resume-hub.js
           node --check STORYSPACE/web/command-palette.js
           node --check STORYSPACE/web/quick-discovery.js
+          node --check STORYSPACE/web/collections.js
           node --check STORYSPACE/home-media/server.mjs
           node --check STORYSPACE/home-media/smoke-test.mjs
           node STORYSPACE/home-media/smoke-test.mjs
