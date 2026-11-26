@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 const root = path.join(__dirname, "..");
 const read = p => fs.readFileSync(path.join(root, p), "utf8");
 for (const p of ["web/manifest.webmanifest", "platforms/desktop/package.json", "platforms/mobile/package.json"]) JSON.parse(read(p));
@@ -25,7 +26,6 @@ const desktop = JSON.parse(read("platforms/desktop/package.json"));
 if (!desktop.devDependencies["electron-builder"] || !desktop.scripts.dist) throw new Error("Desktop package scripts are missing");
 if (!desktop.build.extraResources?.some(resource => resource.from === "../../web")) throw new Error("Desktop build must bundle the shared web client");
 
-const { execFileSync } = require("node:child_process");
 const os = require("node:os");
 const nativeBridgePath = path.join(root, "web", "native-bridge.js");
 execFileSync(process.execPath, ["--check", nativeBridgePath], { stdio: "pipe" });
