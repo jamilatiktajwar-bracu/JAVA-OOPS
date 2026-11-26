@@ -31,8 +31,13 @@ try{
  assert.equal((await fetch(base+"/api/uploads/init",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:"Denied",filename:"x.mp4",size:16})})).status,401);
  const init=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Review Me",filename:"demo.mp4",size:16})});
  assert.equal(init.status,201);const session=await init.json();
- const part1=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"0"},body:Buffer.from("01234567")});
- assert.equal(part1.status,200);assert.equal((await part1.json()).offset,8);
+ const concurrentChunks=await Promise.all(["01234567","ABCDEFGH"].map(payload=>fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"0"},body:Buffer.from(payload)})));
+ const concurrentStatuses=concurrentChunks.map(response=>response.status).sort((a,b)=>a-b);
+ assert.deepEqual(concurrentStatuses,[200,409],"parallel chunks at the same offset cannot both append");
+ const concurrentBodies=await Promise.all(concurrentChunks.map(response=>response.json()));
+ assert.equal(concurrentBodies.find(body=>body.offset===8)?.offset,8,"one concurrent chunk advances the session exactly once");
+ const concurrentStatus=await (await fetch(base+"/api/uploads/"+session.uploadId,{headers})).json();
+ assert.equal(concurrentStatus.offset,8,"serialized status reports the committed offset");
 
  const staleOffset=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"7"},body:Buffer.from("x")});
  assert.equal(staleOffset.status,409,"stale chunk offsets are rejected");
