@@ -250,3 +250,9 @@ if(!sw.includes("storyspace-shell-v61"))throw Error("Collection descriptions cac
 for(const token of ["reorderCollections","collection-shelf-card","collection-shelf-controls","collection-shelf-move","dragstart","dragover","dragend"])if(!collections.includes(token))throw Error("Collection hub reorder feature missing: "+token);
 for(const token of [".collection-shelf-card",".collection-shelf-controls",".collection-shelf-move",".collection-shelf-dragging"])if(!collectionsCss.includes(token))throw Error("Collection hub reorder styles missing: "+token);
 if(!sw.includes("storyspace-shell-v61"))throw Error("Collection hub cache version missing");
+
+// My Universe live search filters saved stories without changing the saved set.
+if(!h.includes('id="universeSearch"'))throw Error("My Universe search input missing");
+for(const token of ['$("universeSearch")?.value','String(value||"").toLowerCase().includes(query)','$("universeSearch")?.addEventListener("input",renderHome)'])if(!app.includes(token))throw Error("My Universe search behavior missing: "+token);
+if(!styles.includes(".universe-search-label"))throw Error("My Universe search responsive styling missing");
+if(!sw.includes("storyspace-shell-v62"))throw Error("My Universe search cache version missing");
