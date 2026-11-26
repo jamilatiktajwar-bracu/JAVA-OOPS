@@ -29,6 +29,8 @@
           id: String(item.id || ("collection-" + index)),
           name,
           theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+          icon: validIcon(item.icon),
+          sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
           createdAt: Math.max(0, Number(item.createdAt) || Date.now()),
           items
         }];
