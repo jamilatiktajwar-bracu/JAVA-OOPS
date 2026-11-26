@@ -434,7 +434,75 @@
     }
   });
 
-  $("collectionBulkToggle")?.addEventListener("click",()=>{collectionBulkMode=!collectionBulkMode;if(!collectionBulkMode)collectionBulkSelection.clear();renderCollectionDetail()});$("collectionSearch")?.addEventListener("input",event=>{collectionSearchQuery=event.target.value;renderCollectionDetail()});$("collectionMoveTarget")?.addEventListener("change",()=>renderCollectionDetail());$("collectionMoveSelected")?.addEventListener("click",()=>{const source=collections.find(x=>x.id===activeCollectionId),target=collections.find(x=>x.id===$("collectionMoveTarget").value);if(!source||!target)return;const ids=[...collectionBulkSelection].filter(id=>source.items.includes(id));let moved=0;ids.forEach(id=>{if(target.items.includes(id)||target.items.length>=MAX_ITEMS)return;target.items.unshift(id);source.items=source.items.filter(item=>item!==id);moved++});collectionBulkSelection.clear();saveCollections();render();if(typeof showToast==="function")showToast("Moved "+moved+" title"+(moved===1?"":"s")+" to "+target.name)});$("collectionDuplicate")?.addEventListener("click",()=>{const source=collections.find(x=>x.id===activeCollectionId);if(!source)return;if(collections.length>=MAX_COLLECTIONS){showToast("You reached the collection limit");return}let name=cleanName(source.name+" Copy"),suffix=2;while(collections.some(x=>x.name.toLowerCase()===name.toLowerCase()))name=cleanName(source.name+" Copy "+suffix++);const copy={...source,id:newCollectionId(),name,createdAt:Date.now(),items:[...source.items]};collections.unshift(copy);saveCollections();activeCollectionId=copy.id;render();showToast("Duplicated collection")}$("collectionSelectAll")?.addEventListener("click",()=>{const found=collections.find(x=>x.id===activeCollectionId)?.items.map(movieFor).filter(Boolean)||[];if(found.length&&found.every(m=>collectionBulkSelection.has(identify(m))))found.forEach(m=>collectionBulkSelection.delete(identify(m)));else found.forEach(m=>collectionBulkSelection.add(identify(m)));renderCollectionDetail()});$("collectionClearSelection")?.addEventListener("click",()=>{collectionBulkSelection.clear();renderCollectionDetail()});$("collectionRemoveSelected")?.addEventListener("click",()=>{const collection=collections.find(x=>x.id===activeCollectionId);if(!collection)return;const ids=[...collectionBulkSelection].filter(id=>collection.items.includes(id));if(!ids.length)return;collection.items=collection.items.filter(id=>!ids.includes(id));collectionBulkSelection.clear();saveCollections();render();if(typeof showToast==="function")showToast("Removed "+ids.length+" from "+collection.name)});
+  $("collectionBulkToggle")?.addEventListener("click", () => {
+    collectionBulkMode = !collectionBulkMode;
+    if (!collectionBulkMode) collectionBulkSelection.clear();
+    renderCollectionDetail();
+  });
+  $("collectionSearch")?.addEventListener("input", event => {
+    collectionSearchQuery = event.target.value;
+    renderCollectionDetail();
+  });
+  $("collectionMoveTarget")?.addEventListener("change", () => renderCollectionDetail());
+  $("collectionMoveSelected")?.addEventListener("click", () => {
+    const source = collections.find(item => item.id === activeCollectionId);
+    const target = collections.find(item => item.id === $("collectionMoveTarget").value);
+    if (!source || !target) return;
+    const ids = [...collectionBulkSelection].filter(id => source.items.includes(id));
+    let moved = 0;
+    ids.forEach(id => {
+      if (target.items.includes(id) || target.items.length >= MAX_ITEMS) return;
+      target.items.unshift(id);
+      source.items = source.items.filter(item => item !== id);
+      moved++;
+    });
+    collectionBulkSelection.clear();
+    saveCollections();
+    render();
+    if (typeof showToast === "function") showToast("Moved " + moved + " title" + (moved === 1 ? "" : "s") + " to " + target.name);
+  });
+  $("collectionDuplicate")?.addEventListener("click", () => {
+    const source = collections.find(item => item.id === activeCollectionId);
+    if (!source) return;
+    if (collections.length >= MAX_COLLECTIONS) {
+      showToast("You reached the collection limit");
+      return;
+    }
+    let name = cleanName(source.name + " Copy"), suffix = 2;
+    while (collections.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+      name = cleanName(source.name + " Copy " + suffix++);
+    }
+    const copy = { ...source, id: newCollectionId(), name, createdAt: Date.now(), items: [...source.items] };
+    collections.unshift(copy);
+    saveCollections();
+    activeCollectionId = copy.id;
+    render();
+    showToast("Duplicated collection");
+  });
+  $("collectionSelectAll")?.addEventListener("click", () => {
+    const found = collections.find(item => item.id === activeCollectionId)?.items.map(movieFor).filter(Boolean) || [];
+    if (found.length && found.every(item => collectionBulkSelection.has(identify(item)))) {
+      found.forEach(item => collectionBulkSelection.delete(identify(item)));
+    } else {
+      found.forEach(item => collectionBulkSelection.add(identify(item)));
+    }
+    renderCollectionDetail();
+  });
+  $("collectionClearSelection")?.addEventListener("click", () => {
+    collectionBulkSelection.clear();
+    renderCollectionDetail();
+  });
+  $("collectionRemoveSelected")?.addEventListener("click", () => {
+    const collection = collections.find(item => item.id === activeCollectionId);
+    if (!collection) return;
+    const ids = [...collectionBulkSelection].filter(id => collection.items.includes(id));
+    if (!ids.length) return;
+    collection.items = collection.items.filter(id => !ids.includes(id));
+    collectionBulkSelection.clear();
+    saveCollections();
+    render();
+    if (typeof showToast === "function") showToast("Removed " + ids.length + " from " + collection.name);
+  });
   $("collectionSort")?.addEventListener("change", event => {
     const collection = collections.find(item => item.id === activeCollectionId);
     if (!collection) return;
