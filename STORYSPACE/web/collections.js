@@ -397,6 +397,8 @@
       saveCollections();
       render();
       renderModalChoices(movie);
+      // The form is rebuilt after saving; return keyboard focus to its toggle instead of a detached submit button.
+      $("modalCollectionsChoices")?.querySelector(".collection-quick-create-toggle")?.focus();
       if (typeof showToast === "function") showToast("Created " + created.name + " and saved this story");
     });
     choices.append(quickCreate, form);
