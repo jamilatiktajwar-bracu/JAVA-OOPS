@@ -707,11 +707,11 @@ function showView(view){legacyShowView(view);const personal=$("personalSection")
 function search(q){if($("personalSection"))$("personalSection").hidden=true;legacySearch(q)}
 document.addEventListener("click",event=>{const button=event.target.closest("[data-discovery]");if(!button)return;const query=button.dataset.discovery,input=$("searchInput");input.value=query;$("searchBox").classList.add("has-value");search(query);input.focus()});
 $("universeLayoutToggle").onclick=()=>{storage.set("storyspace.universeLayout",storage.get("storyspace.universeLayout")==="grid"?"rail":"grid");syncUniverseLayout();showToast(storage.get("storyspace.universeLayout")==="grid"?"My Universe grid view":"My Universe rail view")};
-$("#demoCinemaFilters")?.addEventListener("click",event=>{
+$("demoCinemaFilters")?.addEventListener("click",event=>{
  const button=event.target.closest("[data-demo-filter]");if(!button)return;
  const next=button.dataset.demoFilter;if(!["all","open","short"].includes(next))return;
  demoCinemaFilter=next;
- $("#demoCinemaFilters").querySelectorAll("[data-demo-filter]").forEach(b=>{const active=b.dataset.demoFilter===next;b.setAttribute("aria-pressed",String(active));b.classList.toggle("is-active",active)});
+ $("demoCinemaFilters").querySelectorAll("[data-demo-filter]").forEach(b=>{const active=b.dataset.demoFilter===next;b.setAttribute("aria-pressed",String(active));b.classList.toggle("is-active",active)});
  renderDemoCinema();
 });
 updateAccountUI();drawPreferences();renderHome();setHero(chooseHero());
