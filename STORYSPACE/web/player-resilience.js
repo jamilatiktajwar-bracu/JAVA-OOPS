@@ -4,7 +4,7 @@ if(!video||!stage||!backdrop)return;
 let overlay=stage.querySelector(".player-buffer-state");
 if(!overlay){overlay=document.createElement("div");overlay.className="player-buffer-state";overlay.setAttribute("role","status");overlay.setAttribute("aria-live","polite");overlay.hidden=true;overlay.innerHTML='<span class="player-buffer-spinner" aria-hidden="true"></span><span class="player-buffer-message">Preparing playback…</span><button class="player-buffer-retry" type="button" hidden>Retry playback</button>';stage.append(overlay)}
 const message=overlay.querySelector(".player-buffer-message"),retryAction=overlay.querySelector(".player-buffer-retry");
-let waitingTimer=0,lastPosition=0,stalledAt=0,recoveryTimer=0,recovering=false,recoveryId=0;
+let waitingTimer=0,lastPosition=0,stalledAt=0,recoveryTimer=0,stallRecoveryTimer=0,lastAutoRecoveryAt=0,recovering=false,recoveryId=0;
 function show(text,canRetry=false){message.textContent=text;retryAction.hidden=!canRetry;overlay.hidden=false;overlay.setAttribute("aria-busy","true");stage.classList.add("is-buffering")}
 function hide(){overlay.hidden=true;overlay.setAttribute("aria-busy","false");stage.classList.remove("is-buffering");clearTimeout(waitingTimer)}
 function active(){return !backdrop.hidden&&!video.paused&&!video.ended}
@@ -15,13 +15,22 @@ restore=()=>{if(id!==recoveryId)return;video.removeEventListener("loadedmetadata
 video.addEventListener("loadedmetadata",restore,{once:true});video.addEventListener("error",onError,{once:true});try{video.load()}catch{stopRecovery();show("Could not restart this source · Check the video URL",true)}
 }
 video.addEventListener("waiting",onWaiting);
-video.addEventListener("stalled",()=>{if(active()){stalledAt=Date.now();show("Connection is slow · trying to recover…")}});
-video.addEventListener("playing",()=>{hide();lastPosition=video.currentTime;stalledAt=0;stopRecovery()});
+video.addEventListener("stalled",()=>{
+ if(!active())return;
+ stalledAt=Date.now();show("Connection is slow · waiting for video data…");
+ clearTimeout(stallRecoveryTimer);
+ const observedAt=stalledAt;
+ stallRecoveryTimer=setTimeout(()=>{
+  if(!active()||stalledAt!==observedAt||video.readyState>=3||Date.now()-lastAutoRecoveryAt<25000)return;
+  lastAutoRecoveryAt=Date.now();recover({resume:true,autoplay:true});
+ },8500);
+});
+video.addEventListener("playing",()=>{hide();lastPosition=video.currentTime;stalledAt=0;clearTimeout(stallRecoveryTimer);stopRecovery()});
 video.addEventListener("canplay",()=>{if(!active())hide()});
 video.addEventListener("timeupdate",()=>{if(!video.paused&&video.currentTime>lastPosition+.2){lastPosition=video.currentTime;if(!overlay.hidden)hide()}});
-video.addEventListener("pause",hide);
-video.addEventListener("ended",hide);
-video.addEventListener("emptied",hide);
+video.addEventListener("pause",()=>{clearTimeout(stallRecoveryTimer);stalledAt=0;hide()});
+video.addEventListener("ended",()=>{clearTimeout(stallRecoveryTimer);stalledAt=0;hide()});
+video.addEventListener("emptied",()=>{clearTimeout(stallRecoveryTimer);stalledAt=0;hide()});
 video.addEventListener("error",()=>{stopRecovery();clearTimeout(waitingTimer);const code=video.error?.code;const reason=code===2?"Network interrupted":code===3?"Video decoding failed":code===4?"This video format or source is unavailable":"Playback could not continue";show((video.dataset.demoStream==="1"?"Sample stream unavailable · ":"")+reason+" · Use Retry playback to try again.",true)});
 window.addEventListener("offline",()=>{if(active())show("You’re offline · Playback will resume when connection returns")});
 window.addEventListener("online",()=>{if(active()){recover({resume:true,autoplay:true})}});
