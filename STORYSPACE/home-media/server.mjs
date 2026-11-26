@@ -35,7 +35,7 @@ function removeExpiredUploadSessions(now=Date.now()) {
   }
   const entries=fs.readdirSync(stagingDir,{withFileTypes:true});
   for (const entry of entries) {
-    if (!entry.isFile() || !/^[a-f0-9-]{36}\\.(?:json|part)$/i.test(entry.name)) continue;
+    if (!entry.isFile() || !/^[a-f0-9-]{36}\.(?:json|part)$/i.test(entry.name)) continue;
     const file=path.join(stagingDir,entry.name);
     let stat;
     try { stat=fs.statSync(file); } catch { continue; }
