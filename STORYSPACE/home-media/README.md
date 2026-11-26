@@ -2,7 +2,7 @@
 
 This optional service streams owner-approved media from your Windows PC using HTTP byte ranges. It binds to **127.0.0.1 only**; never expose port 8787 directly through your router. You can publish it through a temporary Cloudflare Quick Tunnel (no domain or Cloudflare account required) or a stable named tunnel with your own domain.
 
-## Requirements
+Catalog entries are validated before use: media filenames must be the generated UUID plus a supported extension, and the stored MIME type, title, size, and timestamp must be valid. Unsafe or malformed entries are ignored, preventing a tampered catalog filename from being used for streaming or moderation file deletion.\n\n## Requirements
 
 - Windows 10/11 and Node.js 20 LTS or newer
 - Internet access and sufficient upload bandwidth
