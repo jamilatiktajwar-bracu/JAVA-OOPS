@@ -226,3 +226,7 @@ if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('
  for(const token of ["collection.sort","collectionRename","collectionSort","sortMode === \"title\"","sortMode === \"recent\"","sortMode === \"rating\"","sortMode === \"year\"","A collection with that name already exists","sort:item.sort"])if(!collections.includes(token))throw Error("Collection rename/sort persistence missing: "+token);
  for(const token of [".collection-sort-label","collection-sort-label select:focus-visible"])if(!collectionsCss.includes(token))throw Error("Collection sort styling missing: "+token);
  if(!sw.includes("storyspace-shell-v57"))throw Error("Collection management cache version missing");
+
+// Custom Collection ordering: accessible move buttons and drag/drop, while preserving filtered slots.
+for(const token of ["reorderVisibleItems","collection-order-controls","Move \\"","dragstart","dragend","dragover","data-collection-item-id","sort = \\"custom\\\""])if(!collections.includes(token))throw Error("Collection reorder implementation missing: "+token);
+for(const token of [".collection-order-controls",".collection-order-button",".collection-is-dragging"])if(!collectionsCss.includes(token))throw Error("Collection reorder styles missing: "+token);
