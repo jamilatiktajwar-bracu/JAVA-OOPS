@@ -68,5 +68,21 @@
   .player-gesture-feedback{transition:none}
 }
 
-/* Expanded theater layout */
-.player-theater-mode{padding:0!important;background:#000!important;backdrop-filter:none!important}.player-theater-mode .player-panel{width:100vw!important;max-width:none!important;height:100vh!important;max-height:none!important;border-radius:0!important;padding:16px clamp(12px,3vw,48px)!important;overflow:auto!important}.player-theater-mode .player-stage{aspect-ratio:auto;height:min(72vh,calc(100vh - 270px));min-height:0}.player-theater-mode .player-stage video{object-fit:contain}.player-theater-mode .player-tools{justify-content:center}.player-theater-mode .player-settings-row{max-width:100%;margin-inline:auto}@media(max-width:650px){.player-theater-mode .player-panel{padding:10px!important}.player-theater-mode .player-stage{height:50vh}}
+/* Expanded theater layout: dynamic viewport + safe-area aware controls */
+.player-theater-mode{padding:0!important;background:#000!important;backdrop-filter:none!important}
+.player-theater-mode .player-panel{box-sizing:border-box;width:100vw!important;max-width:none!important;height:100dvh!important;max-height:none!important;border-radius:0!important;padding:calc(12px + env(safe-area-inset-top)) clamp(12px,3vw,48px) calc(12px + env(safe-area-inset-bottom))!important;overflow:auto!important;overscroll-behavior:contain}
+.player-theater-mode .player-stage{aspect-ratio:auto;height:min(72dvh,calc(100dvh - 270px));min-height:0}
+.player-theater-mode .player-stage video{object-fit:contain}
+.player-theater-mode .player-tools{justify-content:center}
+.player-theater-mode .player-settings-row{max-width:100%;margin-inline:auto}
+@media(max-width:650px){.player-theater-mode .player-panel{padding:calc(8px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom))!important}.player-theater-mode .player-stage{height:55dvh;max-height:calc(100dvh - 210px)}.player-theater-mode .player-tools{gap:8px}}
+@media(prefers-reduced-motion:reduce){.player-theater-mode .player-panel{scroll-behavior:auto}}
+
+/* Short landscape screens: prioritize the video and keep controls scrollable. */
+@media(max-height:520px) and (orientation:landscape){
+  .player-theater-mode .player-panel{padding:calc(6px + env(safe-area-inset-top)) 12px calc(6px + env(safe-area-inset-bottom))!important}
+  .player-theater-mode .player-stage{height:calc(100dvh - 150px);max-height:none}
+  .player-theater-mode .player-stage video{max-height:none}
+  .player-theater-mode .player-gesture-row{margin:4px 0}
+  .player-theater-mode .player-tools{gap:6px}
+}
