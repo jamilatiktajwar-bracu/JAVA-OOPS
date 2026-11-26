@@ -141,7 +141,26 @@ function readSession(id) {
     fs.rmSync(files.part,{force:true});
     return null;
   }
-  try { const value=JSON.parse(fs.readFileSync(files.data,"utf8")); return value.id===id ? value : null; } catch { return null; }
+  try {
+    const value=JSON.parse(fs.readFileSync(files.data,"utf8"));
+    const partStat=fs.statSync(files.part);
+    const valid=value.id===id && safeTitle(value.title)!=="" &&
+      typeof value.extension==="string" && types.has(value.extension) &&
+      value.contentType===types.get(value.extension) &&
+      Number.isSafeInteger(value.size) && value.size>0 && value.size<=maxUploadBytes &&
+      Number.isSafeInteger(value.offset) && value.offset>=0 && value.offset<=value.size &&
+      partStat.isFile() && partStat.size<=value.size;
+    if (!valid) {
+      fs.rmSync(files.data,{force:true});
+      fs.rmSync(files.part,{force:true});
+      return null;
+    }
+    return value;
+  } catch {
+    fs.rmSync(files.data,{force:true});
+    fs.rmSync(files.part,{force:true});
+    return null;
+  }
 }
 function writeSession(session) {
   const files=sessionPaths(session.id), temp=files.data+".tmp";
