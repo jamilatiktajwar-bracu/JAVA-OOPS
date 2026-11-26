@@ -255,3 +255,8 @@ if(!sw.includes("storyspace-shell-v61"))throw Error("Collection hub cache versio
 for(const id of ["universeSearch","universeSearchClear","universeEmptyState"])if(!h.includes('id="'+id+'"'))throw Error("My Universe search/empty-state interface missing: "+id);
 for(const token of ["universeSearch","universeSearchClear","universeEmptyState","toLocaleLowerCase()","No saved titles match","savedMovies.length","m.description,m.cast,m.genre,m.genres,m.year,m.releaseYear"])if(!a.includes(token))throw Error("My Universe search/empty-state behavior missing: "+token);
 for(const token of [".universe-search-label input",".universe-search-clear",".universe-empty-state","focus-visible"])if(!c.includes(token))throw Error("My Universe search/empty-state styling missing: "+token);
+
+// My Universe bulk-selection regression guards.
+for(const id of ["universeSelectToggle","universeBulkActions","universeSelectAll","universeClearSelection","universeRemoveSelected","universeSelectedCount"])if(!h.includes('id="'+id+'"'))throw Error("Bulk selection control missing: "+id);
+for(const token of ["universeSelection","universeSelectMode","universeSelectAll","universeClearSelection","universeRemoveSelected","universe-selected","Select all visible","Removed ","syncUniverseBulkControls"])if(!a.includes(token))throw Error("Bulk selection behavior missing: "+token);
+for(const token of [".universe-bulk-actions",".universe-selection-action",".movie-card.universe-selected",".universe-select-toggle"])if(!c.includes(token))throw Error("Bulk selection styling missing: "+token);
