@@ -149,7 +149,8 @@ public class NetflixPlaylist {
             currentPosition = toIndex;
         } else if (fromIndex < currentPosition && toIndex >= currentPosition) {
             currentPosition--;
-        } else if (fromIndex > currentPosition && toIndex < currentPosition) {
+        } else if (fromIndex > currentPosition && toIndex <= currentPosition) {
+            // Moving a later movie onto the cursor index shifts the next movie right.
             currentPosition++;
         }
         touch();
