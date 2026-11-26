@@ -232,7 +232,7 @@ for(const token of ["reorderVisibleItems","collection-order-controls","Move ","d
 for(const token of [".collection-order-controls",".collection-order-button",".collection-is-dragging"])if(!collectionsCss.includes(token))throw Error("Collection reorder styles missing: "+token);
 
 // Collection cover personalization smoke guards
-for(const token of ["coverIcons","validIcon(item.icon)","icon:validIcon(item.icon)","validIcon(collection.icon)","collectionIcon"])if(!collections.includes(token))throw Error("Collection cover personalization missing: "+token);
+for(const token of ["coverIcons","validIcon(item.icon)","icon: validIcon(item.icon)","validIcon(collection.icon)","collectionIcon"])if(!collections.includes(token))throw Error("Collection cover personalization missing: "+token);
 if(!h.includes('id="collectionIcon"')||!h.includes('id="collectionDetailIcon"'))throw Error("Collection icon controls missing");
 for(const token of [".collection-cover-icon","#collectionDetailIcon"])if(!collectionsCss.includes(token))throw Error("Collection icon styles missing: "+token);
 if(!sw.includes("storyspace-shell-v60"))throw Error("Collection cover cache version missing");
