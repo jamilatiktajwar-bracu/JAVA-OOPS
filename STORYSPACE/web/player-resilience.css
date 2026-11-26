@@ -5,3 +5,10 @@
 .player-buffer-retry:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .player-buffer-retry:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .player-buffer-retry[hidden]{display:none}
+
+/* Keep recovery feedback compact on short landscape screens. */
+@media (max-height: 420px) and (orientation: landscape) {
+  .player-buffer-state { gap: 8px; padding: 12px; font-size: 12px; }
+  .player-buffer-spinner { width: 26px; height: 26px; border-width: 2px; }
+  .player-buffer-retry { min-height: 36px; padding: 7px 14px; }
+}
