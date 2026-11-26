@@ -108,6 +108,7 @@ Paste each key only into its matching field. Never interchange the two keys. If 
 ### Startup configuration validation
 - The media listener accepts only loopback hostnames/addresses and validates the port as an integer from 0 through 65535 (port 0 is useful for automated tests).
 - Upload and chunk byte limits must be positive safe integers, and a chunk limit larger than the total upload limit is rejected at startup. Invalid values fail fast with a setting-specific error instead of silently disabling limits or creating confusing runtime failures.
+- The upload-session retention TTL is also validated before storage initialization: it must be an integer of at least one hour. The default remains seven days.
 
 ### HTTP server lifecycle
 - Header parsing is capped at 15 seconds, request bodies at 30 minutes, keep-alive at 5 seconds, and header count at 100. The 30-minute request window supports large uploads on slower connections.
