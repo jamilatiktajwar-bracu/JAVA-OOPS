@@ -29,11 +29,12 @@ const adminToken = String(process.env.STORYSPACE_MEDIA_ADMIN_TOKEN || "");
 const uploadToken = String(process.env.STORYSPACE_MEDIA_UPLOAD_TOKEN || "");
 const maxUploadBytes = readIntegerSetting("STORYSPACE_MEDIA_MAX_UPLOAD_BYTES", 15 * 1024 ** 3, 1, Number.MAX_SAFE_INTEGER);
 const maxChunkBytes = readIntegerSetting("STORYSPACE_MEDIA_MAX_CHUNK_BYTES", 8 * 1024 ** 2, 1, Number.MAX_SAFE_INTEGER);
+const uploadSessionTtlMs = readIntegerSetting("STORYSPACE_MEDIA_SESSION_TTL_MS", 7 * 24 * 60 * 60 * 1000, 60 * 60 * 1000, Number.MAX_SAFE_INTEGER);
 if (maxChunkBytes > maxUploadBytes) {
   console.error("STORYSPACE_MEDIA_MAX_CHUNK_BYTES cannot exceed STORYSPACE_MEDIA_MAX_UPLOAD_BYTES.");
   process.exit(1);
 }
-const uploadSessionTtlMs = Number(process.env.STORYSPACE_MEDIA_SESSION_TTL_MS || 7 * 24 * 60 * 60 * 1000);
+
 const publicOrigin = String(process.env.STORYSPACE_MEDIA_PUBLIC_ORIGIN || "").replace(/\/+$/, "");
 const allowedOrigin = String(process.env.STORYSPACE_MEDIA_CORS_ORIGIN || "*");
 const types = new Map([[".mp4","video/mp4"],[".m4v","video/x-m4v"],[".webm","video/webm"],[".mov","video/quicktime"]]);
@@ -47,9 +48,6 @@ fs.mkdirSync(stagingDir, { recursive:true });
 if (!fs.existsSync(catalogFile)) fs.writeFileSync(catalogFile, "[]\n", { flag:"wx" });
 
 function removeExpiredUploadSessions(now=Date.now()) {
-  if (!Number.isSafeInteger(uploadSessionTtlMs) || uploadSessionTtlMs < 60 * 60 * 1000) {
-    throw new Error("STORYSPACE_MEDIA_SESSION_TTL_MS must be an integer of at least one hour");
-  }
   const ids=new Set();
   for (const entry of fs.readdirSync(stagingDir,{withFileTypes:true})) {
     const match=entry.isFile() && entry.name.match(/^([a-f0-9-]{36})\.(?:json|part)$/i);
