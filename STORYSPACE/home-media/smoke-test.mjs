@@ -1,19 +1,22 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { mkdtemp, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, rm, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root=path.dirname(fileURLToPath(import.meta.url)),temp=await mkdtemp(path.join(os.tmpdir(),"storyspace-media-"));
 const admin="test-admin-secret-with-at-least-32-characters",invite="test-uploader-secret-with-at-least-32-characters";
+const staging=path.join(temp,"staging"),expiredId="11111111-1111-4111-8111-111111111111",expiredTime=new Date(Date.now()-8*24*60*60*1000);
+await mkdir(staging,{recursive:true});
+for(const suffix of [".json",".part"]){const file=path.join(staging,expiredId+suffix);await writeFile(file,"expired");await utimes(file,expiredTime,expiredTime);}
 const portProbe=createServer();
 await new Promise((resolve,reject)=>{portProbe.once("error",reject);portProbe.listen(0,"127.0.0.1",resolve);});
 const port=portProbe.address().port;
 await new Promise((resolve,reject)=>portProbe.close(error=>error?reject(error):resolve()));
 const base="http://127.0.0.1:"+port;
-const server=spawn(process.execPath,[path.join(root,"server.mjs")],{env:{...process.env,STORYSPACE_MEDIA_ADMIN_TOKEN:admin,STORYSPACE_MEDIA_UPLOAD_TOKEN:invite,STORYSPACE_MEDIA_DIR:path.join(temp,"media"),STORYSPACE_MEDIA_STAGING_DIR:path.join(temp,"staging"),STORYSPACE_MEDIA_CATALOG_FILE:path.join(temp,"catalog.json"),STORYSPACE_MEDIA_HOST:"127.0.0.1",STORYSPACE_MEDIA_PORT:String(port),STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"2048",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8"},stdio:["ignore","ignore","pipe"]});
+const server=spawn(process.execPath,[path.join(root,"server.mjs")],{env:{...process.env,STORYSPACE_MEDIA_ADMIN_TOKEN:admin,STORYSPACE_MEDIA_UPLOAD_TOKEN:invite,STORYSPACE_MEDIA_DIR:path.join(temp,"media"),STORYSPACE_MEDIA_STAGING_DIR:staging,STORYSPACE_MEDIA_CATALOG_FILE:path.join(temp,"catalog.json"),STORYSPACE_MEDIA_HOST:"127.0.0.1",STORYSPACE_MEDIA_PORT:String(port),STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"2048",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8"},stdio:["ignore","ignore","pipe"]});
 let serverError="";
 server.stderr.setEncoding("utf8");server.stderr.on("data",chunk=>{serverError+=chunk;});
 const serverExit=new Promise(resolve=>server.once("exit",(code,signal)=>resolve({code,signal})));
@@ -21,6 +24,7 @@ const headers={"x-storyspace-upload-token":invite};
 try{
  let ready=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
  assert.equal(ready,true,"server starts"+(serverError?": "+serverError:""));
+ for(const suffix of [".json",".part"]){await assert.rejects(access(path.join(staging,expiredId+suffix)), "stale upload session artifacts are removed on startup");}
  const uploaderCheck=await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers});
  assert.equal(uploaderCheck.status,200);assert.deepEqual(await uploaderCheck.json(),{ok:true,role:"uploader"});
  const adminHeaders={"x-storyspace-admin-token":admin};
