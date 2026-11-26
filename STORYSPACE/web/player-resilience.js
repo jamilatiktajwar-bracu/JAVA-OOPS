@@ -5,8 +5,8 @@ let overlay=stage.querySelector(".player-buffer-state");
 if(!overlay){overlay=document.createElement("div");overlay.className="player-buffer-state";overlay.setAttribute("role","status");overlay.setAttribute("aria-live","polite");overlay.hidden=true;overlay.innerHTML='<span class="player-buffer-spinner" aria-hidden="true"></span><span class="player-buffer-message">Preparing playback…</span><button class="player-buffer-retry" type="button" hidden>Retry playback</button>';stage.append(overlay)}
 const message=overlay.querySelector(".player-buffer-message"),retryAction=overlay.querySelector(".player-buffer-retry");
 let waitingTimer=0,lastPosition=0,stalledAt=0,recoveryTimer=0,recovering=false,recoveryId=0;
-function show(text,canRetry=false){message.textContent=text;retryAction.hidden=!canRetry;overlay.hidden=false;stage.classList.add("is-buffering")}
-function hide(){overlay.hidden=true;stage.classList.remove("is-buffering");clearTimeout(waitingTimer)}
+function show(text,canRetry=false){message.textContent=text;retryAction.hidden=!canRetry;overlay.hidden=false;overlay.setAttribute("aria-busy","true");stage.classList.add("is-buffering")}
+function hide(){overlay.hidden=true;overlay.setAttribute("aria-busy","false");stage.classList.remove("is-buffering");clearTimeout(waitingTimer)}
 function active(){return !backdrop.hidden&&!video.paused&&!video.ended}
 function onWaiting(){if(!active())return;clearTimeout(waitingTimer);waitingTimer=setTimeout(()=>{if(active()&&video.readyState<3)show("Buffering · waiting for video data…")},450)}
 function stopRecovery(){clearTimeout(recoveryTimer);recovering=false;const retry=document.getElementById("playerRetry");if(retry)retry.disabled=false}
@@ -26,7 +26,8 @@ video.addEventListener("error",()=>{stopRecovery();clearTimeout(waitingTimer);co
 window.addEventListener("offline",()=>{if(active())show("You’re offline · Playback will resume when connection returns")});
 window.addEventListener("online",()=>{if(active()){recover({resume:true,autoplay:true})}});
 const retry=document.getElementById("playerRetry");
-retry?.addEventListener("click",()=>recover({resume:true,autoplay:true}));\nretryAction?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
+retry?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
+retryAction?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&video.paused)hide()});
 window.StoryspacePlayerResilience=Object.freeze({show,hide,isBuffering:()=>!overlay.hidden,recover:()=>recover({resume:true,autoplay:true}),getLastPosition:()=>lastPosition});
 })();
