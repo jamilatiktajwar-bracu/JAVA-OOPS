@@ -154,6 +154,7 @@
     renderCollectionGrid();
     renderCollectionDetail();
     $("collectionDetail")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    $("collectionDetailTitle")?.focus({preventScroll:true});
   }
 
   function render() {
@@ -187,8 +188,18 @@
     }
     if (!collections.length) {
       const note = document.createElement("p");
-      note.textContent = "Create a collection in My Collections first, then return here to save this story.";
-      choices.append(note);
+      note.textContent = "Create your first collection, then return here to save this story.";
+      const create = document.createElement("button");
+      create.type = "button";
+      create.className = "secondary-button collection-inline-create";
+      create.textContent = "＋ Create collection";
+      create.addEventListener("click", () => {
+        $("modalClose").click();
+        $("collectionCreateForm").hidden = false;
+        $("collectionsSection").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"});
+        $("collectionName").focus();
+      });
+      choices.append(note, create);
       return;
     }
     collections.forEach(collection => {
@@ -244,6 +255,7 @@
   $("collectionBack")?.addEventListener("click", () => {
     activeCollectionId = null;
     render();
+    ($("collectionsGrid").querySelector(".collection-tile") || $("collectionCreateToggle"))?.focus();
   });
   $("collectionDelete")?.addEventListener("click", () => {
     const collection = collections.find(item => item.id === activeCollectionId);
@@ -252,6 +264,7 @@
     activeCollectionId = null;
     saveCollections();
     render();
+    ($("collectionsGrid").querySelector(".collection-tile") || $("collectionCreateToggle"))?.focus();
     if (typeof showToast === "function") showToast("Collection deleted");
   });
 
