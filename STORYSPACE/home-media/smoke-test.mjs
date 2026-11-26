@@ -101,5 +101,17 @@ try{
  assert.equal(new Set(directResults.map(item=>item.id)).size,2,"parallel admin uploads receive distinct media IDs");
  const pendingAfterParallel=await (await fetch(base+"/admin/pending",{headers:adminHeaders})).json();
  assert.equal(pendingAfterParallel.length,2,"catalog lock preserves both parallel admin uploads");
- console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges.");
+ // Corrupt catalog entries must never become filesystem paths or public media.
+ const catalogFile=path.join(temp,"catalog.json");
+ const trustedCatalog=JSON.parse(await readFile(catalogFile,"utf8"));
+ const maliciousId="33333333-3333-4333-8333-333333333333";
+ trustedCatalog.push({id:maliciousId,title:"Path Escape",fileName:"../../outside.mp4",contentType:"video/mp4",size:4,addedAt:new Date().toISOString(),published:true});
+ await writeFile(catalogFile,JSON.stringify(trustedCatalog,null,2)+"\\n");
+ assert.equal((await (await fetch(base+"/api/catalog")).json()).length,1,"unsafe catalog filenames are excluded from public catalog");
+ const safePending=await (await fetch(base+"/admin/pending",{headers:adminHeaders})).json();
+ assert.equal(safePending.length,2,"unsafe catalog entries are excluded from moderation");
+ const maliciousReview=await fetch(base+"/admin/review/"+maliciousId,{method:"POST",headers:{...adminHeaders,"content-type":"application/json"},body:JSON.stringify({action:"reject"})});
+ assert.equal(maliciousReview.status,404,"unsafe catalog entries cannot trigger filesystem deletion");
+ assert.equal((await fetch(base+"/media/"+maliciousId)).status,404,"unsafe catalog entries cannot be streamed");
+ console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges, catalog path safety.");
 }finally{if(server.exitCode===null&&server.signalCode===null)server.kill("SIGTERM");await serverExit;await rm(temp,{recursive:true,force:true});}
