@@ -327,6 +327,32 @@ async function handle(req,res) {
   return json(res,404,{error:"Not found"});
 }
 const server=http.createServer((req,res)=>{handle(req,res).catch(error=>{if(!res.headersSent)json(res,error.statusCode||500,{error:error.statusCode===413?"Request too large":"Internal server error"});else res.destroy();});});
+// Bound slow headers and idle keep-alive sockets without imposing a short cap on large uploads.
+server.headersTimeout = 15_000;
+server.requestTimeout = 30 * 60 * 1000;
+server.keepAliveTimeout = 5_000;
+server.maxHeadersCount = 100;
+server.maxRequestsPerSocket = 1_000;
+
 server.listen(port,host,()=>console.log("Storyspace Home Media listening on http://"+host+":"+port+" (loopback only)"));
-process.on("SIGINT",()=>server.close(()=>process.exit(0)));
-process.on("SIGTERM",()=>server.close(()=>process.exit(0)));
+let shuttingDown = false;
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log("Storyspace Home Media received " + signal + "; draining active requests");
+  server.close(error => {
+    if (error) {
+      console.error("Media server shutdown failed:", error);
+      process.exitCode = 1;
+    }
+    process.exit();
+  });
+  server.closeIdleConnections?.();
+  const forceClose = setTimeout(() => {
+    console.error("Media server shutdown grace period expired; closing remaining connections");
+    server.closeAllConnections?.();
+  }, 30_000);
+  forceClose.unref();
+}
+process.on("SIGINT",()=>shutdown("SIGINT"));
+process.on("SIGTERM",()=>shutdown("SIGTERM"));
