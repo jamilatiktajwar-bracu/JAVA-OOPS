@@ -6,6 +6,7 @@
   const guide=document.getElementById("playerShortcutGuide");
   const fullscreenButton=document.getElementById("playerFullscreen");
   const closeButton=document.getElementById("playerClose");
+  const theaterButton=document.getElementById("playerTheater");
   if(!video||!backdrop||!helpButton||!guide||!fullscreenButton||!closeButton)return;
   const visible=()=>!backdrop.hidden;
   const isEditable=target=>{
@@ -21,6 +22,8 @@
     video.currentTime=clamp(video.currentTime+delta,0,video.duration);
   };
   function setGuide(open){guide.hidden=!open;helpButton.setAttribute("aria-expanded",String(open));}
+  function setTheater(open){const active=!!open;backdrop.classList.toggle("player-theater-mode",active);if(theaterButton){theaterButton.setAttribute("aria-pressed",String(active));theaterButton.textContent=active?"Exit theater mode":"Theater mode";}}
+  theaterButton?.addEventListener("click",()=>setTheater(!backdrop.classList.contains("player-theater-mode")));
   helpButton.addEventListener("click",()=>setGuide(guide.hidden));
   document.addEventListener("keydown",event=>{
     if(!visible()||event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey||isEditable(event.target))return;
