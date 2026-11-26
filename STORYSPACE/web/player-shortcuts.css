@@ -4,3 +4,5 @@
 .player-shortcut-guide kbd{display:inline-block;min-width:20px;padding:2px 5px;margin:0 2px;border:1px solid #ffffff24;border-bottom-width:2px;border-radius:5px;background:#14253b;color:#e6f8ff;font:600 10px ui-monospace,monospace;text-align:center}
 .player-shortcut-guide[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){.player-shortcut-guide{scroll-behavior:auto}}
+
+.player-segment-button{white-space:nowrap}.player-segment-button[hidden]{display:none}.player-segment-button:disabled{opacity:.45;cursor:not-allowed}
