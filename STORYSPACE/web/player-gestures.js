@@ -36,7 +36,8 @@
       : minutes + ":" + String(secs).padStart(2, "0");
   };
 
-  function showFeedback(message) {
+  function showFeedback(message, announce = true) {
+    feedback.setAttribute("aria-live", announce ? "polite" : "off");
     feedback.textContent = message;
     feedback.classList.remove("is-visible");
     // Restart the short feedback transition without reading layout.
@@ -97,16 +98,16 @@
       const maxSwipeSeconds=Math.max(20,Math.min(120,video.duration*0.28));
       const delta=clamp((dx/pointer.rect.width)*maxSwipeSeconds,-90,90);
       const target=clamp(video.currentTime+delta,0,video.duration);
-      showFeedback("Seek preview · "+formatGestureTime(target)+" ("+(target>=video.currentTime?"+":"−")+Math.round(Math.abs(target-video.currentTime))+"s)");
+      showFeedback("Seek preview · "+formatGestureTime(target)+" ("+(target>=video.currentTime?"+":"−")+Math.round(Math.abs(target-video.currentTime))+"s)", false);
       return;
     }
     if(Math.abs(dy)>=24&&Math.abs(dy)>Math.abs(dx)*1.15){
       if(pointer.zone==="left"){
         const value=clamp(brightness-dy/pointer.rect.height*0.75,0.45,1.4);
-        showFeedback("Brightness preview · "+Math.round(value*100)+"%");
+        showFeedback("Brightness preview · "+Math.round(value*100)+"%", false);
       }else if(pointer.zone==="right"){
         const value=clamp(video.volume-dy/pointer.rect.height*0.75,0,1);
-        showFeedback("Volume preview · "+Math.round(value*100)+"%");
+        showFeedback("Volume preview · "+Math.round(value*100)+"%", false);
       }
     }
   }
@@ -179,6 +180,9 @@
       feedback.classList.remove("is-visible");
     }
   });
+
+  window.addEventListener("blur", () => { pointer = null; });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) pointer = null; });
 
   updateToggle();
   window.StoryspacePlayerGestures = Object.freeze({
