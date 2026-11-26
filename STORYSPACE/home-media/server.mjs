@@ -15,11 +15,24 @@ if (!["127.0.0.1","::1","localhost"].includes(host)) {
   console.error("STORYSPACE_MEDIA_HOST must be a loopback address (127.0.0.1, ::1, or localhost).");
   process.exit(1);
 }
-const port = Number(process.env.STORYSPACE_MEDIA_PORT || 8787);
+function readIntegerSetting(name, fallback, min, max) {
+  const raw = process.env[name];
+  const value = raw === undefined || raw === "" ? fallback : Number(raw);
+  if (!Number.isSafeInteger(value) || value < min || value > max) {
+    console.error(name + " must be an integer between " + min + " and " + max + ".");
+    process.exit(1);
+  }
+  return value;
+}
+const port = readIntegerSetting("STORYSPACE_MEDIA_PORT", 8787, 0, 65535);
 const adminToken = String(process.env.STORYSPACE_MEDIA_ADMIN_TOKEN || "");
 const uploadToken = String(process.env.STORYSPACE_MEDIA_UPLOAD_TOKEN || "");
-const maxUploadBytes = Number(process.env.STORYSPACE_MEDIA_MAX_UPLOAD_BYTES || 15 * 1024 ** 3);
-const maxChunkBytes = Number(process.env.STORYSPACE_MEDIA_MAX_CHUNK_BYTES || 8 * 1024 ** 2);
+const maxUploadBytes = readIntegerSetting("STORYSPACE_MEDIA_MAX_UPLOAD_BYTES", 15 * 1024 ** 3, 1, Number.MAX_SAFE_INTEGER);
+const maxChunkBytes = readIntegerSetting("STORYSPACE_MEDIA_MAX_CHUNK_BYTES", 8 * 1024 ** 2, 1, Number.MAX_SAFE_INTEGER);
+if (maxChunkBytes > maxUploadBytes) {
+  console.error("STORYSPACE_MEDIA_MAX_CHUNK_BYTES cannot exceed STORYSPACE_MEDIA_MAX_UPLOAD_BYTES.");
+  process.exit(1);
+}
 const uploadSessionTtlMs = Number(process.env.STORYSPACE_MEDIA_SESSION_TTL_MS || 7 * 24 * 60 * 60 * 1000);
 const publicOrigin = String(process.env.STORYSPACE_MEDIA_PUBLIC_ORIGIN || "").replace(/\/+$/, "");
 const allowedOrigin = String(process.env.STORYSPACE_MEDIA_CORS_ORIGIN || "*");
