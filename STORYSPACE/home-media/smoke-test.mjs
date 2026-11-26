@@ -113,5 +113,10 @@ try{
  const maliciousReview=await fetch(base+"/admin/review/"+maliciousId,{method:"POST",headers:{...adminHeaders,"content-type":"application/json"},body:JSON.stringify({action:"reject"})});
  assert.equal(maliciousReview.status,404,"unsafe catalog entries cannot trigger filesystem deletion");
  assert.equal((await fetch(base+"/media/"+maliciousId)).status,404,"unsafe catalog entries cannot be streamed");
+ const mediaDir=path.join(temp,"media");
+ await writeFile(path.join(mediaDir,catalog[0].fileName),"truncated");
+ const corruptedMedia=await fetch(base+catalog[0].streamUrl);
+ assert.equal(corruptedMedia.status,503,"truncated media is not served with a misleading success response");
+ assert.match((await corruptedMedia.json()).error,/integrity check/);
  console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges, catalog path safety.");
 }finally{if(server.exitCode===null&&server.signalCode===null)server.kill("SIGTERM");await serverExit;await rm(temp,{recursive:true,force:true});}
