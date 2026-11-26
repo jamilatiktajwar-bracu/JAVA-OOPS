@@ -206,9 +206,9 @@
     const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
     const sortMode = collection.sort || "custom";
     if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
-    else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(b))-collection.items.indexOf(identify(a)));
-    else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating||b.voteAverage||b.score)||0)-(Number(a.rating||a.voteAverage||a.score)||0));
-    else if (sortMode === "year") found.sort((a,b) => (Number(b.year||b.releaseYear)||0)-(Number(a.year||a.releaseYear)||0));
+    else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(a))-collection.items.indexOf(identify(b)));
+    else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating??b.voteAverage??b.vote_average??b.score)||0)-(Number(a.rating??a.voteAverage??a.vote_average??a.score)||0));
+    else if (sortMode === "year") found.sort((a,b) => (Number(String(b.year||b.releaseYear||b.release_date||\"\").slice(0,4))||0)-(Number(String(a.year||a.releaseYear||a.release_date||\"\").slice(0,4))||0));
     const sortControl = $("collectionSort");
     if (sortControl) sortControl.value = sortMode;
     if (!found.length) {
