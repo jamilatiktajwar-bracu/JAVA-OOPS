@@ -33,5 +33,22 @@ try{
  assert.equal((await fetch(base+"/admin/review/"+session.uploadId,{method:"POST",headers:{"x-storyspace-admin-token":admin,"content-type":"application/json"},body:JSON.stringify({action:"approve"})})).status,200);
  const catalog=await (await fetch(base+"/api/catalog")).json();assert.equal(catalog.length,1);
  const ranged=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=3-7"}});assert.equal(ranged.status,206);assert.equal(await ranged.text(),"34567");
- console.log("Storyspace media tests passed: invite auth, chunk resume, approval gate, catalog visibility, byte ranges.");
+ // A rejected upload must disappear from the pending queue and remain private.
+ const rejectedInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Reject Me",filename:"reject.mp4",size:4})});
+ assert.equal(rejectedInit.status,201);const rejectedSession=await rejectedInit.json();
+ const rejectedChunk=await fetch(base+"/api/uploads/"+rejectedSession.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"0"},body:Buffer.from("nope")});
+ assert.equal(rejectedChunk.status,200);assert.equal((await rejectedChunk.json()).offset,4);
+ const rejectedDone=await fetch(base+"/api/uploads/"+rejectedSession.uploadId+"/complete",{method:"POST",headers});assert.equal(rejectedDone.status,201);
+ const pendingBeforeReject=await (await fetch(base+"/admin/pending",{headers:adminHeaders})).json();
+ assert.equal(pendingBeforeReject.length,1);assert.equal(pendingBeforeReject[0].id,rejectedSession.uploadId);
+ const invalidReview=await fetch(base+"/admin/review/"+rejectedSession.uploadId,{method:"POST",headers:{...adminHeaders,"content-type":"application/json"},body:JSON.stringify({action:"publish"})});
+ assert.equal(invalidReview.status,400,"unknown moderation action is rejected");
+ const rejectResponse=await fetch(base+"/admin/review/"+rejectedSession.uploadId,{method:"POST",headers:{...adminHeaders,"content-type":"application/json"},body:JSON.stringify({action:"reject"})});
+ assert.equal(rejectResponse.status,200);assert.deepEqual(await rejectResponse.json(),{id:rejectedSession.uploadId,status:"rejected"});
+ const pendingAfterReject=await (await fetch(base+"/admin/pending",{headers:adminHeaders})).json();
+ assert.equal(pendingAfterReject.length,0,"rejected item is removed from pending queue");
+ const stillPublished=await (await fetch(base+"/api/catalog")).json();
+ assert.equal(stillPublished.length,1,"rejecting another item does not remove approved media");
+ assert.equal((await fetch(base+"/media/"+rejectedSession.uploadId)).status,404,"rejected media cannot be streamed");
+ console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges.");
 }finally{server.kill("SIGTERM");await rm(temp,{recursive:true,force:true});}
