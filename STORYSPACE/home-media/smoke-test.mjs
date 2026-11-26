@@ -31,13 +31,14 @@ await assertStartupRejected({STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"0"},/STORYSPACE_M
 await assertStartupRejected({STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"4",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8"},/MAX_CHUNK_BYTES cannot exceed/,"chunk-over-upload");
 await assertStartupRejected({STORYSPACE_MEDIA_SESSION_TTL_MS:"not-a-number"},/STORYSPACE_MEDIA_SESSION_TTL_MS must be an integer/,"session-ttl-nan");
 await assertStartupRejected({STORYSPACE_MEDIA_SESSION_TTL_MS:"3599999"},/STORYSPACE_MEDIA_SESSION_TTL_MS must be an integer/,"session-ttl-too-short");
+await assertStartupRejected({STORYSPACE_MEDIA_CORS_ORIGIN:"https://example.com/path"},/STORYSPACE_MEDIA_CORS_ORIGIN must be/,"cors-origin-path");
 
 const portProbe=createServer();
 await new Promise((resolve,reject)=>{portProbe.once("error",reject);portProbe.listen(0,"127.0.0.1",resolve);});
 const port=portProbe.address().port;
 await new Promise((resolve,reject)=>portProbe.close(error=>error?reject(error):resolve()));
 const base="http://127.0.0.1:"+port;
-const server=spawn(process.execPath,[path.join(root,"server.mjs")],{env:{...process.env,STORYSPACE_MEDIA_ADMIN_TOKEN:admin,STORYSPACE_MEDIA_UPLOAD_TOKEN:invite,STORYSPACE_MEDIA_DIR:path.join(temp,"media"),STORYSPACE_MEDIA_STAGING_DIR:staging,STORYSPACE_MEDIA_CATALOG_FILE:path.join(temp,"catalog.json"),STORYSPACE_MEDIA_HOST:"127.0.0.1",STORYSPACE_MEDIA_PORT:String(port),STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"2048",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8"},stdio:["ignore","ignore","pipe"]});
+const server=spawn(process.execPath,[path.join(root,"server.mjs")],{env:{...process.env,STORYSPACE_MEDIA_ADMIN_TOKEN:admin,STORYSPACE_MEDIA_UPLOAD_TOKEN:invite,STORYSPACE_MEDIA_DIR:path.join(temp,"media"),STORYSPACE_MEDIA_STAGING_DIR:staging,STORYSPACE_MEDIA_CATALOG_FILE:path.join(temp,"catalog.json"),STORYSPACE_MEDIA_HOST:"127.0.0.1",STORYSPACE_MEDIA_PORT:String(port),STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"2048",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8",STORYSPACE_MEDIA_CORS_ORIGIN:"https://storyspace.example"},stdio:["ignore","ignore","pipe"]});
 let serverError="";
 server.stderr.setEncoding("utf8");server.stderr.on("data",chunk=>{serverError+=chunk;});
 const serverExit=new Promise(resolve=>server.once("exit",(code,signal)=>resolve({code,signal})));
@@ -45,6 +46,12 @@ const headers={"x-storyspace-upload-token":invite};
 try{
  let ready=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
  assert.equal(ready,true,"server starts"+(serverError?": "+serverError:""));
+ const allowedPreflight=await fetch(base+"/api/uploads/init",{method:"OPTIONS",headers:{origin:"https://storyspace.example","access-control-request-method":"POST"}});
+ assert.equal(allowedPreflight.status,204,"configured browser origin can preflight");
+ assert.equal(allowedPreflight.headers.get("access-control-allow-origin"),"https://storyspace.example");
+ const deniedPreflight=await fetch(base+"/api/uploads/init",{method:"OPTIONS",headers:{origin:"https://attacker.example","access-control-request-method":"POST"}});
+ assert.equal(deniedPreflight.status,403,"untrusted browser origin cannot preflight");
+ assert.equal(deniedPreflight.headers.get("access-control-allow-origin"),null,"untrusted origin receives no CORS permission");
  for(const suffix of [".json",".part"]){await assert.rejects(access(path.join(staging,expiredId+suffix)), "stale upload session artifacts are removed on startup");}
  const recoveredSession=JSON.parse(await readFile(activeMeta,"utf8"));
  assert.equal(recoveredSession.offset,7,"startup recovers committed bytes after an interrupted metadata update");
