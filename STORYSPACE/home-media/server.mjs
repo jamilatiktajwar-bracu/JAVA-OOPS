@@ -33,17 +33,20 @@ function removeExpiredUploadSessions(now=Date.now()) {
   if (!Number.isSafeInteger(uploadSessionTtlMs) || uploadSessionTtlMs < 60 * 60 * 1000) {
     throw new Error("STORYSPACE_MEDIA_SESSION_TTL_MS must be an integer of at least one hour");
   }
-  const entries=fs.readdirSync(stagingDir,{withFileTypes:true});
-  for (const entry of entries) {
-    if (!entry.isFile() || !/^[a-f0-9-]{36}\.(?:json|part)$/i.test(entry.name)) continue;
-    const file=path.join(stagingDir,entry.name);
-    let stat;
-    try { stat=fs.statSync(file); } catch { continue; }
-    if (now-stat.mtimeMs < uploadSessionTtlMs) continue;
-    const id=entry.name.slice(0,36), files=sessionPaths(id);
-    if (!files) continue;
-    fs.rmSync(files.data,{force:true});
-    fs.rmSync(files.part,{force:true});
+  const ids=new Set();
+  for (const entry of fs.readdirSync(stagingDir,{withFileTypes:true})) {
+    const match=entry.isFile() && entry.name.match(/^([a-f0-9-]{36})\.(?:json|part)$/i);
+    if (match) ids.add(match[1]);
+  }
+  for (const id of ids) {
+    const files=sessionPaths(id);
+    const activity=[files.data,files.part].reduce((latest,file)=>{
+      try { return Math.max(latest,fs.statSync(file).mtimeMs); } catch { return latest; }
+    },0);
+    if (activity && now-activity >= uploadSessionTtlMs) {
+      fs.rmSync(files.data,{force:true});
+      fs.rmSync(files.part,{force:true});
+    }
   }
 }
 removeExpiredUploadSessions();
