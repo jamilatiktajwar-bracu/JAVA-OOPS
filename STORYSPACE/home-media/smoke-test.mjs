@@ -76,7 +76,7 @@ try{
  const headRange=await fetch(base+catalog[0].streamUrl,{method:"HEAD",headers:{range:"bytes=0-3"}});assert.equal(headRange.status,206);assert.equal(headRange.headers.get("content-length"),"4");assert.equal(await headRange.text(),"","HEAD never streams a body");
  const etag=headRange.headers.get("etag")||(await fetch(base+catalog[0].streamUrl)).headers.get("etag");
  const notModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":etag}});assert.equal(notModified.status,304,"matching ETag avoids retransmitting unchanged media");
- const ignoredRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"\\"stale\\""}});assert.equal(ignoredRange.status,200,"stale If-Range falls back to a full response");assert.equal(await ignoredRange.text(),"0123456789abcdef");
+ const ignoredRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"stale"}});assert.equal(ignoredRange.status,200,"stale If-Range falls back to a full response");assert.equal(await ignoredRange.text(),"0123456789abcdef");
  // A rejected upload must disappear from the pending queue and remain private.
  const rejectedInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Reject Me",filename:"reject.mp4",size:4})});
  assert.equal(rejectedInit.status,201);const rejectedSession=await rejectedInit.json();
