@@ -64,3 +64,7 @@
 #collectionDetailIcon{font-size:22px}
 .collection-create-form{grid-template-columns:minmax(0,1fr) minmax(125px,170px) minmax(115px,150px) auto auto}
 @media(max-width:760px){.collection-create-form{grid-template-columns:1fr 1fr}.collection-create-form label:first-child{grid-column:1/-1}}
+
+.collection-tile-description{display:block;max-width:22ch;color:#8fa9c3;font-size:10px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#collectionDetailDescription{margin:3px 0 0;color:#9db4ca;font-size:12px;line-height:1.5;max-width:65ch}
+.collection-description-field{grid-column:1/-1}
