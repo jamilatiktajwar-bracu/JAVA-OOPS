@@ -255,6 +255,13 @@ async function handle(req,res) {
     const files=sessionPaths(session.id), current=fs.statSync(files.part).size;
     const offset=Number(req.headers["x-upload-offset"]);
     if(!Number.isSafeInteger(offset)||offset!==current||offset!==session.offset) return json(res,409,{error:"Upload offset mismatch",offset:current});
+    const declaredLength=req.headers["content-length"];
+    if(declaredLength!==undefined){
+      const expected=Number(declaredLength);
+      if(!Number.isSafeInteger(expected)||expected<0) return json(res,400,{error:"Invalid chunk length"});
+      if(expected===0) return json(res,400,{error:"Empty chunk"});
+      if(expected>maxChunkBytes||current+expected>session.size) return json(res,413,{error:"Chunk exceeds limit"});
+    }
     let received=0;
     const limiter=new Transform({transform(chunk,enc,cb){received+=chunk.length;if(received>maxChunkBytes||current+received>session.size)cb(Object.assign(new Error("Chunk too large"),{statusCode:413}));else cb(null,chunk);}});
     try{
