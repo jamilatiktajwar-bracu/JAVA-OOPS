@@ -284,3 +284,7 @@ if(!css.includes(".resume-time-label"))throw Error("Continue Watching resume-tim
 for(const token of ["function getPlayerSeekWindow()","playerVideo.seekable","Number.isFinite(raw)","Math.max(range.start,Math.min(range.end,target))","Seeking unavailable","live window"])if(!a.includes(token))throw Error("Missing guarded seek behavior: "+token);
 const seekUx=read("player-ux.js");
 for(const token of ["function seekWindow()","video.seekable","range.live?\"live window\"","pointercancel"])if(!seekUx.includes(token))throw Error("Missing seek preview range behavior: "+token);
+
+
+const playbackDiagnostics=read("player-media-info.js");
+for(const token of ["function bufferedAhead()","video.buffered","networkState","readyState","getVideoPlaybackQuality","droppedVideoFrames","ratechange","bufferedAhead"])if(!playbackDiagnostics.includes(token))throw Error("Missing playback diagnostics: "+token);
