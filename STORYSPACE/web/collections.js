@@ -14,6 +14,7 @@
   const themeLabel = theme => ({violet:"Nebula",ocean:"Ocean",ember:"Ember",forest:"Forest"}[theme] || "Nebula");
   let collections = [];
   let activeCollectionId = null;
+  let collectionSearchQuery = "";
 
   function readCollections() {
     try {
@@ -214,7 +215,7 @@
   }
 
   const collectionBulkSelection=new Set();let collectionBulkMode=false;
-  function syncCollectionBulkToolbar(found){const toolbar=$("collectionBulkToolbar"),selected=[...collectionBulkSelection].filter(id=>found.some(m=>identify(m)===id));if(toolbar)toolbar.hidden=!collectionBulkMode;const count=$("collectionBulkCount");if(count)count.textContent=selected.length;const remove=$("collectionRemoveSelected");if(remove)remove.disabled=!selected.length;const all=$("collectionSelectAll");if(all)all.textContent=found.length&&found.every(m=>collectionBulkSelection.has(identify(m)) )?"Deselect all":"Select all";}
+  function syncCollectionBulkToolbar(found){const toolbar=$("collectionBulkToolbar"),selected=[...collectionBulkSelection].filter(id=>found.some(m=>identify(m)===id));if(toolbar)toolbar.hidden=!collectionBulkMode;const count=$("collectionBulkCount");if(count)count.textContent=selected.length;const remove=$("collectionRemoveSelected");if(remove)remove.disabled=!selected.length;const move=$("collectionMoveSelected");if(move)move.disabled=!selected.length||!$("collectionMoveTarget")?.value;const all=$("collectionSelectAll");if(all)all.textContent=found.length&&found.every(m=>collectionBulkSelection.has(identify(m)) )?"Deselect all":"Select all";}
   function renderCollectionDetail() {
     const detail = $("collectionDetail"), grid = $("collectionsGrid");
     if (!detail || !grid) return;
@@ -235,8 +236,8 @@
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
-    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
-    const sortMode = collection.sort || "custom";const bulkToggle=$("collectionBulkToggle");if(bulkToggle){bulkToggle.setAttribute("aria-pressed",String(collectionBulkMode));bulkToggle.textContent=collectionBulkMode?"Done selecting":"Select stories"}
+    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie))).filter(movie => {const q=collectionSearchQuery.trim().toLowerCase();return !q||[movie.title,movie.name,movie.description,movie.genre,movie.genres,movie.year,movie.cast].flat().filter(Boolean).join(" ").toLowerCase().includes(q)});
+    const sortMode = collection.sort || "custom";const bulkToggle=$("collectionBulkToggle");if(bulkToggle){bulkToggle.setAttribute("aria-pressed",String(collectionBulkMode));bulkToggle.textContent=collectionBulkMode?"Done selecting":"Select stories"}const moveTarget=$("collectionMoveTarget");if(moveTarget){const old=moveTarget.value;moveTarget.replaceChildren(new Option("Choose destination…",""),...collections.filter(x=>x.id!==collection.id).map(x=>new Option(x.name,x.id)));moveTarget.value=collections.some(x=>x.id===old&&x.id!==collection.id)?old:"";const moveBtn=$("collectionMoveSelected");if(moveBtn)moveBtn.disabled=!moveTarget.value||!collectionBulkSelection.size}
     if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
     else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(a))-collection.items.indexOf(identify(b)));
     else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating??b.voteAverage??b.vote_average??b.score)||0)-(Number(a.rating??a.voteAverage??a.vote_average??a.score)||0));
@@ -311,7 +312,7 @@
   }
 
   function openCollection(id) {
-    activeCollectionId = String(id);
+    activeCollectionId = String(id);collectionSearchQuery="";if($("collectionSearch"))$("collectionSearch").value="";collectionBulkSelection.clear();collectionBulkMode=false;
     renderCollectionGrid();
     renderCollectionDetail();
     $("collectionDetail")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
@@ -429,7 +430,7 @@
     }
   });
 
-  $("collectionBulkToggle")?.addEventListener("click",()=>{collectionBulkMode=!collectionBulkMode;if(!collectionBulkMode)collectionBulkSelection.clear();renderCollectionDetail()});$("collectionSelectAll")?.addEventListener("click",()=>{const found=collections.find(x=>x.id===activeCollectionId)?.items.map(movieFor).filter(Boolean)||[];if(found.length&&found.every(m=>collectionBulkSelection.has(identify(m))))found.forEach(m=>collectionBulkSelection.delete(identify(m)));else found.forEach(m=>collectionBulkSelection.add(identify(m)));renderCollectionDetail()});$("collectionClearSelection")?.addEventListener("click",()=>{collectionBulkSelection.clear();renderCollectionDetail()});$("collectionRemoveSelected")?.addEventListener("click",()=>{const collection=collections.find(x=>x.id===activeCollectionId);if(!collection)return;const ids=[...collectionBulkSelection].filter(id=>collection.items.includes(id));if(!ids.length)return;collection.items=collection.items.filter(id=>!ids.includes(id));collectionBulkSelection.clear();saveCollections();render();if(typeof showToast==="function")showToast("Removed "+ids.length+" from "+collection.name)});
+  $("collectionBulkToggle")?.addEventListener("click",()=>{collectionBulkMode=!collectionBulkMode;if(!collectionBulkMode)collectionBulkSelection.clear();renderCollectionDetail()});$("collectionSearch")?.addEventListener("input",event=>{collectionSearchQuery=event.target.value;renderCollectionDetail()});$("collectionMoveTarget")?.addEventListener("change",()=>renderCollectionDetail());$("collectionMoveSelected")?.addEventListener("click",()=>{const source=collections.find(x=>x.id===activeCollectionId),target=collections.find(x=>x.id===$("collectionMoveTarget").value);if(!source||!target)return;const ids=[...collectionBulkSelection].filter(id=>source.items.includes(id));let moved=0;ids.forEach(id=>{if(target.items.includes(id)||target.items.length>=MAX_ITEMS)return;target.items.unshift(id);source.items=source.items.filter(item=>item!==id);moved++});collectionBulkSelection.clear();saveCollections();render();if(typeof showToast==="function")showToast("Moved "+moved+" title"+(moved===1?"":"s")+" to "+target.name)});$("collectionDuplicate")?.addEventListener("click",()=>{const source=collections.find(x=>x.id===activeCollectionId);if(!source)return;if(collections.length>=MAX_COLLECTIONS){showToast("You reached the collection limit");return}let name=cleanName(source.name+" Copy"),suffix=2;while(collections.some(x=>x.name.toLowerCase()===name.toLowerCase()))name=cleanName(source.name+" Copy "+suffix++);const copy={...source,id:newCollectionId(),name,createdAt:Date.now(),items:[...source.items]};collections.unshift(copy);saveCollections();activeCollectionId=copy.id;render();showToast("Duplicated collection")}$("collectionSelectAll")?.addEventListener("click",()=>{const found=collections.find(x=>x.id===activeCollectionId)?.items.map(movieFor).filter(Boolean)||[];if(found.length&&found.every(m=>collectionBulkSelection.has(identify(m))))found.forEach(m=>collectionBulkSelection.delete(identify(m)));else found.forEach(m=>collectionBulkSelection.add(identify(m)));renderCollectionDetail()});$("collectionClearSelection")?.addEventListener("click",()=>{collectionBulkSelection.clear();renderCollectionDetail()});$("collectionRemoveSelected")?.addEventListener("click",()=>{const collection=collections.find(x=>x.id===activeCollectionId);if(!collection)return;const ids=[...collectionBulkSelection].filter(id=>collection.items.includes(id));if(!ids.length)return;collection.items=collection.items.filter(id=>!ids.includes(id));collectionBulkSelection.clear();saveCollections();render();if(typeof showToast==="function")showToast("Removed "+ids.length+" from "+collection.name)});
   $("collectionSort")?.addEventListener("change", event => {
     const collection = collections.find(item => item.id === activeCollectionId);
     if (!collection) return;
