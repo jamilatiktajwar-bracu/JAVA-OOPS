@@ -6,3 +6,18 @@
 .player-panel.player-controls-idle .player-settings-row:hover,.player-panel.player-controls-idle .player-settings-row:focus-within{opacity:1}
 @media(max-width:620px){.player-center-toggle{width:58px;height:58px}.player-center-icon{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.player-center-toggle,.player-panel.player-controls-idle .player-gesture-row,.player-panel.player-controls-idle .player-timeline,.player-panel.player-controls-idle .player-tools,.player-panel.player-controls-idle .player-settings-row{transition:none}}
+
+/* Mobile landscape + native fullscreen: use the live viewport rather than stale vh units. */
+.player-panel{--player-viewport-height:100vh;--player-viewport-width:100vw}
+.player-native-fullscreen .player-panel,.player-panel.player-native-fullscreen{box-sizing:border-box;width:var(--player-viewport-width)!important;height:var(--player-viewport-height)!important;max-width:none!important;max-height:none!important;margin:0!important;border-radius:0!important;overflow-y:auto!important;overscroll-behavior:contain}
+.player-native-fullscreen .player-stage{height:auto;max-height:calc(var(--player-viewport-height) - 170px);aspect-ratio:16/9}
+.player-native-fullscreen .player-stage>video{width:100%;height:100%;max-height:inherit;object-fit:contain}
+@media(max-height:520px) and (orientation:landscape){
+ .player-theater-mode .player-stage,.player-native-fullscreen .player-stage{height:calc(var(--player-viewport-height) - 116px);max-height:none;min-height:0;aspect-ratio:auto}
+ .player-theater-mode .player-stage>video,.player-native-fullscreen .player-stage>video{width:100%;height:100%;max-height:none;object-fit:contain}
+ .player-theater-mode .player-panel,.player-native-fullscreen .player-panel{padding:calc(5px + env(safe-area-inset-top)) 12px calc(5px + env(safe-area-inset-bottom))!important}
+ .player-theater-mode .player-gesture-row,.player-native-fullscreen .player-gesture-row{margin:3px 0}
+ .player-theater-mode .player-settings-row,.player-native-fullscreen .player-settings-row{gap:6px;margin-block:4px}
+ .player-theater-mode .player-tools,.player-native-fullscreen .player-tools{gap:5px;margin-block:4px}
+}
+@media(prefers-reduced-motion:reduce){.player-panel.player-controls-idle .player-settings-row,.player-panel.player-controls-idle .player-tools{transition:none}}
