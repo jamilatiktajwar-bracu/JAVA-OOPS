@@ -27,6 +27,7 @@
           id: String(item.id || ("collection-" + index)),
           name,
           theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+          sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
           createdAt: Math.max(0, Number(item.createdAt) || Date.now()),
           items
         }];
@@ -61,6 +62,7 @@
       collections: collections.map(item => ({
         name: item.name,
         theme: item.theme,
+        sort: item.sort || "custom",
         items: [...item.items]
       }))
     };
@@ -97,6 +99,7 @@
       return [{
         name,
         theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
+        sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
         items
       }];
     });
@@ -115,7 +118,7 @@
         return;
       }
       if (collections.length >= MAX_COLLECTIONS) { skipped++; return; }
-      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,createdAt:Date.now(),items:item.items});
+      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,sort:item.sort,createdAt:Date.now(),items:item.items});
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
@@ -202,6 +205,13 @@
     const row = $("collectionItemsRow");
     row.replaceChildren();
     const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
+    const sortMode = collection.sort || "custom";
+    if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
+    else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(a))-collection.items.indexOf(identify(b)));
+    else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating??b.voteAverage??b.vote_average??b.score)||0)-(Number(a.rating??a.voteAverage??a.vote_average??a.score)||0));
+    else if (sortMode === "year") found.sort((a,b) => (Number(String(b.year||b.releaseYear||b.release_date||"").slice(0,4))||0)-(Number(String(a.year||a.releaseYear||a.release_date||"").slice(0,4))||0));
+    const sortControl = $("collectionSort");
+    if (sortControl) sortControl.value = sortMode;
     if (!found.length) {
       const empty = document.createElement("p");
       empty.className = "collection-detail-empty";
@@ -252,7 +262,7 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", createdAt:Date.now(), items:[]});
+    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", sort:"custom", createdAt:Date.now(), items:[]});
     saveCollections();
     render();
     return {ok:true, id};
@@ -348,6 +358,26 @@
       $("collectionCreateStatus").textContent = "";
       if (typeof showToast === "function") showToast("Created " + cleanName(collections[0].name));
     }
+  });
+
+  $("collectionSort")?.addEventListener("change", event => {
+    const collection = collections.find(item => item.id === activeCollectionId);
+    if (!collection) return;
+    collection.sort = ["custom","title","recent","rating","year"].includes(event.target.value) ? event.target.value : "custom";
+    saveCollections(); render();
+  });
+  $("collectionRename")?.addEventListener("click", () => {
+    const collection = collections.find(item => item.id === activeCollectionId);
+    if (!collection) return;
+    const next = cleanName(prompt("Rename collection", collection.name));
+    if (!next || next === collection.name) return;
+    if (collections.some(item => item.id !== collection.id && item.name.toLowerCase() === next.toLowerCase())) {
+      if (typeof showToast === "function") showToast("A collection with that name already exists");
+      return;
+    }
+    collection.name = next; saveCollections(); render();
+    $("collectionDetailTitle")?.focus({preventScroll:true});
+    if (typeof showToast === "function") showToast("Collection renamed");
   });
 
   $("collectionBack")?.addEventListener("click", () => {
