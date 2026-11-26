@@ -15,6 +15,14 @@ for(const suffix of [".json",".part"]){const file=path.join(staging,expiredId+su
 const activePart=path.join(staging,activeId+".part"),activeMeta=path.join(staging,activeId+".json");
 await writeFile(activePart,"partial");await utimes(activePart,expiredTime,expiredTime);
 await writeFile(activeMeta,JSON.stringify({id:activeId,title:"Recover Me",extension:".mp4",contentType:"video/mp4",size:16,offset:0,createdAt:new Date().toISOString()}));
+// Refuse public bind addresses even when an environment variable is misconfigured.
+const unsafeBind=spawn(process.execPath,[path.join(root,"server.mjs")],{env:{...process.env,STORYSPACE_MEDIA_ADMIN_TOKEN:admin,STORYSPACE_MEDIA_UPLOAD_TOKEN:invite,STORYSPACE_MEDIA_HOST:"0.0.0.0",STORYSPACE_MEDIA_PORT:"0",STORYSPACE_MEDIA_DIR:path.join(temp,"unsafe-media"),STORYSPACE_MEDIA_STAGING_DIR:path.join(temp,"unsafe-staging"),STORYSPACE_MEDIA_CATALOG_FILE:path.join(temp,"unsafe-catalog.json")},stdio:["ignore","ignore","pipe"]});
+let unsafeBindError="";
+unsafeBind.stderr.setEncoding("utf8");unsafeBind.stderr.on("data",chunk=>{unsafeBindError+=chunk;});
+const unsafeBindExit=await new Promise(resolve=>unsafeBind.once("exit",(code,signal)=>resolve({code,signal})));
+assert.equal(unsafeBindExit.code,1,"public bind address is rejected before the server listens");
+assert.match(unsafeBindError,/must be a loopback address/,"unsafe bind rejection explains the required host");
+
 const portProbe=createServer();
 await new Promise((resolve,reject)=>{portProbe.once("error",reject);portProbe.listen(0,"127.0.0.1",resolve);});
 const port=portProbe.address().port;
