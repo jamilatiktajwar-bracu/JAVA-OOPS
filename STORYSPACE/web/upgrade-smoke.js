@@ -220,3 +220,9 @@ for(const token of [".collection-toolbar",".collection-backup-status",".collecti
 if(!h.includes("collections.css")||!h.includes("collections.js"))throw Error("Collections assets are not wired into the app");
 if(!sw.includes("./collections.css")||!sw.includes("./collections.js")||!sw.includes("storyspace-shell-v56"))throw Error("Collections assets missing from offline shell");
 if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('if($("collectionsSection"))$("collectionsSection").hidden=true'))throw Error("Collections hub must hide in browse/search modes");
+
+ // Collection management: safe rename and persisted presentation sorting.
+ for(const id of ["collectionRename","collectionSort"])if(!h.includes('id="'+id+'"'))throw Error("Collection management control missing: "+id);
+ for(const token of ["collection.sort","collectionRename","collectionSort","sortMode === \"title\"","sortMode === \"recent\"","sortMode === \"rating\"","sortMode === \"year\"","A collection with that name already exists","sort:item.sort"])if(!collections.includes(token))throw Error("Collection rename/sort persistence missing: "+token);
+ for(const token of [".collection-sort-label","collection-sort-label select:focus-visible"])if(!collectionsCss.includes(token))throw Error("Collection sort styling missing: "+token);
+ if(!sw.includes("storyspace-shell-v57"))throw Error("Collection management cache version missing");
