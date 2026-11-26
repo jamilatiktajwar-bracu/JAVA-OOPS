@@ -208,7 +208,7 @@
     if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
     else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(a))-collection.items.indexOf(identify(b)));
     else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating??b.voteAverage??b.vote_average??b.score)||0)-(Number(a.rating??a.voteAverage??a.vote_average??a.score)||0));
-    else if (sortMode === "year") found.sort((a,b) => (Number(String(b.year||b.releaseYear||b.release_date||\"\").slice(0,4))||0)-(Number(String(a.year||a.releaseYear||a.release_date||\"\").slice(0,4))||0));
+    else if (sortMode === "year") found.sort((a,b) => (Number(String(b.year||b.releaseYear||b.release_date||"").slice(0,4))||0)-(Number(String(a.year||a.releaseYear||a.release_date||"").slice(0,4))||0));
     const sortControl = $("collectionSort");
     if (sortControl) sortControl.value = sortMode;
     if (!found.length) {
@@ -359,7 +359,27 @@
     }
   });
 
-  $("collectionSort")?.addEventListener("change", event => {\n    const collection = collections.find(item => item.id === activeCollectionId);\n    if (!collection) return;\n    collection.sort = ["custom","title","recent","rating","year"].includes(event.target.value) ? event.target.value : "custom";\n    saveCollections(); render();\n  });\n  $("collectionRename")?.addEventListener("click", () => {\n    const collection = collections.find(item => item.id === activeCollectionId);\n    if (!collection) return;\n    const next = cleanName(prompt("Rename collection", collection.name));\n    if (!next || next === collection.name) return;\n    if (collections.some(item => item.id !== collection.id && item.name.toLowerCase() === next.toLowerCase())) {\n      if (typeof showToast === "function") showToast("A collection with that name already exists");\n      return;\n    }\n    collection.name = next; saveCollections(); render();\n    $("collectionDetailTitle")?.focus({preventScroll:true});\n    if (typeof showToast === "function") showToast("Collection renamed");\n  });\n\n  $("collectionBack")?.addEventListener("click", () => {
+  $("collectionSort")?.addEventListener("change", event => {
+    const collection = collections.find(item => item.id === activeCollectionId);
+    if (!collection) return;
+    collection.sort = ["custom","title","recent","rating","year"].includes(event.target.value) ? event.target.value : "custom";
+    saveCollections(); render();
+  });
+  $("collectionRename")?.addEventListener("click", () => {
+    const collection = collections.find(item => item.id === activeCollectionId);
+    if (!collection) return;
+    const next = cleanName(prompt("Rename collection", collection.name));
+    if (!next || next === collection.name) return;
+    if (collections.some(item => item.id !== collection.id && item.name.toLowerCase() === next.toLowerCase())) {
+      if (typeof showToast === "function") showToast("A collection with that name already exists");
+      return;
+    }
+    collection.name = next; saveCollections(); render();
+    $("collectionDetailTitle")?.focus({preventScroll:true});
+    if (typeof showToast === "function") showToast("Collection renamed");
+  });
+
+  $("collectionBack")?.addEventListener("click", () => {
     activeCollectionId = null;
     render();
     ($("collectionsGrid").querySelector(".collection-tile") || $("collectionCreateToggle"))?.focus();
