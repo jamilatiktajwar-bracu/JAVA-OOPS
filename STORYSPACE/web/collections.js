@@ -156,52 +156,47 @@
       return;
     }
     grid.hidden = false;
-    collections.forEach(collection => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "collection-tile";
-      button.dataset.theme = collection.theme;
-      button.setAttribute("aria-label", "Open collection " + collection.name + ", " + collection.items.length + " stories");
-      const mosaic = document.createElement("span");
-      mosaic.className = "collection-mosaic";
-      const samples = collection.items.slice(0, 4).map(movieFor).filter(Boolean);
-      if (!samples.length) {
-        const emptyMark = document.createElement("span");
-        emptyMark.className = "collection-mosaic-empty";
-        emptyMark.textContent = validIcon(collection.icon);
-        mosaic.append(emptyMark);
-      } else {
-        samples.forEach(movie => {
-          const image = document.createElement("img");
-          image.alt = "";
-          image.loading = "lazy";
-          image.decoding = "async";
-          image.src = typeof art === "function" ? art(movie) : String(movie.poster || "");
-          image.onerror = () => image.remove();
-          mosaic.append(image);
-        });
-      }
-      const iconBadge = document.createElement("span");
-      iconBadge.className = "collection-cover-icon";
-      iconBadge.textContent = validIcon(collection.icon);
-      mosaic.append(iconBadge);
-      const copy = document.createElement("span");
-      copy.className = "collection-tile-copy";
-      const title = document.createElement("strong");
-      title.textContent = collection.name;
-      const meta = document.createElement("small");
-      meta.textContent = collection.items.length + (collection.items.length === 1 ? " story" : " stories") + " · " + themeLabel(collection.theme);
-      const description = document.createElement("small");
-      description.className = "collection-tile-description";
-      description.textContent = collection.description || "A personal shelf of stories";
-      copy.append(title, meta, description);
-      const arrow = document.createElement("span");
-      arrow.className = "collection-tile-arrow";
-      arrow.textContent = "↗";
-      button.append(mosaic, copy, arrow);
-      button.addEventListener("click", () => openCollection(collection.id));
-      grid.append(button);
+    collections.forEach((collection, index) => {
+      const shelf = document.createElement("article");
+      shelf.className = "collection-shelf-card"; shelf.draggable = true; shelf.dataset.collectionId = collection.id;
+      shelf.addEventListener("dragstart", event => { event.dataTransfer?.setData("text/plain", collection.id); if(event.dataTransfer)event.dataTransfer.effectAllowed="move"; shelf.classList.add("collection-shelf-dragging"); });
+      shelf.addEventListener("dragend", () => shelf.classList.remove("collection-shelf-dragging"));
+      shelf.addEventListener("dragover", event => { event.preventDefault(); if(event.dataTransfer)event.dataTransfer.dropEffect="move"; shelf.classList.add("collection-shelf-over"); });
+      shelf.addEventListener("dragleave", () => shelf.classList.remove("collection-shelf-over"));
+      shelf.addEventListener("drop", event => { event.preventDefault(); shelf.classList.remove("collection-shelf-over"); const id=event.dataTransfer?.getData("text/plain"); const from=collections.findIndex(item=>item.id===id); if(from>=0&&from!==index)reorderCollections(from,index); });
+      const button=document.createElement("button"); button.type="button"; button.className="collection-tile"; button.dataset.theme=collection.theme;
+      button.setAttribute("aria-label","Open collection "+collection.name+", "+collection.items.length+" stories");
+      const mosaic=document.createElement("span"); mosaic.className="collection-mosaic";
+      const samples=collection.items.slice(0,4).map(movieFor).filter(Boolean);
+      if(!samples.length){const mark=document.createElement("span");mark.className="collection-mosaic-empty";mark.textContent=validIcon(collection.icon);mosaic.append(mark);}
+      else samples.forEach(movie=>{const image=document.createElement("img");image.alt="";image.loading="lazy";image.decoding="async";image.src=typeof art==="function"?art(movie):String(movie.poster||"");image.onerror=()=>image.remove();mosaic.append(image);});
+      const badge=document.createElement("span");badge.className="collection-cover-icon";badge.textContent=validIcon(collection.icon);mosaic.append(badge);
+      const copy=document.createElement("span");copy.className="collection-tile-copy";
+      const title=document.createElement("strong");title.textContent=collection.name;
+      const meta=document.createElement("small");meta.textContent=collection.items.length+(collection.items.length===1?" story":" stories")+" · "+themeLabel(collection.theme);
+      const description=document.createElement("small");description.className="collection-tile-description";description.textContent=collection.description||"A personal shelf of stories";
+      copy.append(title,meta,description);const arrow=document.createElement("span");arrow.className="collection-tile-arrow";arrow.textContent="↗";button.append(mosaic,copy,arrow);
+      button.addEventListener("click",()=>openCollection(collection.id));
+      const controls=document.createElement("div");controls.className="collection-shelf-controls";controls.setAttribute("aria-label","Arrange "+collection.name);
+      const hint=document.createElement("span");hint.className="collection-shelf-hint";hint.textContent="Reorder shelf";
+      const up=document.createElement("button");up.type="button";up.className="collection-shelf-move";up.textContent="↑";up.setAttribute("aria-label","Move "+collection.name+" earlier");up.disabled=index===0;up.addEventListener("click",()=>reorderCollections(index,index-1));
+      const down=document.createElement("button");down.type="button";down.className="collection-shelf-move";down.textContent="↓";down.setAttribute("aria-label","Move "+collection.name+" later");down.disabled=index===collections.length-1;down.addEventListener("click",()=>reorderCollections(index,index+1));
+      controls.append(hint,up,down);shelf.append(button,controls);grid.append(shelf);
     });
+  }
+
+  function reorderCollections(from, to) {
+    if (from < 0 || to < 0 || from >= collections.length || to >= collections.length || from === to) return false;
+    const activeLabel = document.activeElement?.getAttribute("aria-label");
+    const [item] = collections.splice(from, 1);
+    collections.splice(to, 0, item);
+    saveCollections();
+    renderCollectionGrid();
+    if (activeLabel) {
+      const target = Array.from($("collectionsGrid").querySelectorAll("button")).find(button => button.getAttribute("aria-label") === activeLabel);
+      target?.focus({preventScroll:true});
+    }
+    return true;
   }
 
   function reorderVisibleItems(collection, visibleIds, from, to) {
