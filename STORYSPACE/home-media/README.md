@@ -2,7 +2,9 @@
 
 This optional service streams owner-approved media from your Windows PC using HTTP byte ranges. It binds to **127.0.0.1 only**; never expose port 8787 directly through your router. You can publish it through a temporary Cloudflare Quick Tunnel (no domain or Cloudflare account required) or a stable named tunnel with your own domain.
 
-Catalog entries are validated before use: media filenames must be the generated UUID plus a supported extension, and the stored MIME type, title, size, and timestamp must be valid. Unsafe or malformed entries are ignored, preventing a tampered catalog filename from being used for streaming or moderation file deletion.\n\n## Requirements
+Catalog entries are validated before use: media filenames must be the generated UUID plus a supported extension, and the stored MIME type, title, size, and timestamp must be valid. Unsafe or malformed entries are ignored, preventing a tampered catalog filename from being used for streaming or moderation file deletion.
+
+## Requirements
 
 - Windows 10/11 and Node.js 20 LTS or newer
 - Internet access and sufficient upload bandwidth
@@ -102,4 +104,10 @@ Paste each key only into its matching field. Never interchange the two keys. If 
 - A Quick Tunnel URL is temporary and unlisted, not access control, DRM, or copy protection. Anyone with a published media URL can share it. Do not upload content you lack rights to distribute.
 - The script starts the media server and tunnel in separate windows; it does not install a Windows service or guarantee restart after reboot.
 - A successful CI build does not prove a 5–10 GB upload or playback from another country. Test with a small authorized file first, then a large file, and verify from a separate network before inviting viewers.
-\n### HTTP server lifecycle\n- Header parsing is capped at 15 seconds, request bodies at 30 minutes, keep-alive at 5 seconds, and header count at 100. The 30-minute request window supports large uploads on slower connections.\n- SIGINT/SIGTERM stops accepting new requests, closes idle connections, drains active work, and force-closes remaining sockets after a 30-second grace period.\n\n### Playback integrity\n- Before streaming, the server checks the media file's actual size against its catalog record and returns HTTP 503 for truncated or otherwise size-mismatched media instead of presenting a broken stream as healthy.\n
+
+### HTTP server lifecycle
+- Header parsing is capped at 15 seconds, request bodies at 30 minutes, keep-alive at 5 seconds, and header count at 100. The 30-minute request window supports large uploads on slower connections.
+- SIGINT/SIGTERM stops accepting new requests, closes idle connections, drains active work, and force-closes remaining sockets after a 30-second grace period.
+
+### Playback integrity
+- Before streaming, the server checks the media file's actual size against its catalog record and returns HTTP 503 for truncated or otherwise size-mismatched media instead of presenting a broken stream as healthy.
