@@ -131,6 +131,16 @@ function sessionPaths(id) {
 function readSession(id) {
   const files=sessionPaths(id);
   if (!files || !fs.existsSync(files.data)) return null;
+  // Enforce retention during the lifetime of the process, not only at startup.
+  // The newest metadata or chunk timestamp represents the session's last activity.
+  const activity=[files.data,files.part].reduce((latest,file)=>{
+    try { return Math.max(latest,fs.statSync(file).mtimeMs); } catch { return latest; }
+  },0);
+  if (!activity || Date.now()-activity >= uploadSessionTtlMs) {
+    fs.rmSync(files.data,{force:true});
+    fs.rmSync(files.part,{force:true});
+    return null;
+  }
   try { const value=JSON.parse(fs.readFileSync(files.data,"utf8")); return value.id===id ? value : null; } catch { return null; }
 }
 function writeSession(session) {
