@@ -277,25 +277,42 @@ async function handle(req,res) {
     }catch(error){fs.rmSync(destination,{force:true});return json(res,error.statusCode||400,{error:error.statusCode===413?"Upload exceeds configured size limit":"Upload failed"});}
   }
 
-  const match=url.pathname.match(/^\/media\/([a-f0-9-]{36})$/i);
+  const match=url.pathname.match(/^\\/media\\/([a-f0-9-]{36})$/i);
   if(match&&(req.method==="GET"||req.method==="HEAD")){
     const item=readCatalog().find(x=>x.id===match[1]&&x.published===true);
     if(!item)return json(res,404,{error:"Media not found"});
     const file=path.join(mediaDir,item.fileName);let stat;
     try{stat=fs.statSync(file);}catch{return json(res,404,{error:"Media file is offline"});}
     if(!stat.isFile()||path.basename(file)!==item.fileName)return json(res,404,{error:"Media not found"});
-    const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
-    const range=req.headers.range;
+    const etag='"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
+    const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\\""+item.fileName+"\\"","x-content-type-options":"nosniff"};
+    if(req.headers["if-none-match"]===etag){res.writeHead(304,headers);return res.end();}
+    let range=req.headers.range;
+    if(range&&req.headers["if-range"]&&req.headers["if-range"]!==etag&&req.headers["if-range"]!==headers["last-modified"]) range=null;
+    let start=0,end=stat.size-1,status=200;
     if(range){
-      const m=/^bytes=(\d*)-(\d*)$/.exec(range);if(!m){res.writeHead(416,{"content-range":"bytes */"+stat.size});return res.end();}
-      let start=m[1]?Number(m[1]):NaN,end=m[2]?Number(m[2]):NaN;
-      if(Number.isNaN(start)){const suffix=end;if(!suffix){res.writeHead(416,{"content-range":"bytes */"+stat.size});return res.end();}start=Math.max(0,stat.size-suffix);end=stat.size-1;}
-      else if(Number.isNaN(end))end=stat.size-1;
-      if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||end<start||start>=stat.size){res.writeHead(416,{"content-range":"bytes */"+stat.size});return res.end();}
-      end=Math.min(end,stat.size-1);headers["content-range"]="bytes "+start+"-"+end+"/"+stat.size;headers["content-length"]=String(end-start+1);
-      res.writeHead(206,headers);if(req.method==="HEAD")return res.end();return fs.createReadStream(file,{start,end}).pipe(res);
+      const parsed=/^bytes=(\\d*)-(\\d*)$/.exec(range.trim());
+      if(!parsed||stat.size===0){res.writeHead(416,{"content-range":"bytes */"+stat.size,"cache-control":"no-store"});return res.end();}
+      const first=parsed[1],last=parsed[2];
+      if(!first&&!last){res.writeHead(416,{"content-range":"bytes */"+stat.size,"cache-control":"no-store"});return res.end();}
+      if(!first){
+        const suffix=Number(last);
+        if(!Number.isSafeInteger(suffix)||suffix<=0){res.writeHead(416,{"content-range":"bytes */"+stat.size,"cache-control":"no-store"});return res.end();}
+        start=Math.max(0,stat.size-suffix);
+      }else{
+        start=Number(first);
+        end=last?Number(last):stat.size-1;
+        if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||end<start||start>=stat.size){res.writeHead(416,{"content-range":"bytes */"+stat.size,"cache-control":"no-store"});return res.end();}
+        end=Math.min(end,stat.size-1);
+      }
+      status=206;
+      headers["content-range"]="bytes "+start+"-"+end+"/"+stat.size;
     }
-    headers["content-length"]=String(stat.size);res.writeHead(200,headers);if(req.method==="HEAD")return res.end();return fs.createReadStream(file).pipe(res);
+    headers["content-length"]=String(status===206?end-start+1:stat.size);
+    res.writeHead(status,headers);
+    if(req.method==="HEAD")return res.end();
+    await pipeline(fs.createReadStream(file,{start,end}),res);
+    return;
   }
   return json(res,404,{error:"Not found"});
 }
