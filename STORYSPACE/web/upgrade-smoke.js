@@ -118,7 +118,7 @@ if(!sw.includes("storyspace-shell-v54"))throw Error("Expanded demo shell cache v
 // Demo Cinema filters, open-film metadata/attribution and source links.
 if(!h.includes('id="demoCinemaFilters"')||!h.includes('data-demo-filter="open"')||!h.includes('data-demo-filter="short"'))throw Error("Demo Cinema filter controls missing");
 if(!h.includes('id="demoCinemaStatus"')||!h.includes('id="modalDemoSourceCard"')||!h.includes('id="modalDemoLicenseLink"'))throw Error("Demo source/credit detail panel missing");
-for(const token of ["function renderDemoCinema()","demoCinemaFilter===","demoRuntimeSec","demoOpenMovie","CC BY 4.0","Spring · Open Movie","https://upload.wikimedia.org/wikipedia/commons/a/a5/Spring_-_Blender_Open_Movie.webm"])if(!a.includes(token))throw Error("Open-movie catalog/filter metadata missing: "+token);
+for(const token of ["function renderDemoCinema()","demoCinemaFilter===","demoRuntimeSec","demoOpenMovie","CC BY 4.0","Spring · Open Movie","https://upload.wikimedia.org/wikipedia/commons/a/a5/Spring_-_Blender_Open_Movie.webm","https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Spring_-_Blender_Open_Movie.webm/960px-Spring_-_Blender_Open_Movie.webm.jpg"])if(!a.includes(token))throw Error("Open-movie catalog/filter metadata missing: "+token);
 if(!a.includes('m.demoOpenMovie&&m.demoLicense&&m.demoCredit'))throw Error("Open-movie attribution missing in playback notice");
 if(!a.includes('$("demoCinemaFilters")?.addEventListener')||!a.includes('$("demoCinemaFilters").querySelectorAll'))throw Error("Demo Cinema filter controls are not wired by ID");
 if(!a.includes('demoRuntimeSec:540,demo:true},\n{id:114,title:"Spring · Open Movie"'))throw Error("Demo catalog item separator missing");
