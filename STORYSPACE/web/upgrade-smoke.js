@@ -228,7 +228,7 @@ if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('
  if(!sw.includes("storyspace-shell-v60"))throw Error("Collection management cache version missing");
 
 // Custom Collection ordering: accessible move buttons and drag/drop, while preserving filtered slots.
-for(const token of ["reorderVisibleItems","collection-order-controls","Move ","dragstart","dragend","dragover","data-collection-item-id",'collection.sort = "custom"'])if(!collections.includes(token))throw Error("Collection reorder implementation missing: "+token);
+for(const token of ["reorderVisibleItems","collection-order-controls","Move ","dragstart","dragend","dragover","tile.dataset.collectionItemId",'collection.sort = "custom"'])if(!collections.includes(token))throw Error("Collection reorder implementation missing: "+token);
 for(const token of [".collection-order-controls",".collection-order-button",".collection-is-dragging"])if(!collectionsCss.includes(token))throw Error("Collection reorder styles missing: "+token);
 
 // Collection cover personalization smoke guards
