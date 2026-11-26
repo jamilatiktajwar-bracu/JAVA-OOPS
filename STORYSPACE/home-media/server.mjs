@@ -37,6 +37,15 @@ if (maxChunkBytes > maxUploadBytes) {
 
 const publicOrigin = String(process.env.STORYSPACE_MEDIA_PUBLIC_ORIGIN || "").replace(/\/+$/, "");
 const allowedOrigin = String(process.env.STORYSPACE_MEDIA_CORS_ORIGIN || "*");
+if (allowedOrigin !== "*") {
+  let parsedOrigin;
+  try { parsedOrigin = new URL(allowedOrigin); } catch { parsedOrigin = null; }
+  if (!parsedOrigin || !["http:","https:"].includes(parsedOrigin.protocol) ||
+      parsedOrigin.origin !== allowedOrigin || parsedOrigin.username || parsedOrigin.password) {
+    console.error("STORYSPACE_MEDIA_CORS_ORIGIN must be * or an exact HTTP(S) origin without a path.");
+    process.exit(1);
+  }
+}
 const types = new Map([[".mp4","video/mp4"],[".m4v","video/x-m4v"],[".webm","video/webm"],[".mov","video/quicktime"]]);
 
 if (adminToken.length < 32 || uploadToken.length < 32) {
@@ -112,9 +121,10 @@ function safeTitle(value) {
   const title = String(value || "").trim().replace(/\s+/g, " ");
   return title.length > 0 && title.length <= 160 && !/[\u0000-\u001f\u007f]/.test(title) ? title : "";
 }
-function cors(res) {
-  if (allowedOrigin === "*") res.setHeader("access-control-allow-origin", "*");
-  else res.setHeader("access-control-allow-origin", allowedOrigin);
+function cors(req,res) {
+  const origin = String(req.headers.origin || "");
+  if (allowedOrigin === "*" ) res.setHeader("access-control-allow-origin", "*");
+  else if (origin === allowedOrigin) res.setHeader("access-control-allow-origin", origin);
   res.setHeader("vary", "Origin");
   res.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, OPTIONS");
   res.setHeader("access-control-allow-headers", "content-type, x-storyspace-admin-token, x-storyspace-upload-token, x-upload-offset, range");
@@ -187,8 +197,12 @@ async function readJson(req, limit=16*1024) {
   catch { throw Object.assign(new Error("Invalid JSON"),{statusCode:400}); }
 }
 async function handle(req,res) {
-  cors(res);
-  if(req.method==="OPTIONS"){res.writeHead(204);return res.end();}
+  cors(req,res);
+  if(req.method==="OPTIONS"){
+    if(allowedOrigin !== "*" && req.headers.origin && req.headers.origin !== allowedOrigin)
+      return json(res,403,{error:"Origin is not allowed"});
+    res.writeHead(204);return res.end();
+  }
   const url=new URL(req.url||"/","http://localhost");
   if(url.pathname==="/health"&&req.method==="GET") return json(res,200,{ok:true,service:"storyspace-home-media",version:2});
   if(url.pathname==="/api/catalog"&&req.method==="GET") return json(res,200,readCatalog().filter(x=>x.published===true).map(publicItem));
