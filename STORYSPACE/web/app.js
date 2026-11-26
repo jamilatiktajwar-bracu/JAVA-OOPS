@@ -708,7 +708,7 @@ async function openAdmin(){if(!personalized.account||personalized.account.role!=
 function closeAdmin(){$("adminBackdrop").hidden=true;document.body.style.overflow=""}
 let playerLoadId=0,activePlayerTitle=null,lastProgressPersistAt=0,lastProgressSyncAt=0,lastRemoteProgress=0;
 function refreshContinueRow(){
-  const items=movies.filter(m=>Number(m.progress)>0);
+  const items=movies.filter(m=>Number(m.progress)>0).sort((a,b)=>(Number(resumePoints[String(b.apiId||b.id)]?.updatedAt)||0)-(Number(resumePoints[String(a.apiId||a.id)]?.updatedAt)||0));
   if(typeof renderRow==="function")renderRow("continueRow",items);
   const section=$("continueSection");if(section)section.hidden=items.length===0;
   if(window.storyspaceResumeHub)window.storyspaceResumeHub.refresh();
