@@ -187,17 +187,8 @@
     }
     if (!collections.length) {
       const note = document.createElement("p");
-      note.textContent = "Create your first collection to start organizing stories.";
-      const create = document.createElement("button");
-      create.type = "button";
-      create.className = "secondary-button collection-inline-create";
-      create.textContent = "＋ Create collection";
-      create.addEventListener("click", () => {
-        $("collectionCreateForm").hidden = false;
-        $("collectionName").focus();
-        $("collectionsSection").scrollIntoView({behavior:"smooth",block:"center"});
-      });
-      choices.append(note, create);
+      note.textContent = "Create a collection in My Collections first, then return here to save this story.";
+      choices.append(note);
       return;
     }
     collections.forEach(collection => {
@@ -265,8 +256,9 @@
   });
 
   $("modalCollectionsToggle")?.addEventListener("click", () => {
-    const panel = $("modalCollectionsPanel");
+    const panel = $("modalCollectionsPanel"), button = $("modalCollectionsToggle");
     panel.hidden = !panel.hidden;
+    button.setAttribute("aria-expanded", String(!panel.hidden));
     if (!panel.hidden) renderModalChoices(typeof state !== "undefined" ? state.selected : null);
   });
 
