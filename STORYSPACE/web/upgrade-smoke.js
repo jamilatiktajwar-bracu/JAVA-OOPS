@@ -266,3 +266,8 @@ for(const id of ["collectionBulkToggle","collectionBulkToolbar","collectionSelec
 for(const token of ["collectionBulkSelection","collectionBulkMode","collectionSelectAll","collectionRemoveSelected","bulkAdd","collection-bulk-selected","syncCollectionBulkToolbar"])if(!cs.includes(token))throw Error("Collection bulk behavior missing: "+token);
 for(const token of ["universeCollectionAssign","universeAssignCollection","universeAssignSelected","bulkAdd","syncUniverseCollectionAssignment"])if(!a.includes(token))throw Error("Universe-to-collection bulk assignment missing: "+token);
 for(const token of [".collection-bulk-toolbar",".collection-bulk-selected",".universe-collection-assign"])if(!cc.includes(token))throw Error("Collection bulk styles missing: "+token);
+
+// Collection search, move and duplicate smoke checks.
+for(const id of ["collectionSearch","collectionDuplicate","collectionMoveTarget","collectionMoveSelected"])if(!h.includes('id="'+id+'"'))throw Error("Collection search/move/duplicate UI missing: "+id);
+for(const token of ["collectionSearchQuery","collectionMoveSelected","collectionMoveTarget","collectionDuplicate","newCollectionId","Moved ","Duplicated collection"])if(!js.includes(token))throw Error("Collection search/move/duplicate behavior missing: "+token);
+for(const token of [".collection-search-label",".collection-bulk-toolbar select"])if(!css.includes(token))throw Error("Collection search/move styles missing: "+token);
