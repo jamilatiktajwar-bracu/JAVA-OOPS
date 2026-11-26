@@ -7,6 +7,7 @@
   const catalog = () => typeof movies !== "undefined" && Array.isArray(movies) ? movies : [];
   const identify = movie => String(movie?.apiId || movie?.id);
   const cleanName = value => String(value || "").replace(/\s+/g, " ").trim().slice(0, 28);
+  const cleanDescription = value => String(value || "").replace(/\s+/g, " ").trim().slice(0, 72);
   const themes = ["violet", "ocean", "ember", "forest"];
   const coverIcons = ["✧","🎬","🍿","🌙","❤️","⚡","🧭","🌿","🔥","🪐","👑","🎭"];
   const validIcon = value => coverIcons.includes(value) ? value : "✧";
@@ -28,6 +29,7 @@
         return [{
           id: String(item.id || ("collection-" + index)),
           name,
+          description: cleanDescription(item.description),
           theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
           icon: validIcon(item.icon),
           sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
@@ -64,6 +66,7 @@
       exportedAt: new Date().toISOString(),
       collections: collections.map(item => ({
         name: item.name,
+        description: cleanDescription(item.description),
         theme: item.theme,
         icon: validIcon(item.icon),
         sort: item.sort || "custom",
@@ -102,6 +105,7 @@
       skipped += uniqueItems.length - items.length;
       return [{
         name,
+        description: cleanDescription(item.description),
         theme: themes.includes(item.theme) ? item.theme : themes[index % themes.length],
         icon: validIcon(item.icon),
         sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom",
@@ -123,7 +127,7 @@
         return;
       }
       if (collections.length >= MAX_COLLECTIONS) { skipped++; return; }
-      collections.push({id:newCollectionId(),name:item.name,theme:item.theme,icon:item.icon,sort:item.sort,createdAt:Date.now(),items:item.items});
+      collections.push({id:newCollectionId(),name:item.name,description:item.description,theme:item.theme,icon:item.icon,sort:item.sort,createdAt:Date.now(),items:item.items});
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
@@ -187,7 +191,10 @@
       title.textContent = collection.name;
       const meta = document.createElement("small");
       meta.textContent = collection.items.length + (collection.items.length === 1 ? " story" : " stories") + " · " + themeLabel(collection.theme);
-      copy.append(title, meta);
+      const description = document.createElement("small");
+      description.className = "collection-tile-description";
+      description.textContent = collection.description || "A personal shelf of stories";
+      copy.append(title, meta, description);
       const arrow = document.createElement("span");
       arrow.className = "collection-tile-arrow";
       arrow.textContent = "↗";
@@ -226,6 +233,8 @@
     $("collectionDetailTitle").textContent = collection.name;
     const detailIcon = $("collectionDetailIcon");
     if (detailIcon) detailIcon.textContent = validIcon(collection.icon);
+    const detailDescription = $("collectionDetailDescription");
+    if (detailDescription) { detailDescription.textContent = collection.description; detailDescription.hidden = !collection.description; }
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
@@ -316,7 +325,7 @@
     renderCollectionDetail();
   }
 
-  function createCollection(name, theme, icon) {
+  function createCollection(name, theme, icon, description) {
     const clean = cleanName(name);
     if (!clean) return {ok:false, reason:"Enter a collection name"};
     if (collections.length >= MAX_COLLECTIONS) return {ok:false, reason:"You can create up to " + MAX_COLLECTIONS + " collections"};
@@ -324,7 +333,7 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, theme:themes.includes(theme)?theme:"violet", icon:validIcon(icon), sort:"custom", createdAt:Date.now(), items:[]});
+    collections.unshift({id, name:clean, description:cleanDescription(description), theme:themes.includes(theme)?theme:"violet", icon:validIcon(icon), sort:"custom", createdAt:Date.now(), items:[]});
     saveCollections();
     render();
     return {ok:true, id};
@@ -412,7 +421,7 @@
   });
   createForm?.addEventListener("submit", event => {
     event.preventDefault();
-    const result = createCollection(createName.value, $("collectionTheme").value, $("collectionIcon").value);
+    const result = createCollection(createName.value, $("collectionTheme").value, $("collectionIcon").value, $("collectionDescription").value);
     $("collectionCreateStatus").textContent = result.ok ? "Collection created. Open a story to add it." : result.reason;
     if (result.ok) {
       createForm.reset();
