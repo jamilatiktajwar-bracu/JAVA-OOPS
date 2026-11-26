@@ -108,7 +108,7 @@
     }catch(error){target.textContent=error.message;target.className="media-muted"}
   }
   async function resumeOne(id){
-    if(active)return;active=true;activeItemId=id;cancelRequested=false;
+    if(active)return;active=true;activeItemId=id;cancelRequested=false;await renderQueue();
     let item=null;
     try{const items=await getItems();item=items.find(x=>x.id===id);if(!item)return;const file=await getFile(item);await runUpload(item,file);showToast("Upload sent for owner approval")}
     catch(error){if(error.code!=="UPLOAD_CANCELLED"){if(item){item.status="Paused · "+error.message;item.updatedAt=Date.now();try{await storeItem(item)}catch{}}setProgress(item?.offset||0,item?.size||1,error.message);showToast(error.message)}}
@@ -224,7 +224,7 @@
     const ext=file.name.split(".").pop().toLowerCase();if(!["mp4","m4v","webm","mov"].includes(ext)){showToast("Supported formats: MP4, M4V, WebM, MOV");return}
     const item={id:crypto.randomUUID(),title,filename:file.name,size:file.size,offset:0,status:"Queued",createdAt:Date.now(),updatedAt:Date.now(),handle};
     try{await storeItem(item)}catch(error){showToast("Could not save queue metadata: "+error.message);return}
-    $("mediaUploadStart").disabled=true;active=true;activeItemId=item.id;cancelRequested=false;
+    $("mediaUploadStart").disabled=true;active=true;activeItemId=item.id;cancelRequested=false;await renderQueue();
     try{await runUpload(item,file);$("mediaMovieTitle").value="";showToast("Upload complete · awaiting approval")}
     catch(error){if(error.code!=="UPLOAD_CANCELLED"){item.status="Paused · "+error.message;item.updatedAt=Date.now();await storeItem(item);setProgress(item.offset||0,item.size,error.message);showToast("Upload paused; resume when connected")}}
     finally{active=false;activeItemId=null;cancelRequested=false;$("mediaUploadStart").disabled=false;await renderQueue()}
