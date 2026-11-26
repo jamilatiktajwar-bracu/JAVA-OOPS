@@ -187,6 +187,20 @@
     });
   }
 
+  function reorderVisibleItems(collection, visibleIds, from, to) {
+    if (!collection || from === to || from < 0 || to < 0 || from >= visibleIds.length || to >= visibleIds.length) return false;
+    const nextVisible = [...visibleIds];
+    const [moved] = nextVisible.splice(from, 1);
+    nextVisible.splice(to, 0, moved);
+    const visibleSet = new Set(visibleIds);
+    let cursor = 0;
+    collection.items = collection.items.map(id => visibleSet.has(id) ? nextVisible[cursor++] : id);
+    collection.sort = "custom";
+    saveCollections();
+    render();
+    return true;
+  }
+
   function renderCollectionDetail() {
     const detail = $("collectionDetail"), grid = $("collectionsGrid");
     if (!detail || !grid) return;
@@ -220,8 +234,45 @@
       row.append(empty);
       return;
     }
-    found.forEach(movie => {
+    found.forEach((movie, index) => {
       const tile = typeof card === "function" ? card(movie) : document.createElement("article");
+      tile.dataset.collectionItemId = identify(movie);
+      tile.draggable = sortMode === "custom";
+      if (sortMode === "custom") {
+        tile.classList.add("collection-reorder-draggable");
+        tile.addEventListener("dragstart", event => {
+          event.dataTransfer?.setData("text/plain", identify(movie));
+          if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+          tile.classList.add("collection-is-dragging");
+        });
+        tile.addEventListener("dragend", () => tile.classList.remove("collection-is-dragging"));
+        tile.addEventListener("dragover", event => { event.preventDefault(); if (event.dataTransfer) event.dataTransfer.dropEffect = "move"; });
+        tile.addEventListener("drop", event => {
+          event.preventDefault();
+          const fromId = event.dataTransfer?.getData("text/plain");
+          const from = found.findIndex(item => identify(item) === fromId);
+          if (from >= 0 && from !== index) reorderVisibleItems(collection, found.map(identify), from, index);
+        });
+        const orderControls = document.createElement("div");
+        orderControls.className = "collection-order-controls";
+        orderControls.setAttribute("aria-label", "Reorder " + (movie.title || movie.name || "story"));
+        const moveUp = document.createElement("button");
+        moveUp.type = "button";
+        moveUp.className = "collection-order-button";
+        moveUp.textContent = "↑";
+        moveUp.setAttribute("aria-label", "Move " + (movie.title || movie.name || "story") + " earlier");
+        moveUp.disabled = index === 0;
+        moveUp.addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); reorderVisibleItems(collection, found.map(identify), index, index - 1); });
+        const moveDown = document.createElement("button");
+        moveDown.type = "button";
+        moveDown.className = "collection-order-button";
+        moveDown.textContent = "↓";
+        moveDown.setAttribute("aria-label", "Move " + (movie.title || movie.name || "story") + " later");
+        moveDown.disabled = index === found.length - 1;
+        moveDown.addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); reorderVisibleItems(collection, found.map(identify), index, index + 1); });
+        orderControls.append(moveUp, moveDown);
+        tile.append(orderControls);
+      }
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "collection-card-remove";
