@@ -226,3 +226,6 @@ if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('
  for(const token of ["collection.sort","collectionRename","collectionSort","sortMode === \"title\"","sortMode === \"recent\"","sortMode === \"rating\"","sortMode === \"year\"","A collection with that name already exists","sort:item.sort"])if(!collections.includes(token))throw Error("Collection rename/sort persistence missing: "+token);
  for(const token of [".collection-sort-label","collection-sort-label select:focus-visible"])if(!collectionsCss.includes(token))throw Error("Collection sort styling missing: "+token);
  if(!sw.includes("storyspace-shell-v57"))throw Error("Collection management cache version missing");
+
+// Collection sort preferences must survive profile-local reload and backup.
+for(const token of ['sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom"',"collection.sort =","sort:item.sort"])if(!collections.includes(token))throw Error("Collection sort preference persistence missing: "+token);
