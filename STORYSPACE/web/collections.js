@@ -201,7 +201,7 @@
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
-    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
+    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));\n    const sortMode = collection.sort || "custom";\n    if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));\n    else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(b))-collection.items.indexOf(identify(a)));\n    else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating||b.voteAverage||b.score)||0)-(Number(a.rating||a.voteAverage||a.score)||0));\n    else if (sortMode === "year") found.sort((a,b) => (Number(b.year||b.releaseYear)||0)-(Number(a.year||a.releaseYear)||0));\n    const sortControl = $("collectionSort");\n    if (sortControl) sortControl.value = sortMode;
     if (!found.length) {
       const empty = document.createElement("p");
       empty.className = "collection-detail-empty";
@@ -350,7 +350,7 @@
     }
   });
 
-  $("collectionBack")?.addEventListener("click", () => {
+  $("collectionSort")?.addEventListener("change", event => {\n    const collection = collections.find(item => item.id === activeCollectionId);\n    if (!collection) return;\n    collection.sort = ["custom","title","recent","rating","year"].includes(event.target.value) ? event.target.value : "custom";\n    saveCollections(); render();\n  });\n  $("collectionRename")?.addEventListener("click", () => {\n    const collection = collections.find(item => item.id === activeCollectionId);\n    if (!collection) return;\n    const next = cleanName(prompt("Rename collection", collection.name));\n    if (!next || next === collection.name) return;\n    if (collections.some(item => item.id !== collection.id && item.name.toLowerCase() === next.toLowerCase())) {\n      if (typeof showToast === "function") showToast("A collection with that name already exists");\n      return;\n    }\n    collection.name = next; saveCollections(); render();\n    $("collectionDetailTitle")?.focus({preventScroll:true});\n    if (typeof showToast === "function") showToast("Collection renamed");\n  });\n\n  $("collectionBack")?.addEventListener("click", () => {
     activeCollectionId = null;
     render();
     ($("collectionsGrid").querySelector(".collection-tile") || $("collectionCreateToggle"))?.focus();
