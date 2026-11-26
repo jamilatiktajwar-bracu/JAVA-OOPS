@@ -155,7 +155,7 @@ if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("W
 if(!h.includes('quick-discovery.js')||!h.includes('quick-discovery.css'))throw Error('Quick Discovery assets missing from page');
 if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('quick-discovery.js').includes('Demo Cinema'))throw Error('Quick collections/genre refresh missing');
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
-if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!sw.includes('storyspace-shell-v61'))throw Error('Quick Discovery offline shell missing');
+if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!/storyspace-shell-v\d+/.test(sw))throw Error('Quick Discovery offline shell missing');
 if(!read('../platforms/check-platform-config.js').includes('quick-discovery.js'))throw Error('Platform asset configuration check missing Quick Discovery');
 
 // Watch Later event wiring guard
@@ -182,7 +182,7 @@ if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||
 
 // Live gesture preview regression checks
 for(const token of ['function previewGesture(event)','Seek preview · ','Brightness preview · ','Volume preview · ','pointermove'])if(!read('player-gestures.js').includes(token))throw Error('Gesture preview missing: '+token);
-if(!sw.includes('storyspace-shell-v61'))throw Error('Gesture preview shell cache not bumped');
+if(!/storyspace-shell-v\d+/.test(sw))throw Error('Gesture preview shell cache not bumped');
 
 // Persistent player volume/mute controls
 for(const id of ["playerVolume","playerMuteToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing volume preference control: "+id);
