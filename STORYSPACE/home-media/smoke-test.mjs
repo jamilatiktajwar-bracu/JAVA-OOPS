@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { access, mkdir, mkdtemp, rm, utimes, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,7 +14,7 @@ await mkdir(staging,{recursive:true});
 for(const suffix of [".json",".part"]){const file=path.join(staging,expiredId+suffix);await writeFile(file,"expired");await utimes(file,expiredTime,expiredTime);}
 const activePart=path.join(staging,activeId+".part"),activeMeta=path.join(staging,activeId+".json");
 await writeFile(activePart,"partial");await utimes(activePart,expiredTime,expiredTime);
-await writeFile(activeMeta,JSON.stringify({id:activeId}));
+await writeFile(activeMeta,JSON.stringify({id:activeId,title:"Recover Me",extension:".mp4",contentType:"video/mp4",size:16,offset:0,createdAt:new Date().toISOString()}));
 const portProbe=createServer();
 await new Promise((resolve,reject)=>{portProbe.once("error",reject);portProbe.listen(0,"127.0.0.1",resolve);});
 const port=portProbe.address().port;
@@ -29,7 +29,9 @@ try{
  let ready=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
  assert.equal(ready,true,"server starts"+(serverError?": "+serverError:""));
  for(const suffix of [".json",".part"]){await assert.rejects(access(path.join(staging,expiredId+suffix)), "stale upload session artifacts are removed on startup");}
- await access(activeMeta);await access(activePart);
+ const recoveredSession=JSON.parse(await readFile(activeMeta,"utf8"));
+ assert.equal(recoveredSession.offset,7,"startup recovers committed bytes after an interrupted metadata update");
+ await access(activePart);
  const uploaderCheck=await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers});
  assert.equal(uploaderCheck.status,200);assert.deepEqual(await uploaderCheck.json(),{ok:true,role:"uploader"});
  const adminHeaders={"x-storyspace-admin-token":admin};
