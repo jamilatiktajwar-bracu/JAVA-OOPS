@@ -106,7 +106,7 @@ try{
  const trustedCatalog=JSON.parse(await readFile(catalogFile,"utf8"));
  const maliciousId="33333333-3333-4333-8333-333333333333";
  trustedCatalog.push({id:maliciousId,title:"Path Escape",fileName:"../../outside.mp4",contentType:"video/mp4",size:4,addedAt:new Date().toISOString(),published:true});
- await writeFile(catalogFile,JSON.stringify(trustedCatalog,null,2)+"\\n");
+ await writeFile(catalogFile,JSON.stringify(trustedCatalog,null,2)+"\n");
  assert.equal((await (await fetch(base+"/api/catalog")).json()).length,1,"unsafe catalog filenames are excluded from public catalog");
  const safePending=await (await fetch(base+"/admin/pending",{headers:adminHeaders})).json();
  assert.equal(safePending.length,2,"unsafe catalog entries are excluded from moderation");
