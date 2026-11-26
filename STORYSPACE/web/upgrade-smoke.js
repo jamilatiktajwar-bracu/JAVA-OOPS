@@ -250,3 +250,8 @@ if(!sw.includes("storyspace-shell-v61"))throw Error("Collection descriptions cac
 for(const token of ["reorderCollections","collection-shelf-card","collection-shelf-controls","collection-shelf-move","dragstart","dragover","dragend"])if(!collections.includes(token))throw Error("Collection hub reorder feature missing: "+token);
 for(const token of [".collection-shelf-card",".collection-shelf-controls",".collection-shelf-move",".collection-shelf-dragging"])if(!collectionsCss.includes(token))throw Error("Collection hub reorder styles missing: "+token);
 if(!sw.includes("storyspace-shell-v61"))throw Error("Collection hub cache version missing");
+
+// My Universe search/empty-state behavior regression checks.
+for(const id of ["universeSearch","universeSearchClear","universeEmptyState"])if(!h.includes('id="'+id+'"'))throw Error("My Universe search/empty-state interface missing: "+id);
+for(const token of ["universeSearch","universeSearchClear","universeEmptyState","toLocaleLowerCase()","No saved titles match","savedMovies.length","m.description,m.cast,m.genre,m.genres,m.year,m.releaseYear"])if(!a.includes(token))throw Error("My Universe search/empty-state behavior missing: "+token);
+for(const token of [".universe-search-label input",".universe-search-clear",".universe-empty-state","focus-visible"])if(!c.includes(token))throw Error("My Universe search/empty-state styling missing: "+token);
