@@ -72,7 +72,7 @@ try{
  const suffixRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=-4"}});assert.equal(suffixRange.status,206);assert.equal(await suffixRange.text(),"cdef","suffix byte ranges return the final bytes");
  const openRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=12-"}});assert.equal(openRange.status,206);assert.equal(await openRange.text(),"cdef","open-ended byte ranges reach EOF");
  const invalidRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1,4-5"}});assert.equal(invalidRange.status,416,"unsupported multi-range requests are rejected explicitly");
- assert.match(invalidRange.headers.get("content-range")||"",/^bytes \\/\\/16$/);
+ assert.equal(invalidRange.headers.get("content-range"),"bytes */16");
  const headRange=await fetch(base+catalog[0].streamUrl,{method:"HEAD",headers:{range:"bytes=0-3"}});assert.equal(headRange.status,206);assert.equal(headRange.headers.get("content-length"),"4");assert.equal(await headRange.text(),"","HEAD never streams a body");
  const etag=headRange.headers.get("etag")||(await fetch(base+catalog[0].streamUrl)).headers.get("etag");
  const notModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":etag}});assert.equal(notModified.status,304,"matching ETag avoids retransmitting unchanged media");
