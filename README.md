@@ -31,6 +31,7 @@ An original adaptive story-discovery platform prototype built with a responsive 
 - **Media:** CC0 sample preview only; actual content delivery is not connected.
 
 ## 📱 Download the latest Android APK
+- [APK installation and local build guide](STORYSPACE/ANDROID-INSTALL.md)
 - [Android build workflow](https://github.com/jamilatiktajwar-bracu/JAVA-OOPS/actions/workflows/storyspace-android.yml)
 - Main updates to Storyspace web/platform files now trigger a debug APK build. Open the latest successful run and download the **storyspace-android-debug** artifact (retained for 14 days). Manual workflow runs are also available.
 
