@@ -185,7 +185,21 @@
     });
   }
 
-  function reorderCollections(from, to) {\n    if (from < 0 || to < 0 || from >= collections.length || to >= collections.length || from === to) return false;\n    const [item] = collections.splice(from, 1); collections.splice(to, 0, item); saveCollections(); renderCollectionGrid(); return true;\n  }\n\n  function reorderVisibleItems(collection, visibleIds, from, to) {
+  function reorderCollections(from, to) {
+    if (from < 0 || to < 0 || from >= collections.length || to >= collections.length || from === to) return false;
+    const activeLabel = document.activeElement?.getAttribute("aria-label");
+    const [item] = collections.splice(from, 1);
+    collections.splice(to, 0, item);
+    saveCollections();
+    renderCollectionGrid();
+    if (activeLabel) {
+      const target = Array.from($("collectionsGrid").querySelectorAll("button")).find(button => button.getAttribute("aria-label") === activeLabel);
+      target?.focus({preventScroll:true});
+    }
+    return true;
+  }
+
+  function reorderVisibleItems(collection, visibleIds, from, to) {
     if (!collection || from === to || from < 0 || to < 0 || from >= visibleIds.length || to >= visibleIds.length) return false;
     const nextVisible = [...visibleIds];
     const [moved] = nextVisible.splice(from, 1);
