@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v57"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes("storyspace-shell-v58"))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
@@ -225,7 +225,7 @@ if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('
  for(const id of ["collectionRename","collectionSort"])if(!h.includes('id="'+id+'"'))throw Error("Collection management control missing: "+id);
  for(const token of ["collection.sort","collectionRename","collectionSort","sortMode === \"title\"","sortMode === \"recent\"","sortMode === \"rating\"","sortMode === \"year\"","A collection with that name already exists","sort:item.sort"])if(!collections.includes(token))throw Error("Collection rename/sort persistence missing: "+token);
  for(const token of [".collection-sort-label","collection-sort-label select:focus-visible"])if(!collectionsCss.includes(token))throw Error("Collection sort styling missing: "+token);
- if(!sw.includes("storyspace-shell-v57"))throw Error("Collection management cache version missing");
+ if(!sw.includes("storyspace-shell-v58"))throw Error("Collection management cache version missing");
 
 // Custom Collection ordering: accessible move buttons and drag/drop, while preserving filtered slots.
 for(const token of ["reorderVisibleItems","collection-order-controls","Move \\"","dragstart","dragend","dragover","data-collection-item-id","sort = \\"custom\\\""])if(!collections.includes(token))throw Error("Collection reorder implementation missing: "+token);
