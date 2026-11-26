@@ -60,6 +60,7 @@
       item.offset=response.offset;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
       setProgress(item.offset,item.size,"Uploading "+fmt(item.offset)+" / "+fmt(item.size)+" · "+Math.floor(item.offset/item.size*100)+"%");
     }
+    if(cancelRequested)throw Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"});
     await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/complete",token,{method:"POST",headers:headers(token)});
     item.status="Pending owner approval";item.completedAt=Date.now();item.updatedAt=item.completedAt;item.handle=null;await storeItem(item);
     setProgress(item.size,item.size,"Upload complete · waiting for owner approval");
@@ -94,14 +95,14 @@
             if(!active||activeItemId!==item.id||!item.uploadId||cancelRequested)return;
             const cfg=readConfig(),root=cleanRoot(cfg.root),token=cfg.uploadToken;
             if(!window.confirm("Cancel this upload and delete its unfinished server-side video data?"))return;
-            cancelRequested=true;cancel.disabled=true;showToast("Cancelling upload safely…");
+            cancelRequested=true;cancel.disabled=true;item.status="Cancelling upload";item.updatedAt=Date.now();await storeItem(item);await renderQueue();showToast("Cancelling upload safely…");
             try{
               await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token,{method:"DELETE",headers:headers(token)});
               await removeItem(item.id);showToast("Upload cancelled and partial server data removed");
-            }catch(error){cancelRequested=false;showToast("Could not cancel server upload: "+error.message)}
+            }catch(error){cancelRequested=false;item.status="Paused · cancellation failed";item.updatedAt=Date.now();await storeItem(item);showToast("Could not cancel server upload: "+error.message)}
             await renderQueue();
           });row.append(cancel);
-        }else if(!isTerminalQueueStatus(item.status)){const retry=document.createElement("button");retry.type="button";retry.className="secondary-button";retry.textContent="Resume";retry.disabled=active;retry.addEventListener("click",()=>resumeOne(item.id));row.append(retry)}
+        }else if(!isTerminalQueueStatus(item.status)&&!String(item.status||"").startsWith("Cancelling")){const retry=document.createElement("button");retry.type="button";retry.className="secondary-button";retry.textContent="Resume";retry.disabled=active;retry.addEventListener("click",()=>resumeOne(item.id));row.append(retry)}
         const remove=document.createElement("button");remove.type="button";remove.className="secondary-button";remove.textContent="Remove";remove.setAttribute("aria-label","Remove "+item.title+" from this device's upload queue");remove.disabled=active;remove.addEventListener("click",async()=>{if(active)return;const pending=item.status==="Pending owner approval";const message=pending?"Remove this completed upload from this device's queue? The server copy and owner approval status will not be changed.":"Remove this upload from this device's queue? Any server-side partial upload may remain until the media host cleans it up.";if(!window.confirm(message))return;remove.disabled=true;try{await removeItem(item.id);showToast("Removed from this device's upload queue");await renderQueue()}catch(error){showToast("Could not remove queue item: "+error.message);remove.disabled=false}});row.append(remove);target.append(row);
       });
     }catch(error){target.textContent=error.message;target.className="media-muted"}
