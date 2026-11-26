@@ -10,7 +10,8 @@ function updatePreview(event){const rect=seek.getBoundingClientRect(),x=Math.max
 timeline.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"||e.pointerType==="pen")updatePreview(e)});
 seek.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"||e.pointerType==="pen")updatePreview(e)});
 seek.addEventListener("pointerdown",e=>{updatePreview(e);timeline.classList.add("is-previewing")});
-seek.addEventListener("pointerup",()=>timeline.classList.remove("is-previewing"));\nseek.addEventListener("pointercancel",()=>timeline.classList.remove("is-previewing"));
+seek.addEventListener("pointerup",()=>timeline.classList.remove("is-previewing"));
+seek.addEventListener("pointercancel",()=>timeline.classList.remove("is-previewing"));
 timeline.addEventListener("pointerleave",e=>{if(!seek.matches(":focus"))timeline.classList.remove("is-previewing")});
 seek.addEventListener("focus",()=>{if(seekWindow())updatePreviewAt(Number(seek.value)/1000)});
 seek.addEventListener("blur",()=>timeline.classList.remove("is-previewing"));
