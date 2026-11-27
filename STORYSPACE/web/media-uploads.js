@@ -67,7 +67,9 @@
       setProgress(item.offset,item.size,"Uploading "+fmt(item.offset)+" / "+fmt(item.size)+" · "+Math.floor(item.offset/item.size*100)+"%");
     }
     if(cancelRequested)throw Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"});
-    await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/complete",token,{method:"POST",headers:headers(token)});
+    const completed=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/complete",token,{method:"POST",headers:headers(token)});
+    if(!completed||typeof completed.sha256!=="string"||!/^[a-f0-9]{64}$/i.test(completed.sha256))throw new Error("Media server completed the upload without a valid SHA-256 checksum. Keep this item queued and ask the owner to verify the server catalog.");
+    item.sha256=completed.sha256;
     item.status="Pending owner approval";item.completedAt=Date.now();item.updatedAt=item.completedAt;item.handle=null;await storeItem(item);
     setProgress(item.size,item.size,"Upload complete · waiting for owner approval");
     await renderQueue();
