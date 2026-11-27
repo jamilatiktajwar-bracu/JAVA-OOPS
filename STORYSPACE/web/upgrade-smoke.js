@@ -18,7 +18,7 @@ if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:
 const playerResilience=read("player-resilience.js");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
 if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("player resilience offline shell not updated");
-for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","45000"])if(!playerResilience.includes(token))throw Error("player recovery behavior missing: "+token);
+for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","25000"])if(!playerResilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
 // Demo streaming library guards
