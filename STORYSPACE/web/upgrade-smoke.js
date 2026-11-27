@@ -179,6 +179,7 @@ if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explor
 
 // Player reconnect/resume recovery regression guard
 for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
+for(const token of ["const ranges=video.seekable","ranges.length-1","Math.max(start,Math.min(end-.1,position))","Number.isFinite(start)&&Number.isFinite(end)&&end>start"])if(!read("player-resilience.js").includes(token))throw Error("Live/DVR playback recovery must restore position within the current seekable window");
 if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Player recovery module/cache wiring missing");
 
 // Live gesture preview regression checks
