@@ -328,7 +328,7 @@ if(!shortcuts.includes('video.volume=clamp(video.volume+step,0,1);video.muted=fa
 if(!h.includes("<kbd>Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%"))throw Error("Shift+arrow volume increment guide missing");
 
 
-// Custom speed options must remain selectable and bounded, including intermediate rates.
+// Auto-next countdown pauses in hidden tabs to avoid surprise background playback.\nif(!next.includes('document.addEventListener("visibilitychange",()=>{if(panel.hidden||!auto.checked)return;if(document.hidden){stopTimer();countdown.textContent="Auto-play paused while tab is hidden"}else if(remaining>0)startTimer()})'))throw Error("Auto-next countdown should pause while hidden");\n\n// Custom speed options must remain selectable and bounded, including intermediate rates.
 if(!settings.includes('speed.addEventListener("change",()=>{const raw=Number(speed.value),next=Number.isFinite(raw)?Math.min(2,Math.max(0.25,raw)):1,v=String(next);speed.value=v;video.playbackRate=next;save("storyspace.playerSpeed",v)})'))throw Error("Custom playback speed options must remain selectable and bounded");
 
 // Custom keyboard rates must be restored on reload, not reset to the preset list.
