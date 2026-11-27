@@ -14,6 +14,8 @@
   border-radius:0;
   touch-action:pan-y;
 }
+/* Keep vertical touch gestures from being cancelled by browser page panning. */
+.player-stage:not(.player-gestures-disabled)>video{touch-action:none;}
 .player-gesture-feedback{
   position:absolute;
   inset:0;
