@@ -296,4 +296,9 @@ if(!resilienceCss.includes('.player-diagnostics-copy')||!resilienceCss.includes(
 // Exported diagnostics should not reveal full URLs or query/fragment secrets.
 for(const token of ["function safeSource()","Source origin:","Privacy: URL query, fragment and path omitted","video.ended?","video.paused?"])if(!mediaInfo.includes(token))throw Error("Privacy-safe playback diagnostics missing: "+token);
 
-// Buffer health classifier guards: offline/loading/paused/waiting/low/building/healthy.\nfor(const token of ["function bufferHealth()","Offline","Loading media","Paused","Waiting for data","Buffer low","Buffer building","Buffer healthy","bufferHealth()","window.StoryspaceMediaInfo=Object.freeze({refresh:update,formatTime,bufferedAhead,bufferHealth})"])if(!mediaInfo.includes(token))throw Error("Player buffer health classification missing: "+token);\n
+// Buffer health classifier guards: offline/loading/paused/waiting/low/building/healthy.
+for(const token of ["function bufferHealth()","Offline","Loading media","Paused","Waiting for data","Buffer low","Buffer building","Buffer healthy","bufferHealth()","window.StoryspaceMediaInfo=Object.freeze({refresh:update,formatTime,bufferedAhead,bufferHealth})"])if(!mediaInfo.includes(token))throw Error("Player buffer health classification missing: "+token);
+
+// Keyboard seeking must use a finite VOD window or the latest live DVR range and clamp targets.
+const shortcuts=read("player-shortcuts.js");
+for(const token of ["const seekWindow=()=>","video.seekable","return {start,end,live:true}","const target=clamp(video.currentTime+delta,range.start,range.end)","case \"j\":event.preventDefault();seek(-10)","case \"l\":event.preventDefault();seek(10)","seekWindow,setGuide"])if(!shortcuts.includes(token))throw Error("Player keyboard seek guard missing: "+token);
