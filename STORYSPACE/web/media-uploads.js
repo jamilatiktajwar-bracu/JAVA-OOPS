@@ -20,7 +20,12 @@
     const requestHeaders={...(options.headers||{})};
     // Never send the owner-only admin secret in the uploader-token header.
     if(token&&!requestHeaders["x-storyspace-admin-token"]&&!requestHeaders["x-storyspace-upload-token"]){requestHeaders["x-storyspace-upload-token"]=token}
-    const res=await fetch(root+path,{...options,credentials:"omit",headers:requestHeaders});
+    const controller=!options.signal&&typeof AbortController!=="undefined"?new AbortController():null;
+    const requestOptions={...options,credentials:"omit",headers:requestHeaders,...(controller?{signal:controller.signal}:{})};
+    let timeout=0;
+    const fetchPromise=fetch(root+path,requestOptions);
+    const deadline=new Promise((_,reject)=>{timeout=setTimeout(()=>{controller?.abort();reject(new Error("Media server request timed out after 25 seconds."))},25000)});
+    let res;try{res=await Promise.race([fetchPromise,deadline])}finally{clearTimeout(timeout)}
     let data={};try{data=await res.json()}catch{}
     if(!res.ok){const e=new Error(data.error||"Media server request failed ("+res.status+")");e.status=res.status;e.data=data;throw e}return data;
   }
