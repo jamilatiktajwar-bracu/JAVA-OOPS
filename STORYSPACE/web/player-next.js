@@ -16,6 +16,7 @@
   video.addEventListener("ended",show);
   playButton.addEventListener("click",startNext);dismiss.addEventListener("click",clear);
   auto.addEventListener("change",()=>{save(auto.checked);if(!panel.hidden){stopTimer();if(auto.checked)startTimer();else countdown.textContent="Auto-play is off · choose Play next to continue"}});
+  document.addEventListener("visibilitychange",()=>{if(panel.hidden||!auto.checked)return;if(document.hidden){stopTimer();countdown.textContent="Auto-play paused while tab is hidden"}else if(remaining>0)startTimer()});
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!panel.hidden){clear();event.stopPropagation()}});
   window.StoryspacePlayerNext=Object.freeze({setContext(item,items,callback){clear();current=item;catalog=Array.isArray(items)?items:[];launch=callback},reset(){clear();current=null;launch=null},show});
 })();
