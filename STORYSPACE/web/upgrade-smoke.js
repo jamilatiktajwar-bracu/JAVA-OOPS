@@ -406,8 +406,8 @@ for(const token of ["return false;","Watch Later could not be saved","if(!save()
 // Command palette and Watch Later refinements must invalidate the app shell.
 if(!sw.includes("storyspace-shell-v114"))throw Error("Quick-action and Watch Later shell cache v114 missing");
 // Collection import/create must roll back in-memory mutations if storage fails.
-const collections=read("collections.js");
-for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collections.includes(token))throw Error("Collection transaction regression missing: "+token);
+const collectionSource=read("collections.js");
+for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collectionSource.includes(token))throw Error("Collection transaction regression missing: "+token);
 // Collection transaction changes ship in the refreshed app shell.
 if(!sw.includes("storyspace-shell-v115"))throw Error("Collection transaction shell v115 missing");
 // A stalled network fetch should not block cached assets indefinitely.
