@@ -78,3 +78,8 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 
 - Keyboard seek shortcuts (Left/Right, J/L) use the latest seekable DVR window when the source is live and does not expose a finite duration.
 - Seeking is clamped to the available DVR window or VOD duration; unavailable seek windows are ignored safely.
+
+
+## Restart shortcut for live/DVR
+
+- Press **R** to restart from the beginning of VOD or the earliest point in the current DVR seek window; unavailable seek windows safely ignore the action.
