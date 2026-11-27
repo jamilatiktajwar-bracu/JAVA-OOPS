@@ -539,3 +539,6 @@ if(!offlinePlayer.includes("window.addEventListener(\\"offline\\",()=>switchToCa
 if(!offlinePlayer.includes("window.addEventListener(\\"online\\",restoreNetwork)"))throw Error("Player must restore the network stream after connectivity returns");
 if(!h.includes('id="playerOfflineToggle"')||!h.includes('src="player-offline.js"'))throw Error("Player offline controls must be available in the player UI");
 if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module must be included in the service worker shell");
+
+if(!offlinePlayer.includes('video.querySelector("source")?.src'))throw Error("Offline recovery must resolve the declared video source when initial loading fails");
+if(!offlinePlayer.includes("if(!navigator.onLine)switchToCached()"))throw Error("Offline playback must recover on an initially offline launch");
