@@ -322,3 +322,9 @@ if(!h.includes("<kbd>Home</kbd> beginning · <kbd>End</kbd> end/live edge"))thro
 // Keyboard volume adjustments support 5% and Shift+10% increments with spoken feedback.
 if(!shortcuts.includes('case "arrowup":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume+step,0,1);video.muted=false;announceSeek("Volume "+Math.round(video.volume*100)+"%"))')||!shortcuts.includes('case "arrowdown":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume-step,0,1);announceSeek("Volume "+Math.round(video.volume*100)+"%"))'))throw Error("Volume shortcuts must provide 5/10% steps and feedback");
 if(!h.includes("<kbd>Shift</kbd> + arrows volume 10%"))throw Error("Volume increment guide missing");
+
+
+// Playback speed shortcuts are bounded and announce the active rate.
+if(!shortcuts.includes('case "<":{video.playbackRate=Math.max(0.25'))throw Error("Slow playback shortcut missing");
+if(!shortcuts.includes('case ">":{video.playbackRate=Math.min(2'))throw Error("Fast playback shortcut missing");
+if(!html.includes("0.25×–2×"))throw Error("Playback speed shortcut guide missing");
