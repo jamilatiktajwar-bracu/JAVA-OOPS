@@ -37,6 +37,7 @@ window.addEventListener("online",()=>{if(active()){recover({resume:true,autoplay
 const retry=document.getElementById("playerRetry");
 retry?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
 retryAction?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&video.paused)hide()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}});
+window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()});
 window.StoryspacePlayerResilience=Object.freeze({show,hide,isBuffering:()=>!overlay.hidden,recover:()=>recover({resume:true,autoplay:true}),getLastPosition:()=>lastPosition});
 })();
