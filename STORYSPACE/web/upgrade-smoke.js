@@ -9,14 +9,14 @@ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version mu
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
 if(!h.includes("player-ux.js"))throw Error("player UX script not wired");
-if(!sw.includes("player-ux.js")||!/storyspace-shell-v\\d+/.test(sw))throw Error("player UX offline shell not updated");
+if(!sw.includes("player-ux.js")||!/storyspace-shell-v\d+/.test(sw))throw Error("player UX offline shell not updated");
 if(!pux.includes("player-seek-preview")||!pux.includes("dy>90")||!pux.includes("fullscreenchange"))throw Error("seek preview/swipe-dismiss/fullscreen UX missing");
 if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:reduce"))throw Error("fullscreen transition styles missing");
 
 // Player resilience batch v1 guards
 const resilience=read("player-resilience.js"),resilienceCss=read("player-resilience.css");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
-if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!/storyspace-shell-v\\d+/.test(sw))throw Error("player resilience offline shell not updated");
+if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!/storyspace-shell-v\d+/.test(sw))throw Error("player resilience offline shell not updated");
 for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience"])if(!resilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
@@ -49,20 +49,20 @@ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version mu
 if(!h.includes('id="playerMediaInfo"'))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!/storyspace-shell-v\d+/.test(sw))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player media metadata readout
 if(!h.includes("playerMediaInfo"))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!/storyspace-shell-v\d+/.test(sw))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player playback diagnostics
 const diagnostics=read("player-playback-diagnostics.js");
 if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
-if(!sw.includes("player-playback-diagnostics.js")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Playback diagnostics cache entry missing");
+if(!sw.includes("player-playback-diagnostics.js")||!/storyspace-shell-v\d+/.test(sw))throw Error("Playback diagnostics cache entry missing");
 for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
 if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
 
@@ -82,17 +82,17 @@ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version mu
 // Discovery shortcuts and year search from merged PR #118
 if(!h.includes("data-discovery=\"genre:Sci-Fi\"")||!h.includes("data-discovery=\"year:2026\""))throw Error("Quick discovery markup missing");
 if(!a.includes("event.target.closest(\"[data-discovery]\")")||!a.includes("filters.year")||!a.includes("matchesYear"))throw Error("Discovery year filter wiring missing");
-if(!c.includes(".discovery-shortcuts")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Discovery styles/cache missing");
+if(!c.includes(".discovery-shortcuts")||!/storyspace-shell-v\d+/.test(sw))throw Error("Discovery styles/cache missing");
 
 // Similar-story rail added to consolidated branch
 if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Error("Similar-story markup missing");
 if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Similar-story ranking missing");
-if(!c.includes(".details-recommendations")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Similar-story styles/cache missing");
+if(!c.includes(".details-recommendations")||!/storyspace-shell-v\d+/.test(sw))throw Error("Similar-story styles/cache missing");
 
 // Integrated details modal save/resume/highlights and surprise picker
 if(!h.includes("modalSignals")||!h.includes("modalSave")||!h.includes("modalResumeProgress")||!h.includes("heroSurprise"))throw Error("Details modal controls missing");
 if(!a.includes("syncSignals")||!a.includes("syncSave")||!a.includes("Continue where you left off")||!a.includes("function surpriseHero"))throw Error("Details save/resume/surprise behavior missing");
-if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Details modal styles/cache missing");
+if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!/storyspace-shell-v\d+/.test(sw))throw Error("Details modal styles/cache missing");
 
 // Main-based Queue and Up Next polish guards
 if(!h.includes('id="playerUpNextPoster"')||!h.includes('id="playerUpNextProgress"'))throw Error("Up Next poster/countdown bar missing");
@@ -155,7 +155,7 @@ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version mu
 if(!h.includes('quick-discovery.js')||!h.includes('quick-discovery.css'))throw Error('Quick Discovery assets missing from page');
 if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('quick-discovery.js').includes('Demo Cinema'))throw Error('Quick collections/genre refresh missing');
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
-if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!/storyspace-shell-v\\d+/.test(sw))throw Error('Quick Discovery offline shell missing');
+if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!/storyspace-shell-v\d+/.test(sw))throw Error('Quick Discovery offline shell missing');
 if(!read('../platforms/check-platform-config.js').includes('quick-discovery.js'))throw Error('Platform asset configuration check missing Quick Discovery');
 
 // Watch Later event wiring guard
@@ -178,11 +178,11 @@ if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explor
 
 // Player reconnect/resume recovery regression guard
 for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
-if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Player recovery module/cache wiring missing");
+if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!/storyspace-shell-v\d+/.test(sw))throw Error("Player recovery module/cache wiring missing");
 
 // Live gesture preview regression checks
 for(const token of ['function previewGesture(event)','Seek preview · ','Brightness preview · ','Volume preview · ','pointermove'])if(!read('player-gestures.js').includes(token))throw Error('Gesture preview missing: '+token);
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error('Gesture preview shell cache not bumped');
+if(!/storyspace-shell-v\d+/.test(sw))throw Error('Gesture preview shell cache not bumped');
 
 // Persistent player volume/mute controls
 for(const id of ["playerVolume","playerMuteToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing volume preference control: "+id);
@@ -193,7 +193,7 @@ if(!read("player-settings.css").includes(".player-volume-control")||!read("playe
 for(const id of ["markIntroEnd","skipIntro","markCreditsStart","skipCredits"])if(!h.includes('id="'+id+'"'))throw Error("Player segment skip control missing: "+id);
 for(const token of ["storyspace.playerSegments.v1.","introEnd","creditsStart","timeupdate","loadedmetadata"])if(!read("player-ux.js").includes(token))throw Error("Custom skip marker behavior missing: "+token);
 if(!h.includes(">Skip intro</button>")||!h.includes(">Skip credits</button>"))throw Error("Custom skip labels missing from player UI");
-if(!read("player-shortcuts.css").includes(".player-segment-button")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Player skip control styles/cache missing");
+if(!read("player-shortcuts.css").includes(".player-segment-button")||!/storyspace-shell-v\d+/.test(sw))throw Error("Player skip control styles/cache missing");
 
 // Theater-mode keyboard/button control must have a defined handler and synchronized state.
 if(!read("player-shortcuts.js").includes("function setTheater(open)")||!read("player-shortcuts.js").includes("playerTheater"))throw Error("Theater mode control handler missing");
@@ -218,7 +218,7 @@ for(const id of ["collectionExport","collectionImportToggle","collectionImportFi
 for(const token of ["uniqueItems","skipped += uniqueItems.length - items.length","skipped += combined.length - existing.items.length","limits or invalid data","storyspace-collections","exportBackup","importBackup","file.size > 1024 * 1024","Matching names will merge stories","newCollectionId","collectionBackupStatus","storyspace.collections.v1.","MAX_COLLECTIONS = 20","MAX_ITEMS = 100","cleanName","readCollections","saveCollections","renderCollectionGrid","renderCollectionDetail","storyspace:profile-updated","modalCollectionsToggle","storyspace:collections-updated","aria-pressed"])if(!collections.includes(token))throw Error("Custom collections behavior missing: "+token);
 for(const token of [".collection-toolbar",".collection-backup-status",".collections-grid",".collection-tile",".collection-mosaic",".collection-create-form",".collection-detail",".collection-card-remove",".modal-collections-panel",".collection-choice","prefers-reduced-motion"])if(!collectionsCss.includes(token))throw Error("Custom collections styling missing: "+token);
 if(!h.includes("collections.css")||!h.includes("collections.js"))throw Error("Collections assets are not wired into the app");
-if(!sw.includes("./collections.css")||!sw.includes("./collections.js")||!/storyspace-shell-v\\d+/.test(sw))throw Error("Collections assets missing from offline shell");
+if(!sw.includes("./collections.css")||!sw.includes("./collections.js")||!/storyspace-shell-v\d+/.test(sw))throw Error("Collections assets missing from offline shell");
 if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('if($("collectionsSection"))$("collectionsSection").hidden=true'))throw Error("Collections hub must hide in browse/search modes");
 
  // Collection management: safe rename and persisted presentation sorting.
