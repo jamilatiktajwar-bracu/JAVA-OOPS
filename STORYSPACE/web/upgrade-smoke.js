@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v122"))throw Error("Up-next hidden-tab timer shell v122 missing");
+if(!navigationSW.includes("storyspace-shell-v123"))throw Error("Media API deadline shell v123 missing");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -453,3 +453,12 @@ if(!next.includes('document.addEventListener("visibilitychange",()=>{if(document
 if(!next.includes('else if(!panel.hidden&&auto.checked&&remaining>0)startTimer(false)'))throw Error("Up-next countdown must resume with preserved remaining time");
 if(!next.includes('window.addEventListener("pagehide",clear)'))throw Error("Up-next timers must be cleaned up on pagehide");
 if(!next.includes("timer=setTimeout(tick,1000)"))throw Error("Up-next countdown must use cancellable timeout");
+
+ 
+// Media server API calls (except explicitly signalled chunk uploads) have bounded deadlines.
+const uploads=read("media-uploads.js");
+if(!uploads.includes("Media server request timed out after 25 seconds."))throw Error("Media server API requests need timeout messaging");
+if(!uploads.includes("const deadline=new Promise((_,reject)=>{timeout=setTimeout(()=>{controller?.abort();reject(new Error("))throw Error("Media API requests should race against a deadline");
+if(!uploads.includes("Promise.race([fetchPromise,deadline])"))throw Error("Media API timeout must work even without AbortController");
+if(!uploads.includes("...options,credentials:\"omit\",headers:requestHeaders"))throw Error("Media requests must preserve caller options and omit credentials");
+if(!uploads.includes("!options.signal&&typeof AbortController!==\"undefined\"?new AbortController():null"))throw Error("Upload chunk cancellation signals must be preserved");
