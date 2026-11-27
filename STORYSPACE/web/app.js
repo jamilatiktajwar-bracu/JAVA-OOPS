@@ -632,6 +632,23 @@ async function api(path,options={}){
 }
 function apiTitle(t){return applyResumePoint({id:t.id,title:t.name,description:t.synopsis,genre:(t.genres||[]).join(", "),moods:(t.moods||[]).join(", "),language:t.language,year:t.releaseYear,rating:t.ageRating,duration:t.format,score:t.score,poster:t.posterUrl,original:t.original,featured:t.featured,type:t.format?.toLowerCase()==="series"?"series":"movie",progress:0,apiId:t.id})}
 async function loadServerCatalog(){try{const data=await api("/catalog");if(Array.isArray(data)&&data.length){personalized.serverAvailable=true;const mapped=data.map(apiTitle);personalized.apiTitles=mapped;const existing=new Set(movies.map(m=>m.title.toLowerCase()));mapped.forEach(m=>{if(!existing.has(m.title.toLowerCase()))movies.push(m)});}}catch{personalized.serverAvailable=false}}
+const LIBRARY_OPS_PREFIX="storyspace.libraryOps.v1:";
+function libraryOpsKey(){return LIBRARY_OPS_PREFIX+String(personalized.account?.email||"guest").trim().toLowerCase()}
+function readLibraryOps(){try{const raw=JSON.parse(storage.get(libraryOpsKey())||"{}");return raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{}}catch{return {}}}
+function writeLibraryOps(ops){if(Object.keys(ops).length)storage.set(libraryOpsKey(),JSON.stringify(ops));else storage.remove(libraryOpsKey())}
+function queueLibraryOp(titleId,present){const ops=readLibraryOps();ops[String(titleId)]={present:!!present,updatedAt:Date.now()};writeLibraryOps(ops)}
+async function reconcileLibraryOps(serverItems){
+ const ops=readLibraryOps();if(!Object.keys(ops).length)return false;
+ const byId=new Map((Array.isArray(serverItems)?serverItems:[]).map(item=>[String(item?.title?.id||""),item]));
+ let changed=false;
+ for(const [id,op] of Object.entries(ops)){
+  const remote=byId.get(id),remoteAt=Date.parse(remote?.updatedAt||remote?.lastPlayedAt||"")||0;
+  if(remoteAt>=(Number(op?.updatedAt)||0)){delete ops[id];changed=true;continue}
+  try{await api("/library/"+encodeURIComponent(id),{method:op.present?"PUT":"DELETE"});delete ops[id];changed=true}
+  catch{/* Keep the newest local intent queued for the next successful sync. */}
+ }
+ writeLibraryOps(ops);return changed;
+}
 async function syncAccount(){
   if(!personalized.token)return;
   try{
@@ -639,7 +656,7 @@ async function syncAccount(){
     storage.set("storyspace.account",JSON.stringify(profile));
     personalized.preferences=normalizePreferences({...profile,balance:personalized.preferences.balance});
     savePrefs();
-    const saved=await api("/library");personalized.serverLibrary=Array.isArray(saved)?saved:[];
+    let saved=await api("/library");if(await reconcileLibraryOps(saved))saved=await api("/library");personalized.serverLibrary=Array.isArray(saved)?saved:[];
     personalized.serverLibrary.forEach(item=>{
       const titleId=item?.title?.id;
       if(titleId===undefined||titleId===null)return;
@@ -728,7 +745,7 @@ $("authForm").onsubmit=async e=>{
   }
 };
 document.querySelectorAll(".mood-pill").forEach(old=>{const fresh=old.cloneNode(true);old.replaceWith(fresh);fresh.addEventListener("click",()=>{const mood=fresh.dataset.mood;state.view="mood";$("hero").hidden=true;$("welcomeLine").hidden=true;$("moodSection").hidden=false;["continueSection","trendingSection","originalsSection","topSection","mylistSection","personalSection"].forEach(id=>{const el=$(id);if(el)el.hidden=true});$("searchResultsSection").hidden=false;$("searchHeading").textContent="Stories for: "+fresh.textContent;const matches=movies.filter(m=>titleTokens(m.genre||m.genres).includes(mood.toLowerCase())||titleTokens(m.moods).includes(mood.toLowerCase()));renderGrid(ranked(matches));})});
-function toggleList(m){const id=m.apiId||m.id;if(personalized.token&&m.apiId){api("/library/"+encodeURIComponent(m.apiId),{method:state.list.has(m.id)?"DELETE":"PUT"}).then(async()=>{if(state.list.has(m.id))state.list.delete(m.id);else state.list.add(m.id);persistList();await syncAccount();showToast(state.list.has(m.id)?"Added to My Universe":"Removed from My Universe")}).catch(e=>showToast(e.message));return;}if(state.list.has(m.id)){state.list.delete(m.id);showToast("Removed from My Universe")}else{state.list.add(m.id);showToast("Saved to My Universe")}persistList();recordInterest(m,"save");renderHome();if(state.view==="mylist")showView("mylist")}
+function toggleList(m){const id=m.apiId||m.id;if(personalized.token&&m.apiId){const present=!state.list.has(m.id);queueLibraryOp(m.apiId,present);if(present)state.list.add(m.id);else state.list.delete(m.id);persistList();renderHome();api("/library/"+encodeURIComponent(m.apiId),{method:present?"PUT":"DELETE"}).then(async()=>{const ops=readLibraryOps();delete ops[String(m.apiId)];writeLibraryOps(ops);await syncAccount();showToast(present?"Added to My Universe":"Removed from My Universe")}).catch(e=>{showToast("Saved locally · will sync when you reconnect: "+e.message)});return;}if(state.list.has(m.id)){state.list.delete(m.id);showToast("Removed from My Universe")}else{state.list.add(m.id);showToast("Saved to My Universe")}persistList();recordInterest(m,"save");renderHome();if(state.view==="mylist")showView("mylist")}
 function playMovie(m){recordInterest(m,"play");closeDetails();closePreferences();showToast("Preview concept · "+m.title+" · media player not connected");renderHome()}
 function openDetails(m){if(!kidsSafe(m)){showToast("This title is hidden by the Kids Mode age guide");return}recordInterest(m,"details");$("modalCollectionsPanel").hidden=true;$("modalCollectionsToggle").setAttribute("aria-expanded","false");state.selected=m;const image=art(m);$("modalArt").style.backgroundImage=image?`url("${image}")`:"";$("modalArtTitle").textContent=String(m.title||m.name||"").toUpperCase();$("modalYear").textContent=m.year||m.releaseYear||"";$("modalMaturity").textContent=m.rating||m.ageRating||"13+";$("modalDuration").textContent=m.duration||m.format||"";$("modalDescription").textContent=m.description||m.synopsis||"";$("modalCast").textContent=m.cast||"Original story";$("modalGenres").textContent=m.genre||m.genres?.join(", ")||"";$("modalPlay").onclick=()=>playMovie(m);$("modalBackdrop").hidden=false;document.body.style.overflow="hidden";$("modalClose").focus()}
 const profileFresh=$("profileButton").cloneNode(true);$("profileButton").replaceWith(profileFresh);profileFresh.onclick=()=> $("profileMenu").classList.toggle("open");
