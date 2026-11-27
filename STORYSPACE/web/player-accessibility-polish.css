@@ -1,0 +1,37 @@
+/* Player control clarity and accessibility layer */
+.player-panel{color-scheme:dark}
+.player-panel :where(button,select,input[type=range]){touch-action:manipulation}
+.player-panel :where(button,select){min-height:40px}
+.player-panel :where(button):focus-visible,.player-panel :where(select,input):focus-visible{outline:2px solid #b7ff45!important;outline-offset:3px!important}
+.player-timeline{padding-block:7px!important}
+.player-timeline input[type=range],.player-timeline [role=slider]{accent-color:#b7ff45}
+.player-timeline input[type=range]::-webkit-slider-thumb{width:15px;height:15px;box-shadow:0 0 0 4px #b7ff4522}
+.player-timeline input[type=range]::-moz-range-thumb{width:15px;height:15px;box-shadow:0 0 0 4px #b7ff4522}
+.player-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px!important}
+.player-tools button,.player-settings-row button,.player-settings-row select{border-radius:10px!important;border:1px solid #ffffff20!important;background:#121d30!important;color:#e9f1ff!important;transition:border-color .16s,background .16s!important}
+.player-tools button:hover,.player-settings-row button:hover{border-color:#b7ff4580!important;background:#1b2a40!important}
+.player-tools button:active,.player-settings-row button:active{transform:scale(.98)!important}
+.player-settings-row{border-color:#ffffff17!important;background:linear-gradient(145deg,#101a2b,#0b1422)!important}
+.player-settings-row label{line-height:1.35!important;color:#b7c7dc!important}
+.player-settings-row select{min-height:42px!important;padding:8px 11px!important}
+.player-volume-control input{accent-color:#b7ff45!important}
+.player-buffer-state{background:linear-gradient(180deg,#020713bb,#020713dd)!important}
+.player-buffer-spinner{border-top-color:#b7ff45!important}
+.player-buffer-retry{border-color:#b7ff4580!important;background:linear-gradient(100deg,#b7ff45,#7af3dc)!important}
+.player-buffer-retry:hover{filter:brightness(1.04)!important}
+.player-panel .player-center-toggle{border-color:#ffffff45!important;background:#0a1424d9!important;box-shadow:0 10px 35px #0008,0 0 0 5px #b7ff4510!important}
+.player-panel .player-center-toggle:hover{border-color:#b7ff45!important;background:#15243adf!important}
+@media(max-width:620px){
+ .player-tools{gap:6px!important}
+ .player-tools button{min-width:42px!important;min-height:42px!important;padding:8px 10px!important}
+ .player-timeline input[type=range]{min-height:28px!important}
+ .player-settings-row{border-radius:14px!important}
+}
+@media(hover:none){
+ .player-tools button:hover,.player-settings-row button:hover{background:#121d30!important}
+ .player-tools button:active,.player-settings-row button:active{background:#1b2a40!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .player-tools button,.player-settings-row button,.player-buffer-retry{transition:none!important}
+ .player-tools button:active,.player-settings-row button:active{transform:none!important}
+}
