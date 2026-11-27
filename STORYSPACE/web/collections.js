@@ -117,6 +117,7 @@
     if (!confirm("Import " + incoming.length + " collection(s)? Matching names will merge stories; existing shelves will not be replaced.")) {
       return {ok:false,reason:"Import cancelled"};
     }
+    const snapshot=collections.map(item=>({...item,items:[...item.items]}));
     let added = 0, merged = 0;
     incoming.forEach(item => {
       const existing = collections.find(c => c.name.toLowerCase() === item.name.toLowerCase());
@@ -132,7 +133,11 @@
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
-    if (!saveCollections()) return {ok:false,reason:"Could not save imported collections"};
+    if (!saveCollections()) {
+      collections=snapshot;
+      render();
+      return {ok:false,reason:"Could not save imported collections · Your shelves were restored"};
+    }
     render();
     return {ok:true,added,merged,skipped};
   }
@@ -336,8 +341,9 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, description:cleanDescription(description), theme:themes.includes(theme)?theme:"violet", icon:validIcon(icon), sort:"custom", createdAt:Date.now(), items:[]});
-    saveCollections();
+    const created={id,name:clean,description:cleanDescription(description),theme:themes.includes(theme)?theme:"violet",icon:validIcon(icon),sort:"custom",createdAt:Date.now(),items:[]};
+    collections.unshift(created);
+    if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:"Could not save this collection on your device"}}
     render();
     return {ok:true, id};
   }
