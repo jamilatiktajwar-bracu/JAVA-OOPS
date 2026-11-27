@@ -402,12 +402,15 @@ async function handle(req,res) {
     const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
     // If-None-Match uses weak comparison for GET/HEAD and accepts lists or "*".
     const ifNoneMatch=req.headers["if-none-match"];
+    let notModified=false;
     if(ifNoneMatch){
       const candidates=ifNoneMatch.split(",").map(value=>value.trim());
-      if(candidates.includes("*")||candidates.some(value=>value.replace(/^W\//i,"")===etag)){
-        res.writeHead(304,headers);return res.end();
-      }
+      notModified=candidates.includes("*")||candidates.some(value=>value.replace(/^W\//i,"")===etag);
+    }else if(req.headers["if-modified-since"]){
+      const modifiedSince=Date.parse(req.headers["if-modified-since"]);
+      notModified=Number.isFinite(modifiedSince)&&Math.floor(stat.mtimeMs/1000)*1000<=modifiedSince;
     }
+    if(notModified){res.writeHead(304,headers);return res.end();}
     let range=req.headers.range;
     const ifRange=req.headers["if-range"];
     if(range&&ifRange){
