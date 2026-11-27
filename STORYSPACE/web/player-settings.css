@@ -2,3 +2,5 @@
 .player-caption-size-small video::cue{font-size:.85em}.player-caption-size-medium video::cue{font-size:1em}.player-caption-size-large video::cue{font-size:1.3em}.player-caption-size-extra-large video::cue{font-size:1.6em}
 
 .player-volume-control input{width:clamp(90px,18vw,150px);accent-color:#8ce5ff}.player-mute-toggle{min-width:68px}.player-volume-control input:focus-visible,.player-mute-toggle:focus-visible{outline:2px solid #8ce5ff;outline-offset:3px}
+
+.player-offline-status{flex-basis:100%;display:block;color:var(--muted);font-size:11px;line-height:1.45;margin:0}.player-offline-toggle:disabled{opacity:.55;cursor:not-allowed}
