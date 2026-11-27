@@ -258,8 +258,17 @@ async function handle(req,res) {
     if(!Number.isSafeInteger(size)||size<1||size>maxUploadBytes) return json(res,413,{error:"Invalid file size or upload limit exceeded"});
     const id=crypto.randomUUID(), session={id,title,extension:ext,contentType,size,offset:0,createdAt:new Date().toISOString()};
     const files=sessionPaths(id);
-    fs.writeFileSync(files.part,Buffer.alloc(0),{flag:"wx",mode:0o600});
-    writeSession(session);
+    try {
+      fs.writeFileSync(files.part,Buffer.alloc(0),{flag:"wx",mode:0o600});
+      writeSession(session);
+    } catch(error) {
+      // Session creation is atomic from the client's perspective: never leave an
+      // untracked .part file if metadata persistence fails.
+      fs.rmSync(files.data,{force:true});
+      fs.rmSync(files.data+".tmp",{force:true});
+      fs.rmSync(files.part,{force:true});
+      throw error;
+    }
     return json(res,201,{uploadId:id,offset:0,chunkSize:maxChunkBytes,status:"uploading"});
   }
 
