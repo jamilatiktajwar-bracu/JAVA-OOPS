@@ -96,3 +96,4 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 
 - `Home` jumps to the beginning of VOD or the earliest available DVR seek point.
 - `End` jumps to the VOD end or current live edge for DVR. Both safely no-op when a seek range is unavailable.
+\n\n## Volume controls\n\n- Up/down arrows adjust volume in 5% increments and show accessible volume feedback.\n- Shift + up/down adjusts volume in 10% increments. Volume remains clamped from 0 to 100%.\n
