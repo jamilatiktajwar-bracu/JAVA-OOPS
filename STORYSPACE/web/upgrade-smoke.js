@@ -548,4 +548,6 @@ const responsiveStyles=read("styles.css"),responsivePlayer=read("player-settings
 if(!responsiveStyles.includes("@media(max-width:640px)"))throw Error("Browse filters need a compact mobile layout");
 if(!responsiveStyles.includes("grid-template-columns:repeat(2,minmax(0,1fr))"))throw Error("Browse controls must use a two-column mobile grid");
 if(!responsivePlayer.includes("@media(max-width:620px)"))throw Error("Player settings need a mobile layout");
+if(!responsivePlayer.includes(".player-settings-row select{width:100%;max-width:none;min-height:44px}"))throw Error("Mobile player controls must meet the 44px touch target minimum");
+if(!responsivePlayer.includes(".player-settings-row>button{min-height:44px}"))throw Error("Mobile player buttons must meet the 44px touch target minimum");
 if(!responsivePlayer.includes(".player-offline-status{grid-column:1/-1}"))throw Error("Offline status must span the mobile player controls");
