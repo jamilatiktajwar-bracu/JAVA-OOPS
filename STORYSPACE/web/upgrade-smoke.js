@@ -307,3 +307,5 @@ for(const token of ["const seekWindow=()=>","video.seekable","return {start,end,
 if(!shortcuts.includes('case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;'))throw Error("Restart shortcut must use seek-window start");
 // Seek shortcuts give screen-reader/visual feedback after successful seeking.
 for(const token of ["const feedback=document.getElementById(\"playerGestureFeedback\")","announceSeek(\"Seek to \"+formatSeekTime(video.currentTime))","aria-live","Restarted at DVR window start"])if(!shortcuts.includes(token))throw Error("Accessible keyboard seek feedback missing: "+token);
+// Seek feedback should announce the clamped target (not a stale currentTime).
+if(!shortcuts.includes("video.currentTime=target;return target")||!shortcuts.includes("formatSeekTime(target)"))throw Error("Seek feedback must announce the seek target");
