@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes("storyspace-shell-v62"))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
