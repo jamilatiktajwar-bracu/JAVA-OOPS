@@ -421,3 +421,10 @@ if(!sw.includes("storyspace-shell-v116"))throw Error("Asset timeout shell cache 
 const apiSource=read("app.js");
 if(!apiSource.includes('Promise.race([request,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error("Request timed out. Check your connection and try again.")),15000)})])'))throw Error("API requests need a timeout fallback when AbortController is unavailable");
 if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. Check your connection and try again."))'))throw Error("AbortController API timeout should reject promptly with a clear message");
+
+
+// Player resilience cancels deferred work and pending recovery on pagehide.
+const resilience=read("player-resilience.js");
+if(!resilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
+if(!resilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
+if(!sw.includes("storyspace-shell-v118"))throw Error("Player lifecycle shell cache v118 missing");
