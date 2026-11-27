@@ -378,3 +378,10 @@ if(!settings.includes("function syncExternalAudioChange()")||!settings.includes(
 // Shortcut help must distinguish directional seek/volume modifiers and document caption-size cycling.
 const shortcutGuide=h.slice(h.indexOf('id="playerShortcutGuide"'),h.indexOf('</div>',h.indexOf('id="playerShortcutGuide"')));
 for(const token of ['Shift</kbd> + <kbd>←</kbd>/<kbd>→</kbd> seek 10 sec','Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%','<kbd>C</kbd> cycle caption size','<kbd>Alt+C</kbd> captions on/off'])if(!shortcutGuide.includes(token))throw Error("Shortcut guide is missing or ambiguous: "+token);
+
+\n// Static assets should prefer fresh network responses and use cached assets only as fallback.
+if(!sw.includes("const networkFirst = fetch(request).then(async response => {"))throw Error("Static asset requests must use network-first freshness");
+if(!sw.includes("return (await cachedAsset()) || response;"))throw Error("Failed HTTP responses must fall back to a cached asset");
+if(!sw.includes("catch(async()=> (await cachedAsset()) || Response.error())")&&!sw.includes("catch(async () => (await cachedAsset()) || Response.error())"))throw Error("Offline asset requests must fall back to cache");
+if(!sw.includes("storyspace-shell-v111"))throw Error("Fresh asset strategy must invalidate shell cache");
+if(sw.includes("if (cached) return cached;"))throw Error("Static assets must not return stale cache before network refresh");
