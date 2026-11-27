@@ -404,7 +404,7 @@ async function handle(req,res) {
     const ifNoneMatch=req.headers["if-none-match"];
     if(ifNoneMatch){
       const candidates=ifNoneMatch.split(",").map(value=>value.trim());
-      if(candidates.includes("*")||candidates.some(value=>value.replace(/^W\\//i,"")===etag)){
+      if(candidates.includes("*")||candidates.some(value=>value.replace(/^W\//i,"")===etag)){
         res.writeHead(304,headers);return res.end();
       }
     }
