@@ -598,3 +598,10 @@ if(!tvNavigation.includes('e.getAttribute("aria-disabled")==="true"'))throw Erro
 if(!tvNavigation.includes('e.closest("[hidden],[inert],[aria-hidden=\'true\']")'))throw Error("TV navigation must skip descendants of hidden, inert and aria-hidden regions");
 if(!tvNavigation.includes("!e.isConnected"))throw Error("TV navigation must ignore detached stale focus candidates");
 
+
+// Responsive navigation remains scrollable without shrinking touch controls below 40px.
+const interactionPolish=read("interaction-polish.css");
+if(!interactionPolish.includes(".main-nav{overflow-x:auto"))throw Error("Mobile navigation must scroll horizontally rather than clip links");
+if(!interactionPolish.includes("scroll-snap-type:x proximity"))throw Error("Mobile navigation should gently snap to link targets");
+if(!interactionPolish.includes("min-width:40px,min-height:40px"))throw Error("Top action controls need accessible touch targets");
+if(!interactionPolish.includes("@media(prefers-reduced-motion:reduce){.main-nav"))throw Error("Navigation snapping must respect reduced motion");
