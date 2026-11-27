@@ -283,17 +283,21 @@ async function handle(req,res) {
     const offset=Number(req.headers["x-upload-offset"]);
     if(!Number.isSafeInteger(offset)||offset!==current||offset!==session.offset) return json(res,409,{error:"Upload offset mismatch",offset:current});
     const declaredLength=req.headers["content-length"];
+    let expectedLength=null;
     if(declaredLength!==undefined){
-      const expected=Number(declaredLength);
-      if(!Number.isSafeInteger(expected)||expected<0) return json(res,400,{error:"Invalid chunk length"});
-      if(expected===0) return json(res,400,{error:"Empty chunk"});
-      if(expected>maxChunkBytes||current+expected>session.size) return json(res,413,{error:"Chunk exceeds limit"});
+      expectedLength=Number(declaredLength);
+      if(!Number.isSafeInteger(expectedLength)||expectedLength<0) return json(res,400,{error:"Invalid chunk length"});
+      if(expectedLength===0) return json(res,400,{error:"Empty chunk"});
+      if(expectedLength>maxChunkBytes||current+expectedLength>session.size) return json(res,413,{error:"Chunk exceeds limit"});
     }
     let received=0;
     const limiter=new Transform({transform(chunk,enc,cb){received+=chunk.length;if(received>maxChunkBytes||current+received>session.size)cb(Object.assign(new Error("Chunk too large"),{statusCode:413}));else cb(null,chunk);}});
     try{
       await pipeline(req,limiter,fs.createWriteStream(files.part,{flags:"a",mode:0o600}));
       if(received===0) return json(res,400,{error:"Empty chunk"});
+      if(expectedLength!==null&&received!==expectedLength){
+        throw Object.assign(new Error("Chunk length does not match Content-Length"),{statusCode:400});
+      }
       session.offset=current+received;writeSession(session);
       return json(res,200,{uploadId:session.id,offset:session.offset,complete:session.offset===session.size});
     }catch(error){
@@ -305,7 +309,8 @@ async function handle(req,res) {
         fs.rmSync(files.part,{force:true});
         return json(res,500,{error:"Chunk rollback failed; upload session was discarded"});
       }
-      return json(res,error.statusCode||400,{error:error.statusCode===413?"Chunk exceeds limit":"Chunk upload failed",offset:current});
+      const message=error.statusCode===413?"Chunk exceeds limit":error.message==="Chunk length does not match Content-Length"?"Chunk length does not match Content-Length":"Chunk upload failed";
+      return json(res,error.statusCode||400,{error:message,offset:current});
     }
     });
   }
