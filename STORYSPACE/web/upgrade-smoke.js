@@ -343,6 +343,9 @@ if(!shortcuts.includes('case ">":{video.playbackRate=Math.min(2'))throw Error("F
 if(!h.includes("0.25×–2×"))throw Error("Playback speed shortcut guide missing");
 
 
+// Upward volume swipe must unmute so raising volume is immediately audible.
+if(!pg.includes("if(dy<0)video.muted=false"))throw Error("Touch volume-up gesture must unmute playback");
+
 // Touch seek gestures use the latest seekable range, including live DVR windows.
 if(!pg.includes("function getSeekRange()")||!pg.includes("video.seekable.length"))throw Error("Touch gestures must discover DVR seekable ranges");
 if(!pg.includes("clamp(before + delta, range.start, range.end)"))throw Error("Touch seek must clamp to the active DVR/VOD range");
