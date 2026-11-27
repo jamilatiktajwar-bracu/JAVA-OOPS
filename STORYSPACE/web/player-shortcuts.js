@@ -35,6 +35,7 @@
     const target=clamp(video.currentTime+delta,range.start,range.end);
     try{video.currentTime=target;return target}catch{return false}
   };
+  const goLive=()=>{const range=seekWindow();if(!range||!range.live)return false;try{video.currentTime=range.end;video.play().catch(()=>{});announceSeek("Jumped to live");return range.end}catch{return false}};
   function setGuide(open){guide.hidden=!open;helpButton.setAttribute("aria-expanded",String(open));}
   function setTheater(open){const active=!!open;backdrop.classList.toggle("player-theater-mode",active);if(theaterButton){theaterButton.setAttribute("aria-pressed",String(active));theaterButton.textContent=active?"Exit theater mode":"Theater mode";}}
   theaterButton?.addEventListener("click",()=>setTheater(!backdrop.classList.contains("player-theater-mode")));
@@ -54,6 +55,7 @@
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!backdrop.classList.contains("player-theater-mode"));event.preventDefault();break;
       case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;video.play().catch(()=>{});announceSeek(range.live?"Restarted at DVR window start":"Restarted from beginning");event.preventDefault()}catch{}}break;}
+      case "g":{const target=goLive();if(target!==false)event.preventDefault();break;}
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
       default:handled=false;
@@ -61,5 +63,5 @@
     if(handled){event.stopPropagation();event.stopImmediatePropagation();}
   });
   backdrop.addEventListener("transitionend",()=>{if(backdrop.hidden){setGuide(false);setTheater(false)}});
-  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,seekWindow,setGuide,setTheater});
+  window.StoryspacePlayerShortcuts=Object.freeze({isEditable,seek,seekWindow,goLive,setGuide,setTheater});
 })();
