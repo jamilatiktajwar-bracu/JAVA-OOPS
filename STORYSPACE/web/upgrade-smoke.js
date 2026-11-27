@@ -498,3 +498,10 @@ for(const token of ["autoRecoveryAttempts=0","function scheduleStallRecovery()",
 // Upload-session cleanup tolerates a missing staging directory, reports removals, and isolates per-session filesystem failures.
 const cleanupServer=read("../home-media/server.mjs");
 for(const token of ["if(error.code===\"ENOENT\")return removed;","if(sessionLocks.has(id))continue;","return removed;","Could not remove expired upload session","Initial upload session cleanup failed"])if(!cleanupServer.includes(token))throw Error("Upload cleanup resilience missing: "+token);
+
+
+// Upload initialization rolls back partial staging files when session metadata cannot be persisted.
+const initSource=read("../home-media/server.mjs");
+if(!initSource.includes("Session creation is atomic from the client's perspective"))throw Error("Upload initialization must document transactional cleanup");
+if(!initSource.includes('fs.rmSync(files.data+".tmp",{force:true});'))throw Error("Upload initialization must remove a failed metadata temp file");
+if(!initSource.includes('fs.rmSync(files.part,{force:true});\n      throw error;'))throw Error("Upload initialization must remove its orphaned partial file");
