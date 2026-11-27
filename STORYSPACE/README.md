@@ -42,3 +42,5 @@ No trademark clearance or patentability/freedom-to-operate determination has bee
 - Player keyboard shortcuts: `←/→` seek 5 seconds, `Shift+←/→` seek 10 seconds, `J/L` seek 10 seconds, `R` restarts at the beginning of the current seekable window (VOD or live DVR), `T` toggles theater mode, and `?` opens the player shortcut guide. Successful seek actions announce the destination in player feedback.
 
 - Player caption selection filters out metadata, chapter and audio-description text tracks, while retaining the source track indexes so saved language preferences remain stable.
+
+- Saved regional audio-language preferences continue to resolve against indexed audio tracks independently of caption-track filtering.
