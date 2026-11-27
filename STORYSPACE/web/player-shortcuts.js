@@ -33,7 +33,7 @@
     if(video.readyState<1)return false;
     const range=seekWindow();if(!range)return false;
     const target=clamp(video.currentTime+delta,range.start,range.end);
-    try{video.currentTime=target;return true}catch{return false}
+    try{video.currentTime=target;return target}catch{return false}
   };
   function setGuide(open){guide.hidden=!open;helpButton.setAttribute("aria-expanded",String(open));}
   function setTheater(open){const active=!!open;backdrop.classList.toggle("player-theater-mode",active);if(theaterButton){theaterButton.setAttribute("aria-pressed",String(active));theaterButton.textContent=active?"Exit theater mode":"Theater mode";}}
@@ -44,9 +44,9 @@
     const key=event.key.toLowerCase();let handled=true;
     switch(key){
       case " ":case "k":event.preventDefault();if(video.paused)video.play().catch(()=>{});else video.pause();break;
-      case "arrowleft":{const delta=event.shiftKey?-10:-5;if(seek(delta))announceSeek("Seek to "+formatSeekTime(video.currentTime));event.preventDefault();break;}
+      case "arrowleft":{const delta=event.shiftKey?-10:-5;{const target=seek(delta);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};event.preventDefault();break;}
       case "arrowright":{const delta=event.shiftKey?10:5;if(seek(delta))announceSeek("Seek to "+formatSeekTime(video.currentTime));event.preventDefault();break;}
-      case "j":event.preventDefault();if(seek(-10))announceSeek("Seek to "+formatSeekTime(video.currentTime));break;case "l":event.preventDefault();if(seek(10))announceSeek("Seek to "+formatSeekTime(video.currentTime));break;
+      case "j":event.preventDefault();{const target=seek(-10);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};break;case "l":event.preventDefault();{const target=seek(10);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};break;
       case "arrowup":video.volume=clamp(video.volume+0.05,0,1);video.muted=false;event.preventDefault();break;
       case "arrowdown":video.volume=clamp(video.volume-0.05,0,1);event.preventDefault();break;
       case "m":video.muted=!video.muted;break;
