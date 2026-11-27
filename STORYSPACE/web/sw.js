@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v118";
+const SHELL_CACHE = "storyspace-shell-v119";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
@@ -50,20 +50,19 @@ self.addEventListener("fetch", event => {
   if (url.pathname.includes("/api/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request);
-        const cache = await caches.open(SHELL_CACHE);
-        if (response.ok) {
-          await cache.put("./index.html", response.clone());
-          return response;
-        }
-        return (await cache.match("./index.html")) || response;
-      } catch {
-        const shell = await caches.open(SHELL_CACHE);
-        return (await shell.match("./index.html")) || Response.error();
-      }
-    })());
+    const shellPromise=caches.open(SHELL_CACHE);
+    const network=fetch(request).then(async response=>{
+      if(response.ok){const cache=await shellPromise;try{await cache.put("./index.html",response.clone())}catch{/* Cache quota must not block navigation. */}}
+      return response;
+    }).catch(()=>null);
+    let timeoutId=0;
+    const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})]).finally(()=>clearTimeout(timeoutId)).then(async response=>{
+      if(response?.ok)return response;
+      const cache=await shellPromise;
+      return (await cache.match("./index.html"))||response||Response.error();
+    });
+    event.waitUntil(network.then(()=>undefined).catch(()=>{}));
+    event.respondWith(navigation);
     return;
   }
 
