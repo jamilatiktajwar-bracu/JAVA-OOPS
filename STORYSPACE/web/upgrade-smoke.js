@@ -15,10 +15,10 @@ if(!pux.includes("player-seek-preview")||!pux.includes("dy>90")||!pux.includes("
 if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:reduce"))throw Error("fullscreen transition styles missing");
 
 // Player resilience batch v1 guards
-const resilience=read("player-resilience.js");
+const playerResilience=read("player-resilience.js");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
 if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("player resilience offline shell not updated");
-for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","25000"])if(!resilience.includes(token))throw Error("player recovery behavior missing: "+token);
+for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","25000"])if(!playerResilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
 // Demo streaming library guards
@@ -43,7 +43,7 @@ if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))thro
 
 // Demo-stream error messaging and cache-version regression checks
 if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
-if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
+if(!playerResilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
 if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Demo recovery cache version not bumped");
 
 // Player media metadata readout
@@ -420,9 +420,9 @@ if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. 
 
 
 // Player resilience cancels deferred work and pending recovery on pagehide.
-const resilience=read("player-resilience.js");
-if(!resilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
-if(!resilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
+const playerResilience=read("player-resilience.js");
+if(!playerResilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
+if(!playerResilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
 
 
 // Navigation network fetches have a bounded wait and retain background shell refresh.
