@@ -350,3 +350,8 @@ for(const token of ["captionSummary","audioSummary","Captions off","Captions: ",
 // Native text/audio track changes must keep player selectors and persisted preferences synchronized.
 if(!settings.includes("function syncExternalCaptionChange()")||!settings.includes('video.textTracks.addEventListener?.("change",syncExternalCaptionChange)'))throw Error("Native caption track changes must sync the selector and saved language");
 if(!settings.includes("function syncExternalAudioChange()")||!settings.includes('video.audioTracks?.addEventListener?.("change",syncExternalAudioChange)'))throw Error("Native audio track changes must sync the selector and saved language");
+
+
+// Shortcut help must distinguish directional seek/volume modifiers and document caption-size cycling.
+const shortcutGuide=h.slice(h.indexOf('id="playerShortcutGuide"'),h.indexOf('</div>',h.indexOf('id="playerShortcutGuide"')));
+for(const token of ['Shift</kbd> + <kbd>←</kbd>/<kbd>→</kbd> seek 10 sec','Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%','<kbd>C</kbd> cycle caption size','<kbd>Alt+C</kbd> captions on/off'])if(!shortcutGuide.includes(token))throw Error("Shortcut guide is missing or ambiguous: "+token);
