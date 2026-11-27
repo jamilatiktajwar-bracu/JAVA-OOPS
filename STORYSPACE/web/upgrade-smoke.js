@@ -345,3 +345,8 @@ if(!settings.includes('const audioEntries=Array.from(ats||[]).map((track,index)=
 
 // Caption/audio selector status is specific and announces user selections through the polite status region.
 for(const token of ["captionSummary","audioSummary","Captions off","Captions: ","Audio: Default","Audio: "])if(!settings.includes(token))throw Error("Accessible caption/audio selection feedback missing: "+token);
+
+
+// Native text/audio track changes must keep player selectors and persisted preferences synchronized.
+if(!settings.includes("function syncExternalCaptionChange()")||!settings.includes('video.textTracks.addEventListener?.("change",syncExternalCaptionChange)'))throw Error("Native caption track changes must sync the selector and saved language");
+if(!settings.includes("function syncExternalAudioChange()")||!settings.includes('video.audioTracks?.addEventListener?.("change",syncExternalAudioChange)'))throw Error("Native audio track changes must sync the selector and saved language");
