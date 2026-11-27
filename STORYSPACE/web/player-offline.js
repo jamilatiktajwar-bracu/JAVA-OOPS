@@ -79,15 +79,19 @@
     try{await touchCached(cache,url,response)}catch{/* Playback remains available even if recency metadata cannot be refreshed. */}
     const blob=await response.blob();sourceUrl=url;objectUrl=URL.createObjectURL(blob);
     const position=Number(video.currentTime)||0,wasPlaying=!video.paused;
-    switching=true;video.src=objectUrl;video.load();
-    video.addEventListener("loadedmetadata",function onOfflineMetadata(){video.removeEventListener("loadedmetadata",onOfflineMetadata);switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{})});
+    switching=true;
+    video.addEventListener("loadedmetadata",function onOfflineMetadata(){switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{})},{once:true});
+    video.src=objectUrl;video.load();
     announce("Connection lost · playing the saved offline copy");
   }
   function restoreNetwork(){
     if(!objectUrl||!navigator.onLine||!sourceUrl)return;
     const url=sourceUrl,position=Number(video.currentTime)||0,wasPlaying=!video.paused,old=objectUrl;objectUrl="";
-    switching=true;video.src=url;video.load();
-    video.addEventListener("loadedmetadata",function onOfflineMetadata(){video.removeEventListener("loadedmetadata",onOfflineMetadata);switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{});URL.revokeObjectURL(old)});
+    switching=true;
+    const releaseOld=()=>{video.removeEventListener("error",releaseOld);URL.revokeObjectURL(old)};
+    video.addEventListener("loadedmetadata",function onNetworkMetadata(){switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{});releaseOld();},{once:true});
+    video.addEventListener("error",()=>{switching=false;releaseOld();announce("Could not reconnect the stream · try playback again")},{once:true});
+    video.src=url;video.load();
     announce("Connection restored · returning to the network stream");
   }
   button.addEventListener("click",async()=>{
