@@ -42,6 +42,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
   mvc.perform(put("/api/library/"+titleId).header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("updatedAt","2099-01-01T00:00:01Z"))))
    .andExpect(status().isOk());
   mvc.perform(get("/api/library/deletions").header("Authorization",bearer)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
+  mvc.perform(delete("/api/library/"+titleId).header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("updatedAt","2098-12-31T23:59:59Z"))))
+   .andExpect(status().isConflict());
+  mvc.perform(get("/api/library").header("Authorization",bearer)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
   MvcResult secondRegister=mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("email","other-"+System.nanoTime()+"@example.test","password","strong-password-456","displayName","Other Explorer")))).andExpect(status().isOk()).andReturn();
   String secondBearer="Bearer "+mapper.readTree(secondRegister.getResponse().getContentAsString()).get("token").asText();
   mvc.perform(get("/api/library").header("Authorization",secondBearer)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
