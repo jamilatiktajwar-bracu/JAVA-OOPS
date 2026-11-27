@@ -49,23 +49,37 @@ if (!fs.existsSync(catalogFile)) fs.writeFileSync(catalogFile, "[]\n", { flag:"w
 
 const sessionLocks = new Map();
 function removeExpiredUploadSessions(now=Date.now()) {
+  let removed=0;
+  let entries;
+  try { entries=fs.readdirSync(stagingDir,{withFileTypes:true}); }
+  catch(error) {
+    if(error.code==="ENOENT")return removed;
+    throw error;
+  }
   const ids=new Set();
-  for (const entry of fs.readdirSync(stagingDir,{withFileTypes:true})) {
-    const match=entry.isFile() && entry.name.match(/^([a-f0-9-]{36})\.(?:json|part)$/i);
+  for (const entry of entries) {
+    const match=entry.isFile() && entry.name.match(/^([a-f0-9-]{36})\\.(?:json|part)$/i);
     if (match) ids.add(match[1]);
   }
   for (const id of ids) {
+    if(sessionLocks.has(id))continue;
     const files=sessionPaths(id);
     const activity=[files.data,files.part].reduce((latest,file)=>{
       try { return Math.max(latest,fs.statSync(file).mtimeMs); } catch { return latest; }
     },0);
-    if (activity && now-activity >= uploadSessionTtlMs && !sessionLocks.has(id)) {
+    if (!activity || now-activity < uploadSessionTtlMs)continue;
+    try {
       fs.rmSync(files.data,{force:true});
       fs.rmSync(files.part,{force:true});
+      removed++;
+    } catch(error) {
+      console.warn("Could not remove expired upload session",id,error);
     }
   }
+  return removed;
 }
-removeExpiredUploadSessions();
+try { removeExpiredUploadSessions(); }
+catch(error) { console.warn("Initial upload session cleanup failed",error); }
 const uploadSessionCleanup=setInterval(()=>{try{removeExpiredUploadSessions()}catch(error){console.warn("Upload session cleanup failed",error)}},30*60*1000);
 uploadSessionCleanup.unref?.();
 
