@@ -12,9 +12,11 @@ public class NETFLIX_SMOKE_TEST {
         testSubscriptionPlanNormalization();
         testMovieConstructorNormalization();
         testMovieMetadataArrayHandling();
+        testMovieCompletionRateBounds();
         testUnknownAgeRatingSafety();
         testSubscriptionPaymentAndRefundSafety();
         testPaymentWalletDefaultInvariant();
+        testPaymentMethodExpirySafety();
         testPromoCodeRedemptionConsistency();
         testNetflixUserInputValidation();
         testNetflixUserHistoryConsistency();
@@ -302,6 +304,15 @@ public class NETFLIX_SMOKE_TEST {
         require("Actor".equals(movie.getCast()[0]), "cast getter should return a defensive array copy");
     }
 
+    private static void testMovieCompletionRateBounds() {
+        Movies movie = new Movies("Completion rate bound", "Drama", 90);
+        movie.recordView();
+        movie.recordWatchSeconds(90 * 60);
+        movie.recordWatchSeconds(90 * 60);
+        require(movie.getCompletionRate() == 100.0,
+                "completion rate should not exceed 100 percent when counts are inconsistent");
+    }
+
     private static void testUnknownAgeRatingSafety() {
         String title = "Unrated safety test " + System.nanoTime();
         require(Movies.addMovie(title, "Drama", 90, 2025),
@@ -417,6 +428,16 @@ public class NETFLIX_SMOKE_TEST {
         require(paymentUser.getPaymentWallet().getDefaultMethod() == defaultCard
                 && "Visa".equals(paymentUser.getSubscription().getPaymentMethod()),
                 "subscription should keep the wallet's actual default method");
+    }
+
+    private static void testPaymentMethodExpirySafety() {
+        PaymentMethod method = new PaymentMethod("Card", "1234567890123456", "Expiry tester");
+        require(method.setExpiry(12, 2028), "valid expiry date should be accepted");
+        require(!method.isExpired(2026, 11), "future payment method should not be expired");
+        require(method.isExpired(2029, 1), "past expiry date should be expired");
+        require(method.isExpired(2026, 13), "invalid current month must fail closed");
+        require(method.isExpired(1899, 12), "invalid current year must fail closed");
+        require(!method.setExpiry(0, 2028), "invalid expiry month should be rejected");
     }
 
     private static void testPromoCodeRedemptionConsistency() {
