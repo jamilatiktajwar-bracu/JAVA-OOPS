@@ -2,10 +2,12 @@
 const video=document.getElementById("previewVideo"),info=document.getElementById("playerMediaInfo"),backdrop=document.getElementById("playerBackdrop");
 if(!video||!info||!backdrop)return;
 const formatTime=value=>{if(!Number.isFinite(value)||value<0)return "";const sec=Math.floor(value),h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?h+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"):m+":"+String(s).padStart(2,"0")};
-let lastText="";
+let lastText="",copyButton=null;
+function diagnosticReport(){const quality=video.getVideoPlaybackQuality?.();return ["Storyspace playback diagnostics","Source: "+(video.currentSrc||"none"),"Dimensions: "+(video.videoWidth&&video.videoHeight?video.videoWidth+" × "+video.videoHeight:"unknown"),"Time: "+formatTime(video.currentTime)+" / "+formatTime(video.duration),"Buffered ahead: "+bufferedAhead().toFixed(2)+"s","Ready state: "+video.readyState,"Network state: "+video.networkState,"Playback rate: "+video.playbackRate,"Online: "+(navigator.onLine!==false),"Dropped frames: "+(quality&&Number.isFinite(quality.droppedVideoFrames)?quality.droppedVideoFrames:"unsupported"),"User agent: "+navigator.userAgent].join("\\n")}
+function ensureCopyButton(){if(copyButton||!info.parentNode)return;copyButton=document.createElement("button");copyButton.type="button";copyButton.className="player-diagnostics-copy";copyButton.textContent="Copy diagnostics";copyButton.setAttribute("aria-label","Copy playback diagnostics");info.insertAdjacentElement("afterend",copyButton);copyButton.addEventListener("click",async()=>{const report=diagnosticReport();try{await navigator.clipboard.writeText(report);copyButton.textContent="Copied ✓"}catch{const field=document.createElement("textarea");field.value=report;field.setAttribute("readonly","");field.style.position="fixed";field.style.opacity="0";document.body.append(field);field.select();let ok=false;try{ok=document.execCommand("copy")}catch{}field.remove();copyButton.textContent=ok?"Copied ✓":"Copy unavailable"}setTimeout(()=>{if(copyButton)copyButton.textContent="Copy diagnostics"},1800)})}
 function bufferedAhead(){const now=Number(video.currentTime);if(!Number.isFinite(now))return 0;const ranges=video.buffered;for(let i=0;i<ranges.length;i++){try{const start=ranges.start(i),end=ranges.end(i);if(now>=start-.25&&now<=end+.25)return Math.max(0,end-now)}catch{}}return 0}
-function update(){if(backdrop.hidden||video.readyState<1){info.hidden=true;info.textContent="";lastText="";return}
-const parts=[];if(video.videoWidth&&video.videoHeight)parts.push(video.videoWidth+" × "+video.videoHeight);
+function update(){if(backdrop.hidden||video.readyState<1){info.hidden=true;info.textContent="";lastText="";if(copyButton)copyButton.hidden=true;return}
+ensureCopyButton();const parts=[];if(video.videoWidth&&video.videoHeight)parts.push(video.videoWidth+" × "+video.videoHeight);
 const duration=formatTime(video.duration);if(video.duration===Infinity)parts.push("LIVE");else if(duration)parts.push("Duration "+duration);
 const ahead=bufferedAhead();parts.push("Buffer "+(ahead<10?ahead.toFixed(1):Math.round(ahead))+"s ahead");
 if(video.networkState===video.NETWORK_NO_SOURCE)parts.push("No source");else if(video.networkState===video.NETWORK_LOADING)parts.push("Loading");
@@ -13,7 +15,7 @@ if(video.readyState===video.HAVE_NOTHING)parts.push("No media");else if(video.re
 if(video.playbackRate!==1)parts.push(video.playbackRate+"× speed");
 const quality=video.getVideoPlaybackQuality?.();if(quality&&Number.isFinite(quality.droppedVideoFrames)&&Number.isFinite(quality.totalVideoFrames)&&quality.totalVideoFrames>0)parts.push("Dropped frames "+quality.droppedVideoFrames+"/"+quality.totalVideoFrames);
 parts.push(video.dataset.demoStream==="1"?"Sample stream":"Preview stream");
-const text=parts.join(" · ");if(text!==lastText){info.textContent=text;lastText=text}info.hidden=!parts.length}
+const text=parts.join(" · ");if(text!==lastText){info.textContent=text;lastText=text}info.hidden=!parts.length;if(copyButton)copyButton.hidden=!parts.length}
 const events=["loadedmetadata","loadeddata","durationchange","progress","timeupdate","playing","waiting","stalled","seeking","seeked","ratechange","canplay","canplaythrough"];
 events.forEach(name=>video.addEventListener(name,update));
 video.addEventListener("emptied",()=>{info.hidden=true;info.textContent="";lastText=""});
