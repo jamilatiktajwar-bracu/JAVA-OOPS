@@ -396,22 +396,17 @@ if(!sw.includes('return (await shell.match("./index.html")) || Response.error();
 if(!h.includes('id="resumeHub" hidden role="dialog" aria-modal="true" aria-labelledby="resumeHubTitle"'))throw Error("Resume Hub must expose dialog semantics");
 if(!h.includes('id="resumeHubTitle" tabindex="-1"'))throw Error("Resume Hub needs a focusable labelled heading");
 for(const token of ["let returnFocus=null;","close.focus({preventScroll:true})","returnFocus.focus({preventScroll:true})","event.key===\"Escape\"","event.key!==\"Tab\"","first.focus()","last.focus()","closeHub();if(typeof playMovie==="])if(!read("resume-hub.js").includes(token))throw Error("Resume Hub keyboard/focus behavior missing: "+token);
-
-\n// Quick-action palette preserves the opener focus, safely navigates empty result sets and exposes selected options.
+// Quick-action palette preserves the opener focus, safely navigates empty result sets and exposes selected options.
 const palette=read("command-palette.js");
 for(const token of ["let panel,input,list,trigger,openState=false,returnFocus=null,activeIndex=-1;","if(!rows.length)return;","returnFocus.focus({preventScroll:true})","button.setAttribute(\"aria-selected\",\"false\")","button.onfocus=()=>{activeIndex=index;button.setAttribute(\"aria-selected\",\"true\")","empty.setAttribute(\"role\",\"status\")"])if(!palette.includes(token))throw Error("Command palette focus/navigation regression: "+token);
 if(palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Palette arrow navigation must not modulo an empty list");
-
-\n// Watch Later changes roll back failed persistence and synchronize other same-origin tabs.
+// Watch Later changes roll back failed persistence and synchronize other same-origin tabs.
 const watchLater=read("watch-later.js");
 for(const token of ["return false;","Watch Later could not be saved","if(!save()){items.shift();return false}","if(!save())items=previous","window.addEventListener(\"storage\",event=>{if(event.key===key())"])if(!watchLater.includes(token))throw Error("Watch Later persistence regression: "+token);
-
-\n// Command palette and Watch Later refinements must invalidate the app shell.
+// Command palette and Watch Later refinements must invalidate the app shell.
 if(!sw.includes("storyspace-shell-v114"))throw Error("Quick-action and Watch Later shell cache v114 missing");
-
-\n// Collection import/create must roll back in-memory mutations if storage fails.
+// Collection import/create must roll back in-memory mutations if storage fails.
 const collections=read("collections.js");
 for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collections.includes(token))throw Error("Collection transaction regression missing: "+token);
-
-\n// Collection transaction changes ship in the refreshed app shell.
+// Collection transaction changes ship in the refreshed app shell.
 if(!sw.includes("storyspace-shell-v115"))throw Error("Collection transaction shell v115 missing");
