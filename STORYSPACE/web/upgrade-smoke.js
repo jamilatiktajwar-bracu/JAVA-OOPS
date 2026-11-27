@@ -384,5 +384,9 @@ for(const token of ['Shift</kbd> + <kbd>←</kbd>/<kbd>→</kbd> seek 10 sec','S
 if(!sw.includes("const networkFirst = fetch(request).then(async response => {"))throw Error("Static asset requests must use network-first freshness");
 if(!sw.includes("return (await cachedAsset()) || response;"))throw Error("Failed HTTP responses must fall back to a cached asset");
 if(!sw.includes("catch(async()=> (await cachedAsset()) || Response.error())")&&!sw.includes("catch(async () => (await cachedAsset()) || Response.error())"))throw Error("Offline asset requests must fall back to cache");
-if(!sw.includes("storyspace-shell-v111"))throw Error("Fresh asset strategy must invalidate shell cache");
+if(!sw.includes("storyspace-shell-v112"))throw Error("Fresh navigation and asset strategy must invalidate shell cache");
 if(sw.includes("if (cached) return cached;"))throw Error("Static assets must not return stale cache before network refresh");
+
+// Failed navigation HTTP responses should recover with the cached app shell.
+if(!sw.includes('return (await cache.match("./index.html")) || response;'))throw Error("Navigation must fall back to the cached shell when the server returns an error");
+if(!sw.includes('return (await shell.match("./index.html")) || Response.error();'))throw Error("Offline navigation must fall back to the cached app shell");
