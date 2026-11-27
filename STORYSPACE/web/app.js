@@ -565,7 +565,7 @@ function scoreTitle(m){
     if(!overlap)return;
     const ageDays=Math.max(0,(Date.now()-(Number(entry.at||entry.updatedAt)||Date.now()))/86400000);
     const recency=Math.max(.25,1-ageDays/120);
-    const completion=Math.max(0,Math.min(100,Number(watched.progress)||0))>=95?.35:1;
+    const completion=Math.max(0,Math.min(100,Number(watched.progress)||0))>=95 ? 0.35 : 1;
     genreAffinity+=Math.min(1.8,overlap*.55)*recency*completion*Math.min(2,Math.max(1,Number(entry.count)||1)*.5);
   });
   score+=Math.min(3.6,genreAffinity);
