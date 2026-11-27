@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v123"))throw Error("Media API deadline shell v123 missing");
+if(!navigationSW.includes("storyspace-shell-v124"))throw Error("Media API deadline shell v123 missing");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -462,3 +462,12 @@ if(!uploads.includes("const deadline=new Promise((_,reject)=>{timeout=setTimeout
 if(!uploads.includes("Promise.race([fetchPromise,deadline])"))throw Error("Media API timeout must work even without AbortController");
 if(!uploads.includes("...options,credentials:\"omit\",headers:requestHeaders"))throw Error("Media requests must preserve caller options and omit credentials");
 if(!uploads.includes("!options.signal&&typeof AbortController!==\"undefined\"?new AbortController():null"))throw Error("Upload chunk cancellation signals must be preserved");
+
+
+// Media uploader timeouts distinguish ordinary API requests from explicitly long chunk uploads.
+if(!uploads.includes('const {timeoutMs:deadlineMs=25000,...fetchOptions}=options'))throw Error("Media request deadlines must be configurable per request");
+if(!uploads.includes('body:blob,signal:controller.signal,timeoutMs:120000'))throw Error("Chunk uploads must retain their 120-second deadline");
+if(!uploads.includes('Math.round(deadlineMs/1000)'))throw Error("Deadline errors should report their configured duration");
+if(!uploads.includes('request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"})'))throw Error("Admin catalog refresh must use bounded request helper");
+if(!uploads.includes('request(root,"/api/catalog",readConfig().uploadToken||"",{cache:"no-store"})'))throw Error("Community catalog refresh must use bounded request helper");
+if(!uploads.includes('request(root,"/health","",{cache:"no-store",timeoutMs:8000})'))throw Error("Media connection validation must be bounded");
