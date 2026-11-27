@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { access, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -171,11 +171,12 @@ try{
  assert.equal(maliciousReview.status,404,"unsafe catalog entries cannot trigger filesystem deletion");
  assert.equal((await fetch(base+"/media/"+maliciousId)).status,404,"unsafe catalog entries cannot be streamed");
  const mediaDir=path.join(temp,"media");
- await writeFile(path.join(mediaDir,catalog[0].fileName),"truncated");
+ const mediaFile=path.join(mediaDir,catalog[0].fileName),originalMediaStat=await stat(mediaFile);
+ await writeFile(mediaFile,"truncated");
  const corruptedMedia=await fetch(base+catalog[0].streamUrl);
  assert.equal(corruptedMedia.status,503,"truncated media is not served with a misleading success response");
  assert.match((await corruptedMedia.json()).error,/integrity check/);
- await new Promise(resolve=>setTimeout(resolve,15));await writeFile(path.join(mediaDir,catalog[0].fileName),"xxxxxxxxxxxxxxxx");
+ await writeFile(mediaFile,"xxxxxxxxxxxxxxxx");await utimes(mediaFile,originalMediaStat.atime,originalMediaStat.mtime);
  const sameSizeCorruption=await fetch(base+catalog[0].streamUrl);assert.equal(sameSizeCorruption.status,503,"same-size media corruption is rejected by the SHA-256 integrity check");
  assert.match((await sameSizeCorruption.json()).error,/SHA-256 integrity check/);
  // A partially uploaded file must survive a server restart and continue from its committed offset.
