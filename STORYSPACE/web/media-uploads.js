@@ -307,7 +307,7 @@
         if(handle){duplicate.handle=handle;await storeItem(duplicate)}
         showToast("This video is already queued · resuming the existing upload");
         $("mediaUploadStart").disabled=true;
-        await resumeOne(duplicate.id);
+        try{await resumeOne(duplicate.id)}finally{$("mediaUploadStart").disabled=false}
         return;
       }
     }catch(error){showToast("Could not check for duplicate uploads: "+error.message);return}
