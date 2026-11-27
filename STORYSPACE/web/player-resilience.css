@@ -12,3 +12,5 @@
   .player-buffer-spinner { width: 26px; height: 26px; border-width: 2px; }
   .player-buffer-retry { min-height: 36px; padding: 7px 14px; }
 }
+
+.player-diagnostics-copy{display:inline-flex;margin:6px 0 0;padding:5px 10px;border:1px solid #8af4e555;border-radius:18px;background:#071321;color:#c5f9f1;font:inherit;font-size:11px;cursor:pointer}.player-diagnostics-copy:hover{background:#102a3a}.player-diagnostics-copy:focus-visible{outline:2px solid #8af4e5;outline-offset:2px}.player-diagnostics-copy[hidden]{display:none}
