@@ -137,9 +137,11 @@ function cors(res) {
   res.setHeader("access-control-allow-headers", "content-type, x-storyspace-admin-token, x-storyspace-upload-token, x-upload-offset, range");
   res.setHeader("access-control-expose-headers", "content-length, content-range, accept-ranges, content-type, upload-offset");
 }
+const verifiedMedia=new Map();
+async function sha256File(file){const hash=crypto.createHash("sha256");for await(const chunk of fs.createReadStream(file))hash.update(chunk);return hash.digest("hex")}
 function publicItem(item) {
   return { id:item.id, title:item.title, fileName:item.fileName, contentType:item.contentType, size:item.size, addedAt:item.addedAt,
-    streamUrl:(publicOrigin || "") + "/media/" + item.id };
+    streamUrl:(publicOrigin || "") + "/media/" + item.id, sha256:item.sha256||null };
 }
 function sessionPaths(id) {
   if (!/^[a-f0-9-]{36}$/i.test(id)) return null;
@@ -341,12 +343,13 @@ async function handle(req,res) {
     return withCatalogLock(async()=>{
       const fileName=session.id+session.extension,destination=path.join(mediaDir,fileName);
       if(fs.existsSync(destination)) return json(res,409,{error:"Media destination already exists"});
+      const sha256=await sha256File(files.part);
       fs.renameSync(files.part,destination);
-      const item={id:session.id,title:session.title,fileName,contentType:session.contentType,size:session.size,addedAt:new Date().toISOString(),published:false,uploadedBy:"invite"};
+      const item={id:session.id,title:session.title,fileName,contentType:session.contentType,size:session.size,sha256,addedAt:new Date().toISOString(),published:false,uploadedBy:"invite"};
       try { const items=readCatalog();items.push(item);writeCatalog(items); }
       catch(error) { try { fs.renameSync(destination,files.part); } catch {} throw error; }
       fs.rmSync(files.data,{force:true});
-      return json(res,201,{id:item.id,title:item.title,size:item.size,status:"pending_approval"});
+      return json(res,201,{id:item.id,title:item.title,size:item.size,sha256:item.sha256,status:"pending_approval"});
     });
     });
   }
@@ -379,7 +382,8 @@ async function handle(req,res) {
     try{
       await pipeline(req,limiter,fs.createWriteStream(destination,{flags:"wx",mode:0o600}));
       if(!bytes){fs.rmSync(destination,{force:true});return json(res,400,{error:"Empty upload"});}
-      const item={id,title,fileName,contentType,size:bytes,addedAt:new Date().toISOString(),published:false,uploadedBy:"admin"};
+      const sha256=await sha256File(destination);
+      const item={id,title,fileName,contentType,size:bytes,sha256,addedAt:new Date().toISOString(),published:false,uploadedBy:"admin"};
       await withCatalogLock(async()=>{const items=readCatalog();items.push(item);writeCatalog(items);});
       return json(res,201,{...publicItem(item),status:"pending_approval"});
     }catch(error){fs.rmSync(destination,{force:true});return json(res,error.statusCode||400,{error:error.statusCode===413?"Upload exceeds configured size limit":"Upload failed"});}
@@ -393,7 +397,8 @@ async function handle(req,res) {
     try{stat=fs.statSync(file);}catch{return json(res,404,{error:"Media file is offline"});}
     if(!stat.isFile()||path.basename(file)!==item.fileName)return json(res,404,{error:"Media not found"});
     if(stat.size!==item.size)return json(res,503,{error:"Media file failed its catalog size integrity check"});
-    const etag='"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
+    if(item.sha256){const fingerprint=stat.size+":"+stat.mtimeMs;if(verifiedMedia.get(item.id)!==fingerprint){const actual=await sha256File(file);if(actual!==item.sha256)return json(res,503,{error:"Media file failed its SHA-256 integrity check"});verifiedMedia.set(item.id,fingerprint)}}
+    const etag=item.sha256?'"'+item.sha256+'"':'"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
     const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
     if(req.headers["if-none-match"]===etag){res.writeHead(304,headers);return res.end();}
     let range=req.headers.range;
