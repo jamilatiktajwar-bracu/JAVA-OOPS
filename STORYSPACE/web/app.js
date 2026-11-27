@@ -636,8 +636,9 @@ const LIBRARY_OPS_PREFIX="storyspace.libraryOps.v1:";
 function libraryOpsKey(){return LIBRARY_OPS_PREFIX+String(personalized.account?.email||"guest").trim().toLowerCase()}
 function readLibraryOps(){try{const raw=JSON.parse(storage.get(libraryOpsKey())||"{}");return raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{}}catch{return {}}}
 function writeLibraryOps(ops){if(Object.keys(ops).length)storage.set(libraryOpsKey(),JSON.stringify(ops));else storage.remove(libraryOpsKey())}
-function queueLibraryOp(titleId,present){const ops=readLibraryOps(),op={present:!!present,updatedAt:Date.now()};ops[String(titleId)]=op;writeLibraryOps(ops);return op}
-function clearLibraryOp(titleId,expected){const ops=readLibraryOps(),current=ops[String(titleId)];if(!current||current.present!==expected?.present||current.updatedAt!==expected?.updatedAt)return false;delete ops[String(titleId)];writeLibraryOps(ops);return true}
+let libraryOpSequence=0;
+function queueLibraryOp(titleId,present){const ops=readLibraryOps(),op={present:!!present,updatedAt:Date.now(),sequence:++libraryOpSequence};ops[String(titleId)]=op;writeLibraryOps(ops);return op}
+function clearLibraryOp(titleId,expected){const ops=readLibraryOps(),current=ops[String(titleId)];if(!current||current.present!==expected?.present||current.updatedAt!==expected?.updatedAt||current.sequence!==expected?.sequence)return false;delete ops[String(titleId)];writeLibraryOps(ops);return true}
 const libraryWriteQueues=new Map();
 function sendLibraryOp(titleId,op){const key=String(titleId),previous=libraryWriteQueues.get(key)||Promise.resolve();const task=previous.catch(()=>{}).then(()=>api("/library/"+encodeURIComponent(key),{method:op.present?"PUT":"DELETE"}));libraryWriteQueues.set(key,task);task.finally(()=>{if(libraryWriteQueues.get(key)===task)libraryWriteQueues.delete(key)}).catch(()=>{});return task}
 async function reconcileLibraryOps(serverItems){
@@ -647,7 +648,7 @@ async function reconcileLibraryOps(serverItems){
  for(const [id,op] of Object.entries(ops)){
   const remote=byId.get(id),remoteAt=Date.parse(remote?.updatedAt||remote?.lastPlayedAt||"")||0;
   if(remoteAt>=(Number(op?.updatedAt)||0)){delete ops[id];changed=true;continue}
-  try{await sendLibraryOp(id,op);if(ops[id]?.updatedAt===op.updatedAt&&ops[id]?.present===op.present){delete ops[id];changed=true}}
+  try{await sendLibraryOp(id,op);if(ops[id]?.updatedAt===op.updatedAt&&ops[id]?.present===op.present&&ops[id]?.sequence===op.sequence){delete ops[id];changed=true}}
   catch{/* Keep the newest local intent queued for the next successful sync. */}
  }
  writeLibraryOps(ops);return changed;
