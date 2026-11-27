@@ -29,12 +29,15 @@
     for(const request of await cache.keys()){
       if(request.url===keepUrl)continue;
       const response=await cache.match(request);if(!response)continue;
-      const bytes=Math.max(0,Number(response.headers.get("content-length"))||0);
+      const declaredBytes=Number(response.headers.get("content-length"));
+      // Older cache entries or cross-origin responses may not expose Content-Length.
+      // Measure the cached body instead of treating an unknown size as zero.
+      const bytes=Number.isSafeInteger(declaredBytes)&&declaredBytes>=0?declaredBytes:(await response.clone().blob()).size;
       const savedAt=Math.max(0,Number(response.headers.get("x-storyspace-cached-at"))||0);
       entries.push({request,bytes,savedAt});
     }
     let total=entries.reduce((sum,item)=>sum+item.bytes,0);
-    entries.sort((a,b)=>a.savedAt-b.savedAt);
+    entries.sort((a,b)=>(a.savedAt-b.savedAt)||a.request.url.localeCompare(b.request.url));
     let free=Number.isFinite(quota)&&Number.isFinite(usage)?quota-usage:Infinity;
     while(entries.length&&(total+requiredBytes>budget||free<requiredBytes*1.15)){
       const oldest=entries.shift();await cache.delete(oldest.request);total=Math.max(0,total-oldest.bytes);
