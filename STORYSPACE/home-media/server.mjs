@@ -58,13 +58,15 @@ function removeExpiredUploadSessions(now=Date.now()) {
     const activity=[files.data,files.part].reduce((latest,file)=>{
       try { return Math.max(latest,fs.statSync(file).mtimeMs); } catch { return latest; }
     },0);
-    if (activity && now-activity >= uploadSessionTtlMs) {
+    if (activity && now-activity >= uploadSessionTtlMs && !sessionLocks.has(id)) {
       fs.rmSync(files.data,{force:true});
       fs.rmSync(files.part,{force:true});
     }
   }
 }
 removeExpiredUploadSessions();
+const uploadSessionCleanup=setInterval(()=>{try{removeExpiredUploadSessions()}catch(error){console.warn("Upload session cleanup failed",error)}},30*60*1000);
+uploadSessionCleanup.unref?.();
 
 function isValidCatalogItem(item) {
   if (!item || !/^[a-f0-9-]{36}$/i.test(String(item.id || ""))) return false;
