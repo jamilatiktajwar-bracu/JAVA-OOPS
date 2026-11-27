@@ -514,3 +514,10 @@ const searchRanking=read("app.js");
 if(!searchRanking.includes("genreAffinity+=Math.min(1.8,overlap*.55)*recency*completion"))throw Error("Search ranking must include recency- and completion-weighted watch-history genre affinity");
 if(!searchRanking.includes('languageControl=$("browseLanguage")'))throw Error("Browse filters must include language selection");
 if(!searchRanking.includes('languageControl.value.toLowerCase()'))throw Error("Browse language filter must be applied to results");
+
+
+// Player track pickers expose language and accessibility/channel metadata when available.
+const playerSettings=read("player-settings.js");
+if(!playerSettings.includes("function trackLabel(track,index,kind)"))throw Error("Player track labels should include descriptive metadata");
+if(!playerSettings.includes("trackLabel(track,entry.index,\"caption\")"))throw Error("Caption picker must use descriptive track labels");
+if(!playerSettings.includes("trackLabel(ats[i],i,\"audio\")"))throw Error("Audio picker must use descriptive track labels");
