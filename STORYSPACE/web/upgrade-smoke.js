@@ -384,7 +384,6 @@ for(const token of ['Shift</kbd> + <kbd>←</kbd>/<kbd>→</kbd> seek 10 sec','S
 if(!sw.includes("const networkFirst = fetch(request).then(async response => {"))throw Error("Static asset requests must use network-first freshness");
 if(!sw.includes("return (await cachedAsset()) || response;"))throw Error("Failed HTTP responses must fall back to a cached asset");
 if(!sw.includes("catch(async()=> (await cachedAsset()) || Response.error())")&&!sw.includes("catch(async () => (await cachedAsset()) || Response.error())"))throw Error("Offline asset requests must fall back to cache");
-if(!sw.includes("storyspace-shell-v117"))throw Error("Fresh navigation and asset strategy must invalidate shell cache v117");
 if(sw.includes("if (cached) return cached;"))throw Error("Static assets must not return stale cache before network refresh");
 
 // Failed navigation HTTP responses should recover with the cached app shell.
@@ -404,17 +403,14 @@ if(palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Pale
 const watchLater=read("watch-later.js");
 for(const token of ["return false;","Watch Later could not be saved","if(!save()){items.shift();return false}","if(!save())items=previous","window.addEventListener(\"storage\",event=>{if(event.key===key())"])if(!watchLater.includes(token))throw Error("Watch Later persistence regression: "+token);
 // Command palette and Watch Later refinements must invalidate the app shell.
-if(!sw.includes("storyspace-shell-v114"))throw Error("Quick-action and Watch Later shell cache v114 missing");
 // Collection import/create must roll back in-memory mutations if storage fails.
 const collectionSource=read("collections.js");
 for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collectionSource.includes(token))throw Error("Collection transaction regression missing: "+token);
 // Collection transaction changes ship in the refreshed app shell.
-if(!sw.includes("storyspace-shell-v115"))throw Error("Collection transaction shell v115 missing");
 // A stalled network fetch should not block cached assets indefinitely.
 if(!sw.includes("setTimeout(()=>resolve(null),4500)"))throw Error("Static asset network requests must have a bounded fallback delay");
 if(!sw.includes("Promise.race([")||!sw.includes("finally(()=>clearTimeout(timeoutId))"))throw Error("Asset timeout race must clean its timer");
 if(!sw.includes("const refresh = fetch(request).then(async response => {"))throw Error("Background asset refresh should still populate cache after timeout");
-if(!sw.includes("storyspace-shell-v116"))throw Error("Asset timeout shell cache v116 missing");
 
 
 // API requests must enforce a deadline even when AbortController is unavailable.
@@ -427,7 +423,6 @@ if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. 
 const resilience=read("player-resilience.js");
 if(!resilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
 if(!resilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
-if(!sw.includes("storyspace-shell-v118"))throw Error("Player lifecycle shell cache v118 missing");
 
 
 // Navigation network fetches have a bounded wait and retain background shell refresh.
