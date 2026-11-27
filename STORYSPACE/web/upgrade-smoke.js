@@ -405,3 +405,6 @@ if(palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Pale
 \n// Watch Later changes roll back failed persistence and synchronize other same-origin tabs.
 const watchLater=read("watch-later.js");
 for(const token of ["return false;","Watch Later could not be saved","if(!save()){items.shift();return false}","if(!save())items=previous","window.addEventListener(\"storage\",event=>{if(event.key===key())"])if(!watchLater.includes(token))throw Error("Watch Later persistence regression: "+token);
+
+\n// Command palette and Watch Later refinements must invalidate the app shell.
+if(!sw.includes("storyspace-shell-v114"))throw Error("Quick-action and Watch Later shell cache v114 missing");
