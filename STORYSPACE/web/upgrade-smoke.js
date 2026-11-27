@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v125"))throw Error("Media API deadline shell v123 missing");
+if(!navigationSW.includes("storyspace-shell-v126"))throw Error("Media API deadline shell v123 missing");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -476,3 +476,8 @@ if(!uploads.includes('const healthData=await request(root,"/health","",{cache:"n
 // Community library retains the last public catalog for offline display without blocking server refresh.
 const communityUploads=read("media-uploads.js");
 for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array.isArray(cached.items)","saveCommunityCatalogCache(root,items)","items=readCommunityCatalogCache(root)||[]","Offline · showing saved catalog","role=\"status\""])if(!communityUploads.includes(token))throw Error("Offline community catalog cache behavior missing: "+token);
+
+
+// Continue Watching hub refreshes saved progress from other tabs and preserves keyboard focus during updates.
+const resumeHub=read("resume-hub.js");
+for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null","window.addEventListener(\"focus\",()=>{if(hub.hidden)render()})","document.addEventListener(\"visibilitychange\",()=>{if(!document.hidden&&hub.hidden)render()})","data-resume-action=\"resume\"","data-resume-action=\"clear\"","focus({preventScroll:true})"])if(!resumeHub.includes(token))throw Error("Continue Watching live-sync behavior missing: "+token);
