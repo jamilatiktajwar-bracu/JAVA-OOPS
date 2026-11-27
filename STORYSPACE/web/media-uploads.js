@@ -125,16 +125,20 @@
     const next=items.find(x=>x.status!=="Pending owner approval"&&(x.handle||(selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size)));
     if(next)await resumeOne(next.id);
   }
+  const communityCacheKey=root=>"storyspace.communityCatalog.v1:"+root;
+  function readCommunityCatalogCache(root){try{const cached=JSON.parse(localStorage.getItem(communityCacheKey(root))||"null");return cached&&cached.root===root&&Array.isArray(cached.items)?cached.items:null}catch{return null}}
+  function saveCommunityCatalogCache(root,items){try{localStorage.setItem(communityCacheKey(root),JSON.stringify({root,items,updatedAt:Date.now()}))}catch{/* Public catalog cache is optional and must not block uploads or playback. */}}
   async function refreshCommunityCatalog(){
     const cfg=readConfig(),root=cleanRoot(cfg.root);if(!validRoot(root))return;
-    try{
-      const items=await request(root,"/api/catalog",readConfig().uploadToken||"",{cache:"no-store"});if(!Array.isArray(items))return;
-      const existing=new Set(movies.map(m=>String(m.mediaId||"")));
-      items.forEach(item=>{if(!item||!item.id||existing.has(String(item.id)))return;const stream=new URL(item.streamUrl||("/media/"+item.id),root).href;movies.push({id:"media-"+item.id,mediaId:item.id,title:String(item.title||"Untitled upload"),type:"movie",year:new Date(item.addedAt||Date.now()).getFullYear(),rating:"NR",duration:"Community upload",genre:"Community",score:0,original:true,description:"Owner-approved community upload.",cast:"Community media",poster:"",progress:0,streamUrl:stream});});
-      let section=$("communitySection");if(!section){section=document.createElement("section");section.className="movie-section";section.id="communitySection";section.innerHTML="<div class=\"section-heading\"><div><span class=\"section-kicker\">COMMUNITY LIBRARY</span><h2>Movies shared with Storyspace</h2></div></div><div class=\"movie-row\" id=\"communityRow\"></div>";document.querySelector(".content-area")?.append(section)}
-      renderRow("communityRow",movies.filter(m=>String(m.id).startsWith("media-")));
-      section.hidden=!movies.some(m=>String(m.id).startsWith("media-"));
-    }catch(error){console.warn("Community catalog unavailable",error)}
+    let items=[],offline=false;
+    try{items=await request(root,"/api/catalog",cfg.uploadToken||"",{cache:"no-store"});if(!Array.isArray(items))throw new Error("Invalid community catalog");saveCommunityCatalogCache(root,items)}
+    catch(error){items=readCommunityCatalogCache(root)||[];offline=items.length>0;if(!offline){console.warn("Community catalog unavailable",error);return}}
+    const existing=new Set(movies.map(m=>String(m.mediaId||"")));
+    items.forEach(item=>{if(!item||!item.id||existing.has(String(item.id)))return;const stream=new URL(item.streamUrl||("/media/"+item.id),root).href;movies.push({id:"media-"+item.id,mediaId:item.id,title:String(item.title||"Untitled upload"),type:"movie",year:new Date(item.addedAt||Date.now()).getFullYear(),rating:"NR",duration:"Community upload",genre:"Community",score:0,original:true,description:"Owner-approved community upload.",cast:"Community media",poster:"",progress:0,streamUrl:stream});});
+    let section=$("communitySection");if(!section){section=document.createElement("section");section.className="movie-section";section.id="communitySection";section.innerHTML="<div class=\"section-heading\"><div><span class=\"section-kicker\">COMMUNITY LIBRARY</span><h2>Movies shared with Storyspace</h2></div></div><p id=\"communityCatalogStatus\" class=\"media-muted\" role=\"status\"></p><div class=\"movie-row\" id=\"communityRow\"></div>";document.querySelector(".content-area")?.append(section)}
+    let status=$("communityCatalogStatus");if(status){status.textContent=offline?"Offline · showing saved catalog":"Connected · owner-approved uploads";status.hidden=!offline&&items.length===0}
+    renderRow("communityRow",movies.filter(m=>String(m.id).startsWith("media-")));
+    section.hidden=!movies.some(m=>String(m.id).startsWith("media-"));
   }
   async function loadPending(){
     const root=cleanRoot(readConfig().root),token=$("mediaAdminToken").value.trim(),target=$("mediaPendingList");
