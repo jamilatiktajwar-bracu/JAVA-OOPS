@@ -318,3 +318,7 @@ if(!h.includes("<kbd>0</kbd>–<kbd>9</kbd> seek to 0–90%"))throw Error("Perce
 if(!shortcuts.includes('case "home":{const range=seekWindow();if(range){try{video.currentTime=range.start;announceSeek(range.live?"DVR window start":"Beginning"'))throw Error("Home must jump to the beginning or DVR window start");
 if(!shortcuts.includes('case "end":{const range=seekWindow();if(range){try{video.currentTime=range.end;announceSeek(range.live?"Jumped to live":"End"'))throw Error("End must jump to the VOD end or DVR live edge");
 if(!h.includes("<kbd>Home</kbd> beginning · <kbd>End</kbd> end/live edge"))throw Error("Home/End shortcuts missing from guide");
+
+// Keyboard volume adjustments support 5% and Shift+10% increments with spoken feedback.
+if(!shortcuts.includes('case "arrowup":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume+step,0,1);video.muted=false;announceSeek("Volume "+Math.round(video.volume*100)+"%"))')||!shortcuts.includes('case "arrowdown":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume-step,0,1);announceSeek("Volume "+Math.round(video.volume*100)+"%"))'))throw Error("Volume shortcuts must provide 5/10% steps and feedback");
+if(!h.includes("<kbd>Shift</kbd> + arrows volume 10%"))throw Error("Volume increment guide missing");
