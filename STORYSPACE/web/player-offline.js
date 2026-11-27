@@ -62,22 +62,43 @@
     sourceUrl=url;
     announce("Offline copy saved · "+Math.round(size/1024/1024)+" MB");
   }
+  function restorePosition(position){
+    try{
+      const ranges=video.seekable;
+      if(ranges&&ranges.length){
+        const index=ranges.length-1,start=ranges.start(index),end=ranges.end(index);
+        if(Number.isFinite(start)&&Number.isFinite(end)&&end>start){video.currentTime=Math.max(start,Math.min(end-0.1,position));return}
+      }
+    }catch{/* Fall back to the finite media duration below. */}
+    if(Number.isFinite(video.duration)&&video.duration>0)video.currentTime=Math.max(0,Math.min(video.duration-0.1,position));
+  }
   async function switchToCached(){
-    if(navigator.onLine||objectUrl)return;
+    if(navigator.onLine||objectUrl||switching)return;
     const url=currentUrl();if(!url)return;
-    const {cache,response}=await cacheFor(url);if(!response)return;
-    try{await touchCached(cache,url,response)}catch{/* Playback remains available even if recency metadata cannot be refreshed. */}
-    const blob=await response.blob();sourceUrl=url;objectUrl=URL.createObjectURL(blob);
-    const position=Number(video.currentTime)||0,wasPlaying=!video.paused;
-    switching=true;video.src=objectUrl;video.load();
-    video.addEventListener("loadedmetadata",function restorePosition(){video.removeEventListener("loadedmetadata",restorePosition);switching=false;if(Number.isFinite(position)&&position<video.duration)video.currentTime=position;if(wasPlaying)video.play().catch(()=>{})});
-    announce("Connection lost · playing the saved offline copy");
+    switching=true;
+    try{
+      const {cache,response}=await cacheFor(url);
+      if(navigator.onLine||!response){switching=false;return}
+      try{await touchCached(cache,url,response)}catch{/* Playback remains available even if recency metadata cannot be refreshed. */}
+      const blob=await response.blob();if(navigator.onLine){switching=false;return}
+      sourceUrl=url;objectUrl=URL.createObjectURL(blob);
+      const position=Number(video.currentTime)||0,wasPlaying=!video.paused;
+      video.addEventListener("loadedmetadata",function onOfflineMetadata(){switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{})},{once:true});
+      video.src=objectUrl;video.load();
+      announce("Connection lost · playing the saved offline copy");
+    }catch(error){switching=false;throw error}
   }
   function restoreNetwork(){
-    if(!objectUrl||!navigator.onLine||!sourceUrl)return;
+    if(!objectUrl||!navigator.onLine||!sourceUrl||switching)return;
     const url=sourceUrl,position=Number(video.currentTime)||0,wasPlaying=!video.paused,old=objectUrl;objectUrl="";
-    switching=true;video.src=url;video.load();
-    video.addEventListener("loadedmetadata",function restorePosition(){video.removeEventListener("loadedmetadata",restorePosition);switching=false;if(Number.isFinite(position)&&position<video.duration)video.currentTime=position;if(wasPlaying)video.play().catch(()=>{});URL.revokeObjectURL(old)});
+    switching=true;
+    let settled=false;
+    const releaseOld=()=>{if(settled)return;settled=true;video.removeEventListener("error",onNetworkError);video.removeEventListener("loadedmetadata",onNetworkMetadata);URL.revokeObjectURL(old)};
+    const onNetworkMetadata=()=>{switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{});releaseOld()};
+    const onNetworkError=()=>{switching=false;releaseOld();announce("Could not reconnect the stream · try playback again")};
+    video.addEventListener("loadedmetadata",onNetworkMetadata,{once:true});
+    video.addEventListener("error",onNetworkError,{once:true});
+    video.src=url;video.load();
     announce("Connection restored · returning to the network stream");
   }
   button.addEventListener("click",async()=>{
