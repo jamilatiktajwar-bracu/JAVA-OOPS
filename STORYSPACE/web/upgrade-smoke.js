@@ -563,7 +563,7 @@ if(!responsivePlayer.includes("@media(max-width:620px)"))throw Error("Player set
 if(!responsivePlayer.includes(".player-offline-status{grid-column:1/-1}"))throw Error("Offline status must span the mobile player controls");
 
 // Personalized search ranking is deterministic and responds to history, recency and completion.
-const vm=require("node:vm"),rankingStart=a.indexOf("function scoreTitle(m){"),rankingEnd=a.indexOf("function recordInterest(",rankingStart);
+const vm=require("node:vm"),rankingStart=a.indexOf("function currentDaypart(){"),rankingEnd=a.indexOf("function recordInterest(",rankingStart);
 if(rankingStart<0||rankingEnd<=rankingStart)throw Error("Search ranking functions must remain independently testable");
 const rankingContext={personalized:{preferences:{genres:[],moods:[],languages:[],balance:"explore"},history:[{id:1,count:4,at:Date.now()}]},movies:[{id:1,genre:"Sci-Fi",progress:60}],titleTokens:s=>String(s||"").split(/[,|]/).map(x=>x.trim().toLowerCase()).filter(Boolean)};
 vm.runInNewContext(a.slice(rankingStart,rankingEnd)+";globalThis.__ranked=ranked;globalThis.__scoreTitle=scoreTitle;",rankingContext);
