@@ -55,5 +55,6 @@
   window.addEventListener("offline",()=>switchToCached().catch(error=>announce(error.message||"Offline recovery failed")));
   window.addEventListener("online",restoreNetwork);
   sync();
+  if(!navigator.onLine)switchToCached().catch(error=>announce(error.message||"Offline recovery failed"));
   window.StoryspaceOfflinePlayback=Object.freeze({sync,switchToCached,restoreNetwork});
 })();
