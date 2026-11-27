@@ -412,3 +412,6 @@ if(!sw.includes("storyspace-shell-v114"))throw Error("Quick-action and Watch Lat
 \n// Collection import/create must roll back in-memory mutations if storage fails.
 const collections=read("collections.js");
 for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collections.includes(token))throw Error("Collection transaction regression missing: "+token);
+
+\n// Collection transaction changes ship in the refreshed app shell.
+if(!sw.includes("storyspace-shell-v115"))throw Error("Collection transaction shell v115 missing");
