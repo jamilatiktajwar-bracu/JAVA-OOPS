@@ -58,6 +58,10 @@ try{
  assert.equal((await fetch(base+"/api/auth/verify/admin",{method:"POST",headers})).status,401,"uploader key cannot authenticate as admin");
  assert.equal((await fetch(base+"/api/auth/verify/uploader",{method:"POST",headers:adminHeaders})).status,401,"admin key cannot authenticate as uploader");
  assert.equal((await fetch(base+"/api/uploads/init",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:"Denied",filename:"x.mp4",size:16})})).status,401);
+ const cancelPreflight=await fetch(base+"/api/uploads/"+ "00000000-0000-4000-8000-000000000000",{method:"OPTIONS",headers:{origin:"https://storyspace.example","access-control-request-method":"DELETE","access-control-request-headers":"x-storyspace-upload-token"}});
+ assert.equal(cancelPreflight.status,204,"browser DELETE preflight is accepted");
+ assert.match(cancelPreflight.headers.get("access-control-allow-methods")||"",/\\bDELETE\\b/,"CORS explicitly permits upload cancellation");
+ assert.match(cancelPreflight.headers.get("access-control-allow-headers")||"",/x-storyspace-upload-token/i,"CORS permits the uploader credential header");
  const cancelInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Cancel Me",filename:"cancel.mp4",size:4})});
  assert.equal(cancelInit.status,201);const cancelSession=await cancelInit.json();
  assert.equal((await fetch(base+"/api/uploads/"+cancelSession.uploadId,{method:"DELETE"})).status,401,"upload cancellation requires uploader authorization");
