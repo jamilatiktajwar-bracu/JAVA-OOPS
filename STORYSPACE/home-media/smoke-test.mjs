@@ -109,7 +109,7 @@ try{
  const resumed=await fetch(base+"/api/uploads/"+session.uploadId,{headers});assert.equal((await resumed.json()).offset,8);
  const part2=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.from("89abcdef")});
  assert.equal(part2.status,200);
- const done=await fetch(base+"/api/uploads/"+session.uploadId+"/complete",{method:"POST",headers});assert.equal(done.status,201);
+ const done=await fetch(base+"/api/uploads/"+session.uploadId+"/complete",{method:"POST",headers});assert.equal(done.status,201);const completedUpload=await done.json();const expectedSha256=crypto.createHash("sha256").update("0123456789abcdef").digest("hex");assert.equal(completedUpload.sha256,expectedSha256,"completed uploads expose the verified SHA-256 digest");
  assert.equal((await (await fetch(base+"/api/catalog")).json()).length,0,"pending upload stays private");
  const pending=await fetch(base+"/admin/pending",{headers:{"x-storyspace-admin-token":admin}});assert.equal(pending.status,200);assert.equal((await pending.json()).length,1);
  assert.equal((await fetch(base+"/admin/review/"+session.uploadId,{method:"POST",headers:{"x-storyspace-admin-token":admin,"content-type":"application/json"},body:JSON.stringify({action:"approve"})})).status,200);
@@ -164,5 +164,8 @@ try{
  const corruptedMedia=await fetch(base+catalog[0].streamUrl);
  assert.equal(corruptedMedia.status,503,"truncated media is not served with a misleading success response");
  assert.match((await corruptedMedia.json()).error,/integrity check/);
+ await new Promise(resolve=>setTimeout(resolve,15));await writeFile(path.join(mediaDir,catalog[0].fileName),"xxxxxxxxxxxxxxxx");
+ const sameSizeCorruption=await fetch(base+catalog[0].streamUrl);assert.equal(sameSizeCorruption.status,503,"same-size media corruption is rejected by the SHA-256 integrity check");
+ assert.match((await sameSizeCorruption.json()).error,/SHA-256 integrity check/);
  console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges, catalog path safety.");
 }finally{if(server.exitCode===null&&server.signalCode===null)server.kill("SIGTERM");await serverExit;await rm(temp,{recursive:true,force:true});}
