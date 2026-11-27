@@ -83,4 +83,4 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 ## Live-edge shortcut
 
 - Press `G` in the player to jump to the current live edge of a seekable DVR stream. It is a safe no-op for VOD or when a valid live seek range is unavailable.
-\n\n## Percentage seeking\n\n- Press `0`–`9` to seek to 0%, 10%, …, 90% of the current VOD duration or live DVR seek window.\n- Percentage seeking is clamped to the current valid window, provides accessible feedback, and safely ignores unavailable seek ranges.\n
+\n\n## Percentage seeking\n\n- Press `0`–`9` to seek to 0%, 10%, …, 90% of the current VOD duration or live DVR seek window.\n- Percentage seeking is clamped to the current valid window, provides accessible feedback, and safely ignores unavailable seek ranges.\n\n\n## Home/End seeking\n\n- `Home` jumps to the beginning of VOD or the earliest available DVR seek point.\n- `End` jumps to the VOD end or current live edge for DVR. Both safely no-op when a seek range is unavailable.\n
