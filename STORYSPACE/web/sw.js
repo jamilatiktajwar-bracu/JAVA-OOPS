@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v120";
+const SHELL_CACHE = "storyspace-shell-v121";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
@@ -68,11 +68,16 @@ self.addEventListener("fetch", event => {
   }
 
   if (["script", "style", "image", "font"].includes(request.destination)) {
-    const runtimePromise = caches.open(RUNTIME_CACHE);
-    const shellPromise = caches.open(SHELL_CACHE);
+    const runtimePromise = caches.open(RUNTIME_CACHE).catch(() => null);
+    const shellPromise = caches.open(SHELL_CACHE).catch(() => null);
     const cachedAsset = async () => {
-      const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
-      return (await runtime.match(request)) || (await shell.match(request)) || null;
+      try {
+        const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
+        return (runtime && await runtime.match(request)) || (shell && await shell.match(request)) || null;
+      } catch {
+        // Cache read failures should not reject the fetch event.
+        return null;
+      }
     };
     const refresh = fetch(request).then(async response => {
       if (response.ok) {
