@@ -428,3 +428,11 @@ const resilience=read("player-resilience.js");
 if(!resilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
 if(!resilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
 if(!sw.includes("storyspace-shell-v118"))throw Error("Player lifecycle shell cache v118 missing");
+
+
+// Navigation network fetches have a bounded wait and retain background shell refresh.
+const navigationSW=read("sw.js");
+if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
+if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
+if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
+if(!navigationSW.includes("storyspace-shell-v119"))throw Error("Navigation timeout shell cache v119 missing");
