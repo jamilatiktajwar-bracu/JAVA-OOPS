@@ -358,6 +358,7 @@ if(!settings.includes('const audioEntries=Array.from(ats||[]).map((track,index)=
 if(!settings.includes("nativeDefaultAudioIndex=enabledIndex>=0?enabledIndex:0")||!settings.includes("ats?.length&&video.readyState>=1"))throw Error("Native default audio must be captured only after media metadata is available");
 if(!settings.includes("nativeDefaultAudioIndex=enabledIndex>=0?enabledIndex:0")||!settings.includes('audio.value==="-1"?i===nativeDefaultAudioIndex:i===Number(audio.value)'))throw Error("Default audio selection must respect the browser-provided native track rather than blindly choosing the first track");
 if(!settings.includes('video.addEventListener("emptied",()=>{nativeDefaultAudioIndex=-1;refreshTracks()})'))throw Error("Native audio default must be recalculated when the media source changes");
+const recovery=read("player-resilience.js");if(!recovery.includes('const onError=()=>{if(id!==recoveryId)return;clearTimeout(recoveryTimer);video.removeEventListener("loadedmetadata",restore);video.removeEventListener("error",onError);stopRecovery();show("Source unavailable · Check the video URL or try another stream",true)}'))throw Error("Recovery source errors must cancel the timeout and clean up listeners to avoid stale timeout messages");
 
 
 // Caption/audio selector status is specific and announces user selections through the polite status region.
