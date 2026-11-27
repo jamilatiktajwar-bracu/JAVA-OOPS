@@ -49,7 +49,7 @@
       case "c":{const size=document.getElementById("playerCaptionSize"),sizes=["small","medium","large","extra-large"];if(size){size.value=sizes[(sizes.indexOf(size.value)+1)%sizes.length];size.dispatchEvent(new Event("change"));event.preventDefault()}break;}
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!backdrop.classList.contains("player-theater-mode"));event.preventDefault();break;
-      case "r":video.currentTime=0;video.play().catch(()=>{});break;
+      case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;video.play().catch(()=>{});event.preventDefault()}catch{}}break;}
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
       default:handled=false;
