@@ -95,6 +95,10 @@ try{
  const emptyChunk=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.alloc(0)});
  assert.equal(emptyChunk.status,400,"zero-byte chunks are rejected before opening the staging file");
  assert.equal((await (await fetch(base+"/api/uploads/"+session.uploadId,{headers})).json()).offset,8,"empty chunks cannot move or corrupt the resume offset");
+ const oversizedChunk=await fetch(base+"/api/uploads/"+session.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.from("123456789")});
+ assert.equal(oversizedChunk.status,413,"oversized streamed chunks are rejected");
+ assert.equal((await oversizedChunk.json()).offset,8,"failed chunk rollback reports the last committed offset");
+ assert.equal((await (await fetch(base+"/api/uploads/"+session.uploadId,{headers})).json()).offset,8,"failed chunk bytes are truncated and cannot be mistaken for committed data");
  assert.equal((await fetch(base+"/admin/pending")).status,401,"pending queue requires owner authorization");
  const incompleteInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Incomplete",filename:"incomplete.mp4",size:4})});
  assert.equal(incompleteInit.status,201);const incompleteSession=await incompleteInit.json();
