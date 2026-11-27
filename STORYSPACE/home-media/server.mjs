@@ -47,6 +47,7 @@ fs.mkdirSync(mediaDir, { recursive:true });
 fs.mkdirSync(stagingDir, { recursive:true });
 if (!fs.existsSync(catalogFile)) fs.writeFileSync(catalogFile, "[]\n", { flag:"wx" });
 
+const sessionLocks = new Map();
 function removeExpiredUploadSessions(now=Date.now()) {
   const ids=new Set();
   for (const entry of fs.readdirSync(stagingDir,{withFileTypes:true})) {
@@ -198,7 +199,6 @@ function recoverUploadSessions() {
 recoverUploadSessions();
 
 // Serialize mutations and offset reads for each upload within this server process.
-const sessionLocks = new Map();
 async function withSessionLock(id, task) {
   const previous = sessionLocks.get(id) || Promise.resolve();
   let release;
