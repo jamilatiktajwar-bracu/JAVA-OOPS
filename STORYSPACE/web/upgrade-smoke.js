@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v128"))throw Error("Media API deadline shell v123 missing");
+if(!navigationSW.includes("storyspace-shell-v129"))throw Error("Media API deadline shell v123 missing");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -493,3 +493,8 @@ if(!mediaServerSource.includes("uploadSessionCleanup.unref?.()"))throw Error("Se
 // Player stall recovery uses bounded exponential backoff and resumes scheduling when a hidden tab becomes visible.
 const recoveryCooldown=read("player-resilience.js");
 for(const token of ["autoRecoveryAttempts=0","function scheduleStallRecovery()","autoRecoveryAttempts>=3","8500*Math.pow(2,autoRecoveryAttempts)","autoRecoveryAttempts=0;lastAutoRecoveryAt=0","else if(active()&&stalledAt&&video.readyState<3){scheduleStallRecovery()}"])if(!recoveryCooldown.includes(token))throw Error("Player recovery cooldown/visibility behavior missing: "+token);
+
+
+// Upload-session cleanup tolerates a missing staging directory, reports removals, and isolates per-session filesystem failures.
+const cleanupServer=read("../home-media/server.mjs");
+for(const token of ["if(error.code===\"ENOENT\")return removed;","if(sessionLocks.has(id))continue;","return removed;","Could not remove expired upload session","Initial upload session cleanup failed"])if(!cleanupServer.includes(token))throw Error("Upload cleanup resilience missing: "+token);
