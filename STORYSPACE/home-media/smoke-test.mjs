@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
-import { createServer } from "node:net";
+import { createConnection, createServer } from "node:net";
 import { access, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -104,6 +104,20 @@ try{
  assert.equal(oversizedChunk.status,413,"oversized streamed chunks are rejected");
  assert.match((await oversizedChunk.json()).error,/Chunk exceeds limit/,"oversized chunks return a bounded validation error");
  assert.equal((await (await fetch(base+"/api/uploads/"+session.uploadId,{headers})).json()).offset,8,"failed chunk bytes are truncated and cannot be mistaken for committed data");
+ // A client that disconnects before its declared Content-Length must not leave
+ // uncommitted bytes in staging or poison the next resume attempt.
+ const shortBodySocket=createConnection(port,"127.0.0.1");
+ await new Promise((resolve,reject)=>{
+  shortBodySocket.once("connect",()=>{
+   shortBodySocket.write("PUT /api/uploads/"+session.uploadId+"/chunk HTTP/1.1\\r\\nHost: 127.0.0.1\\r\\nConnection: close\\r\\nContent-Type: application/octet-stream\\r\\nContent-Length: 5\\r\\nX-Storyspace-Upload-Token: "+invite+"\\r\\nX-Upload-Offset: 8\\r\\n\\r\\nabc");
+   shortBodySocket.end();
+  });
+  shortBodySocket.once("close",resolve);
+  shortBodySocket.once("error",reject);
+ });
+ assert.equal((await stat(path.join(staging,session.uploadId+".part"))).size,8,"aborted short body is physically rolled back");
+ assert.equal((await (await fetch(base+"/api/uploads/"+session.uploadId,{headers})).json()).offset,8,"aborted short body does not advance the resumable offset");
+
  assert.equal((await fetch(base+"/admin/pending")).status,401,"pending queue requires owner authorization");
  const incompleteInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Incomplete",filename:"incomplete.mp4",size:4})});
  assert.equal(incompleteInit.status,201);const incompleteSession=await incompleteInit.json();
