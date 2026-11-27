@@ -309,3 +309,7 @@ if(!shortcuts.includes('case "r":{const range=seekWindow();if(range){try{video.c
 for(const token of ["const feedback=document.getElementById(\"playerGestureFeedback\")","announceSeek(\"Seek to \"+formatSeekTime(target))","aria-live","Restarted at DVR window start"])if(!shortcuts.includes(token))throw Error("Accessible keyboard seek feedback missing: "+token);
 // Seek feedback should announce the clamped target (not a stale currentTime).
 if(!shortcuts.includes("video.currentTime=target;return target")||!shortcuts.includes("formatSeekTime(target)"))throw Error("Seek feedback must announce the seek target");
+
+// Percentage seeking maps digits to a clamped fraction of the current VOD/DVR window.
+if(!shortcuts.includes("const seekPercent=percent=>")||!shortcuts.includes("range.start+(range.end-range.start)*clamp(percent,0,100)/100")||!shortcuts.includes('case "0":case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":'))throw Error("Percentage seeking must clamp numeric shortcuts to the seek window");
+if(!h.includes("<kbd>0</kbd>–<kbd>9</kbd> seek to 0–90%"))throw Error("Percentage seek shortcuts missing from keyboard guide");
