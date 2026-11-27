@@ -485,7 +485,7 @@ for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null",
 
 // Expired upload sessions are cleaned periodically without deleting sessions currently locked by active requests.
 const mediaServerSource=read("../home-media/server.mjs");
-if(!mediaServerSource.includes("now-activity >= uploadSessionTtlMs && !sessionLocks.has(id)"))throw Error("Expired-session cleanup must skip locked uploads");
+if(!mediaServerSource.includes("if(sessionLocks.has(id))continue;"))throw Error("Expired-session cleanup must skip locked uploads");
 if(!mediaServerSource.includes("setInterval(()=>{try{removeExpiredUploadSessions()}catch(error){console.warn(\"Upload session cleanup failed\",error)}},30*60*1000)"))throw Error("Upload session cleanup must run periodically");
 if(!mediaServerSource.includes("uploadSessionCleanup.unref?.()"))throw Error("Session cleanup timer must not hold the server process open");
 
