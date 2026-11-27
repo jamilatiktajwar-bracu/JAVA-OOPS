@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v115";
+const SHELL_CACHE = "storyspace-shell-v116";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
@@ -74,15 +74,22 @@ self.addEventListener("fetch", event => {
       const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
       return (await runtime.match(request)) || (await shell.match(request)) || null;
     };
-    const networkFirst = fetch(request).then(async response => {
+    const refresh = fetch(request).then(async response => {
       if (response.ok) {
         try { await updateRuntimeCache(request, response); } catch { /* Cache quota must not block a network response. */ }
-        return response;
       }
-      return (await cachedAsset()) || response;
-    }).catch(async () => (await cachedAsset()) || Response.error());
-    // Fresh assets win online; cached copies remain the fallback when offline.
-    event.waitUntil(networkFirst.then(() => undefined).catch(() => {}));
+      return response;
+    }).catch(() => null);
+    let timeoutId=0;
+    const networkFirst = Promise.race([
+      refresh,
+      new Promise(resolve => { timeoutId=setTimeout(()=>resolve(null),4500); })
+    ]).finally(()=>clearTimeout(timeoutId)).then(async response => {
+      if(response?.ok)return response;
+      return (await cachedAsset()) || response || Response.error();
+    });
+    // Fresh assets win online, but slow/offline connections get cached fallback within 4.5 seconds.
+    event.waitUntil(refresh.then(() => undefined).catch(() => {}));
     event.respondWith(networkFirst);
   }
 });
