@@ -5,3 +5,11 @@
 @media(max-width:700px){.topbar{padding-left:max(4%,env(safe-area-inset-left));padding-right:max(4%,env(safe-area-inset-right));gap:14px}.top-actions{gap:8px}.search-box.open{width:min(52vw,240px)}.content-area{padding-left:max(4%,env(safe-area-inset-left));padding-right:max(4%,env(safe-area-inset-right))}.hero-content{width:min(84vw,520px)}.hero-title{letter-spacing:-2.5px}.hero-actions{flex-wrap:wrap}.primary-button,.secondary-button{min-height:44px}.movie-row{scroll-padding-inline:4%;overscroll-behavior-inline:contain}.movie-card{flex-basis:min(72vw,280px)}.movie-grid{grid-template-columns:repeat(auto-fill,minmax(min(44vw,190px),1fr));gap:10px}}
 @media(max-width:420px){.brand-tag{display:none}.topbar{gap:8px}.main-nav{gap:13px}.nav-link{font-size:11px}.top-actions{gap:4px}.avatar{width:29px;height:29px}.search-box.open{width:46vw}.movie-card{flex-basis:78vw}.section-heading h2{font-size:17px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Responsive navigation and touch accessibility refinement. */
+.main-nav{min-width:0;scrollbar-width:none}
+.main-nav::-webkit-scrollbar{display:none}
+@media(max-width:700px){.main-nav{overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;white-space:nowrap;flex:1 1 auto;min-width:0}.main-nav .nav-link{scroll-snap-align:start;flex:0 0 auto}.topbar{min-width:0}.brand{flex:0 0 auto}.top-actions{flex:0 0 auto}.icon-button,.profile-button,.command-palette-trigger{min-width:40px;min-height:40px}.nav-link{min-height:38px}.main-nav:focus-within{scrollbar-width:thin}}
+@media(max-width:520px){.topbar{align-items:center}.main-nav{order:3;flex-basis:100%;width:100%;margin-inline:0;padding-block:4px}.topbar{flex-wrap:wrap}.brand{max-width:45vw}.top-actions{margin-left:auto}.main-nav .nav-link{padding-inline:10px}}
+:where([id],.section-heading,.movie-row,.player-panel){scroll-margin-top:calc(var(--topbar-height,72px) + 14px)}
+@media(prefers-reduced-motion:reduce){.main-nav{scroll-behavior:auto;scroll-snap-type:none}}
