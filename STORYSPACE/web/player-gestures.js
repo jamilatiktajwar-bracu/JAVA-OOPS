@@ -112,8 +112,9 @@
   function renderGesturePreview(point) {
     if (!pointer || point.pointerId !== pointer.id || !enabled || !isOpen()) return;
     const dx=point.clientX-pointer.x,dy=point.clientY-pointer.y;
-    if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.15&&getSeekRange()&&video.readyState>=1){
-      const range=getSeekRange(),maxSwipeSeconds=Math.max(20,Math.min(120,(range.end-range.start)*0.28));
+    const seekRange = Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.15&&video.readyState>=1 ? getSeekRange() : null;
+    if(seekRange){
+      const range=seekRange,maxSwipeSeconds=Math.max(20,Math.min(120,(range.end-range.start)*0.28));
       const delta=clamp((dx/pointer.rect.width)*maxSwipeSeconds,-90,90);
       const target=clamp(video.currentTime+delta,range.start,range.end);
       showFeedback("Seek preview · "+formatGestureTime(target)+" ("+(target>=video.currentTime?"+":"−")+Math.round(Math.abs(target-video.currentTime))+"s)", false);
