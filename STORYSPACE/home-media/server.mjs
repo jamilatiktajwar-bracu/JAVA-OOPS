@@ -400,9 +400,23 @@ async function handle(req,res) {
     if(item.sha256){const fingerprint=stat.size+":"+stat.mtimeMs;if(verifiedMedia.get(item.id)!==fingerprint){const actual=await sha256File(file);if(actual!==item.sha256)return json(res,503,{error:"Media file failed its SHA-256 integrity check"});verifiedMedia.set(item.id,fingerprint)}}
     const etag=item.sha256?'"'+item.sha256+'"':'"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
     const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
-    if(req.headers["if-none-match"]===etag){res.writeHead(304,headers);return res.end();}
+    // If-None-Match uses weak comparison for GET/HEAD and accepts lists or "*".
+    const ifNoneMatch=req.headers["if-none-match"];
+    if(ifNoneMatch){
+      const candidates=ifNoneMatch.split(",").map(value=>value.trim());
+      if(candidates.includes("*")||candidates.some(value=>value.replace(/^W\\//i,"")===etag)){
+        res.writeHead(304,headers);return res.end();
+      }
+    }
     let range=req.headers.range;
-    if(range&&req.headers["if-range"]&&req.headers["if-range"]!==etag&&req.headers["if-range"]!==headers["last-modified"]) range=null;
+    const ifRange=req.headers["if-range"];
+    if(range&&ifRange){
+      // If-Range requires a strong ETag match; weak validators never match.
+      const strongEtagMatch=!ifRange.startsWith("W/")&&ifRange===etag;
+      const date=Date.parse(ifRange);
+      const dateMatch=Number.isFinite(date)&&Math.floor(stat.mtimeMs/1000)*1000<=date;
+      if(!strongEtagMatch&&!dateMatch)range=null;
+    }
     let start=0,end=stat.size-1,status=200;
     if(range){
       const parsed=/^bytes=(\d*)-(\d*)$/.exec(range.trim());
