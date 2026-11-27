@@ -297,6 +297,20 @@
     if(!Number.isFinite(file.size)||file.size<=0){showToast("The selected video file is empty or unreadable");return}
     if(file.size>15*1024*1024*1024){showToast("This video exceeds the 15 GB media server limit");return}
     const ext=file.name.split(".").pop().toLowerCase();if(!["mp4","m4v","webm","mov"].includes(ext)){showToast("Supported formats: MP4, M4V, WebM, MOV");return}
+    // Reuse a matching unfinished queue entry instead of creating duplicate uploads.
+    try{
+      const queued=await getItems();
+      const sameFile=x=>x.filename===file.name&&x.size===file.size&&(!x.lastModified||!file.lastModified||x.lastModified===file.lastModified);
+      const duplicate=queued.find(x=>sameFile(x)&&!isTerminalQueueStatus(x.status)&&!String(x.status||"").startsWith("Cancelling"));
+      if(duplicate){
+        selectedFile=file;selectedHandle=handle;
+        if(handle){duplicate.handle=handle;await storeItem(duplicate)}
+        showToast("This video is already queued · resuming the existing upload");
+        $("mediaUploadStart").disabled=true;
+        await resumeOne(duplicate.id);
+        return;
+      }
+    }catch(error){showToast("Could not check for duplicate uploads: "+error.message);return}
     const item={id:crypto.randomUUID(),title,filename:file.name,size:file.size,lastModified:file.lastModified||0,offset:0,status:"Queued",createdAt:Date.now(),updatedAt:Date.now(),handle};
     try{await storeItem(item)}catch(error){showToast("Could not save queue metadata: "+error.message);return}
     $("mediaUploadStart").disabled=true;active=true;activeItemId=item.id;cancelRequested=false;await renderQueue();
