@@ -44,3 +44,5 @@ No trademark clearance or patentability/freedom-to-operate determination has bee
 - Player caption selection filters out metadata, chapter and audio-description text tracks, while retaining the source track indexes so saved language preferences remain stable.
 
 - Saved regional audio-language preferences continue to resolve against indexed audio tracks independently of caption-track filtering.
+
+- Player caption and audio settings announce the available track counts and the currently selected track through a polite status message.
