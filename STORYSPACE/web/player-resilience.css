@@ -1,1 +1,18 @@
 .player-buffer-state{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:13px;padding:24px;background:#020713a8;color:#eef8ff;text-align:center;font-size:13px;pointer-events:none;backdrop-filter:blur(3px)}.player-buffer-state[hidden]{display:none}.player-buffer-spinner{width:34px;height:34px;border:3px solid #ffffff35;border-top-color:#8af4e5;border-radius:50%;animation:player-buffer-spin .8s linear infinite}.player-stage{position:relative}.player-stage.is-buffering video{filter:brightness(.68)}.player-buffer-message{max-width: min(90%,360px);line-height:1.5}@keyframes player-buffer-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.player-buffer-spinner{animation:none;border-top-color:#8af4e5}.player-buffer-state{backdrop-filter:none}}
+/* Retry is an actionable, keyboard reachable control inside the recovery overlay. */
+.player-buffer-state{pointer-events:auto}
+.player-buffer-retry{min-height:40px;padding:9px 16px;border:1px solid #8af4e58a;border-radius:24px;background:linear-gradient(100deg,#8af4e5,#b9baff);color:#081320;font-weight:700;font-size:12px;cursor:pointer;box-shadow:0 6px 24px #0005}
+.player-buffer-retry:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.player-buffer-retry:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.player-buffer-retry[hidden]{display:none}
+
+/* Keep recovery feedback compact on short landscape screens. */
+@media (max-height: 420px) and (orientation: landscape) {
+  .player-buffer-state { gap: 8px; padding: 12px; font-size: 12px; }
+  .player-buffer-spinner { width: 26px; height: 26px; border-width: 2px; }
+  .player-buffer-retry { min-height: 36px; padding: 7px 14px; }
+}
+
+.player-diagnostics-copy{display:inline-flex;margin:6px 0 0;padding:5px 10px;border:1px solid #8af4e555;border-radius:18px;background:#071321;color:#c5f9f1;font:inherit;font-size:11px;cursor:pointer}.player-diagnostics-copy:hover{background:#102a3a}.player-diagnostics-copy:focus-visible{outline:2px solid #8af4e5;outline-offset:2px}.player-diagnostics-copy[hidden]{display:none}
+
+.player-media-info{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}.player-buffer-health{font-weight:600}

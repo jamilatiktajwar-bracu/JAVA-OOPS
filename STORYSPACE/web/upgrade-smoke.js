@@ -1,23 +1,24 @@
-"use strict";const fs=require("node:fs"),path=require("node:path");const read=n=>fs.readFileSync(path.join(__dirname,n),"utf8");const h=read("index.html"),a=read("app.js"),collections=read("collections.js"),collectionsCss=read("collections.css"),c=read("styles.css"),cp=read("command-palette.css"),e=read("enhancements.js"),ec=read("enhancements.css"),m=read("media-uploads.js"),cine=read("cinematic.js"),cc=read("cinematic.css"),pg=read("player-gestures.js"),pgc=read("player-gestures.css"),ps=read("player-shortcuts.js"),psc=read("player-shortcuts.css"),sw=read("sw.js"),settings=read("player-settings.js"),settingsCss=read("player-settings.css"),tv=read("tv-navigation.js"),next=read("player-next.js"),mediaInfo=read("player-media-info.js"),sm=read("player-mini.js"),css=c;const demoEntries=a.match(/\{id:\s*1\d{2}[\s\S]*?demo:true\}/g)||[];if(demoEntries.length<13||demoEntries.some(entry=>!entry.includes("streamUrl:")))throw Error("Playable demo catalog should retain at least 13 streamed demo entries");for(const token of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo","Sintel · Demo Movie","streamUrl:\"https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4\"","streamUrl:\"https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4\"","streamUrl:\"https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4\""])if(!a.includes(token))throw Error("Missing playable sample movie: "+token);for(const token of ['$$(".movie-card",row)','$$(".movie-row,.movie-grid").forEach(updateSpatialContainer)'])if(!cine.includes(token))throw Error("Spatial shelf must update every card and container");const ids=["profilePrivacyTitle","profileActivitySummary","clearWatchHistory","clearMyUniverse","profileAccessTitle","setProfileLock","removeProfileLock","profileAccessGate","profileAccessGateTitle","profileAccessGateName","profileAccessGatePin","profileAccessGateError","profileAccessGateUnlock","profileAccessGateSwitch","exportProfiles","importProfiles","profileBackupFile","kidsModeToggle","kidsAgeBand","setParentPin","removeParentPin","dailyScreenLimit","screenTimeTitle","screenTimeSummary","screenTimeProgress","screenTimeProgressFill","screenTimeHint","screenTimeWeekSummary","screenTimeWeek","breakReminderMinutes","quietHoursStart","quietHoursEnd","quietHoursStart","quietHoursEnd","familyUsageList","kidsWelcome","kidsSection","kidsPicksRow","kidsPicksCount","playerCaptionTrack","playerCaptionStyle","playerAudioTrack","playerSettingsNotice","playerRecovery","playerRetry","profilesBackdrop","profileSelect","addProfile","deleteProfile","browseType","browseRating","browseYear","resetBrowseFilters","universeSort","universeGenre","skipBack","skipForward","playerSpeed","playerPip","playerFullscreen","playerSeek","playerStage","playerGestureFeedback","playerGesturesToggle","playerGestureHint","playerCurrentTime","playerDuration","playerShortcutHelp","playerShortcutGuide"];for(const id of ids)if(!h.includes('id="'+id+'"'))throw Error("Missing interface id: "+id);for(const token of ["KIDS_AGE_RATINGS","KIDS_FRIENDLY_GENRES","kidsSafe","visibleCatalog","renderKidsHub","deriveParentPin","deriveParentPin","PBKDF2","PARENT_PIN_ITERATIONS","verifyParentPin","handleKidsModeToggle","handleKidsAgeBandChange","SCREEN_TIME_LIMITS","normalizeScreenTime","recentScreenTimeDays","weeklyScreenTimeRows","renderScreenTimeDashboard","handleDailyScreenLimitChange","BREAK_REMINDER_INTERVALS","handleBreakReminderChange","handleQuietHoursChange","isWithinQuietHours","quietHoursResumeLabel","notifyQuietHoursLock","startScreenTimeTicker","stopScreenTimeTicker","accrueScreenTime","Time for a quick break","Quiet hours are active","weeklyScreenTimeRows","recentScreenTimeDays","profile-switching","kidsCategory","parentPin:","activeLocalProfile.parentPin","Kids content age guide","initializeLocalProfiles","switchLocalProfile","persistLocalProfiles","renderProfilePrivacy","clearProfileWatchHistory","clearProfileMyUniverse","profileLock","verifyProfileAccess","changeProfileAccessPin","removeProfileAccessPin","showProfileAccessGate","unlockProfileAccessGate","useUnlockedProfileInstead","exportProfileBackup","importProfileBackup","storyspace-profile-backup","Restore","profile(s) restored","localProfiles.length+data.profiles.length>8","Existing profiles will not be replaced","storyspace-profiles-backup.json","defaultProgress","browseRating","browseYear","playerSpeed","updatePlayerTimeline","aria-valuetext","setPlayerRecovery","Buffering","Retrying playback","playerVideo.error?.code","playerRetry","normalizeResumePoints","maxAge=180*24*60*60*1000","normalizeHistory","new Map()","previous.count=Math.max(previous.count,entry.count)","sort((a,b)=>b.at-a.at)","addEventListener(\"seeked\"","addEventListener(\"pause\"","addEventListener(\"ended\"","persistPlayerProgress(true)"])if(!a.includes(token))throw Error("Missing feature implementation: "+token);for(const sel of [".profiles-panel",".universe-controls",".player-tools",".screen-time-panel",".screen-time-track",".family-usage-item",".screen-time-week",".screen-time-day",".kids-routine-settings",".quiet-hours-row",".profile-backup-actions",".profile-privacy-panel",".profile-privacy-actions",".profile-access-panel",".profile-access-actions",".profile-access-gate",".profile-access-gate-card",".kids-welcome",".kids-category",".kids-age-setting",".kids-pin-actions","storyspaceProfileSwap"])if(!c.includes(sel))throw Error("Missing stylesheet: "+sel);for(const token of ["userTaste","historyGenres","preferenceHits","selectDiverse","__storyspaceReason","rankedPool(shuffleMix)"])if(!e.includes(token))throw Error("Missing recommendation upgrade: "+token);if(!ec.includes(".mix-reason"))throw Error("Missing recommendation reason style");for(const token of ["/api/auth/verify/uploader","/api/auth/verify/admin","selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size","refreshCommunityCatalog();resumeAll()"])if(!m.includes(token))throw Error("Missing media reliability feature: "+token);for(const token of ["resumePositionSeconds","durationSeconds","lastPlayedAt","currentTime,duration:video.duration","progressPercent:100,currentTime:video.duration"])if(!a.includes(token))throw Error("Missing cloud resume feature: "+token);for(const token of ["cinematic-toolbar","Toggle spatial 3D shelf view","Toggle cinematic motion effects","nextFeatured","previousFeatured","pointerdown","pointerup","cinematic-dragging","IntersectionObserver","MutationObserver","prefers-reduced-motion","StoryspaceCinematic"])if(!cine.includes(token))throw Error("Missing cinematic interaction: "+token);for(const token of [".cinematic-spatial .movie-row>.movie-card",".cinematic-spatial .movie-grid>.movie-card",".cinematic-stars",".cinematic-hero-dots",".cinematic-reveal","@media(prefers-reduced-motion:reduce)"])if(!cc.includes(token))throw Error("Missing cinematic style: "+token);if(!h.includes("Little explorers"))throw Error("Missing Kids welcome interface");if(!h.includes("cinematic.css")||!h.includes("cinematic.js"))throw Error("Cinematic assets are not wired into the app");for(const token of ["pointerdown","pointerup","storyspace.playerGestures","playerGestureFeedback","playerGesturesToggle","Math.abs(dx) >= 48","Math.abs(dx) > Math.abs(dy) * 1.25","Math.abs(dy) >= 42","video.style.filter","brightness(","video.volume","formatTime"])if(!pg.includes(token))throw Error("Missing player gesture implementation: "+token);for(const token of [".player-stage",".player-gesture-feedback",".player-gesture-row","prefers-reduced-motion"])if(!pgc.includes(token))throw Error("Missing player gesture style: "+token);if(!h.includes("player-gestures.css")||!h.includes("player-gestures.js"))throw Error("Player gesture assets are not wired into the app");for(const token of ["playerShortcutHelp","playerShortcutGuide","Keyboard shortcuts"])if(!h.includes(token))throw Error("Missing keyboard shortcut UI: "+token);for(const token of ["activeOverlay","aria-hidden","isContentEditable","playerBackdrop:not([hidden])","prefers-reduced-motion"])if(!a.includes(token))throw Error("Missing TV navigation behavior: "+token);for(const token of ["keydown","video.paused","arrowleft","arrowright","arrowup","arrowdown","event.shiftKey","playerShortcutGuide","escape","isEditable"])if(!ps.includes(token))throw Error("Missing keyboard shortcut implementation: "+token);for(const sel of [".player-shortcut-guide","kbd","prefers-reduced-motion"])if(!psc.includes(sel))throw Error("Missing keyboard shortcut styles: "+sel);if(!h.includes("player-shortcuts.css")||!h.includes("player-shortcuts.js"))throw Error("Keyboard shortcut assets not wired");for(const token of ["storyspace.playerSpeed","playbackRate","playerCaptionTrack","playerCaptionStyle","playerAudioTrack","loadedmetadata","addtrack","removetrack","textTracks","audioTracks"])if(!settings.includes(token))throw Error("Missing player preference behavior: "+token);for(const token of [".player-settings-row",".player-caption-large",".player-caption-high-contrast"])if(!settingsCss.includes(token))throw Error("Missing player preference styling: "+token);if(!h.includes("player-settings.css")||!h.includes("player-settings.js"))throw Error("Player settings assets not wired");if(!h.includes("tv-navigation.js")||!sw.includes("./tv-navigation.js")||!tv.includes("StoryspaceTVNavigation")||!tv.includes("ArrowDown")||!tv.includes("focusin"))throw Error("TV navigation missing/unwired");if(!h.includes("playerCaptionSize")||!settings.includes("storyspace.captionSize")||!settings.includes("extra-large")||!ps.includes('case "c":'))throw Error("Caption size controls or toggle shortcut missing");if(!h.includes('id="playerTheater"')||!ps.includes('setTheater')||!ps.includes('case "t":')||!pgc.includes('player-theater-mode'))throw Error("Theater mode feature missing");for(const token of ["storyspace.playerSpeed","playbackRate","playerCaptionTrack","playerCaptionStyle","playerAudioTrack","loadedmetadata","textTracks","audioTracks"])if(!settings.includes(token))throw Error("Missing player preference behavior: "+token);for(const token of [".player-settings-row",".player-caption-large",".player-caption-high-contrast"])if(!settingsCss.includes(token))throw Error("Missing player preference styling: "+token);if(!h.includes("player-settings.css")||!h.includes("player-settings.js"))throw Error("Player settings assets not wired");if(!h.includes("player-next.js")||!sw.includes("./player-next.js")||!next.includes("StoryspacePlayerNext")||!next.includes("playerAutoNext")||!next.includes("addEventListener(\"ended\""))throw Error("Up-next recommendations missing/unwired");if(!h.includes("playerUpNext")||!a.includes("StoryspacePlayerNext?.setContext")||!a.includes("StoryspacePlayerNext?.reset"))throw Error("Up-next panel integration missing");if(!h.includes("player-mini.js")||!sw.includes("./player-mini.js")||!sm.includes("StoryspaceMiniPlayer"))throw Error("Mini-player module missing or unwired");for(const token of ["player-mini-mode","player-mini-toggle","restore","minimize","MutationObserver"])if(!css.includes(token)&&!read("player-mini.js").includes(token))throw Error("Mini-player behavior/style missing: "+token);for(const asset of ["./player-settings.css","./player-settings.js","./cinematic.css","./cinematic.js","./player-gestures.css","./player-gestures.js","./player-shortcuts.css","./player-shortcuts.js","./media-uploads.js"])if(!sw.includes(asset))throw Error("Missing offline shell asset: "+asset);if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache was not versioned for new assets");console.log("Storyspace UI, discovery, media authentication, upload-resume and cloud playback-sync, cinematic 3D and gesture smoke checks passed");
+"use strict";const fs=require("node:fs"),path=require("node:path");const read=n=>fs.readFileSync(path.join(__dirname,n),"utf8");const h=read("index.html"),a=read("app.js"),collections=read("collections.js"),collectionsCss=read("collections.css"),c=read("styles.css"),cp=read("command-palette.css"),e=read("enhancements.js"),ec=read("enhancements.css"),m=read("media-uploads.js"),cine=read("cinematic.js"),cc=read("cinematic.css"),pg=read("player-gestures.js"),pgc=read("player-gestures.css"),ps=read("player-shortcuts.js"),psc=read("player-shortcuts.css"),sw=read("sw.js"),settings=read("player-settings.js"),settingsCss=read("player-settings.css"),tv=read("tv-navigation.js"),next=read("player-next.js"),mediaInfo=read("player-media-info.js"),resilienceCss=read("player-resilience.css"),sm=read("player-mini.js"),css=c;const demoEntries=a.match(/\{id:\s*1\d{2}[\s\S]*?demo:true\}/g)||[];if(demoEntries.length<13||demoEntries.some(entry=>!entry.includes("streamUrl:")))throw Error("Playable demo catalog should retain at least 13 streamed demo entries");for(const token of ["Big Buck Bunny · Full Demo","Elephants Dream · Full Demo","Sintel · Demo Movie","streamUrl:\"https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4\"","streamUrl:\"https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4\"","streamUrl:\"https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4\""])if(!a.includes(token))throw Error("Missing playable sample movie: "+token);for(const token of ['$$(".movie-card",row)','$$(".movie-row,.movie-grid").forEach(updateSpatialContainer)'])if(!cine.includes(token))throw Error("Spatial shelf must update every card and container");const ids=["profilePrivacyTitle","profileActivitySummary","clearWatchHistory","clearMyUniverse","profileAccessTitle","setProfileLock","removeProfileLock","profileAccessGate","profileAccessGateTitle","profileAccessGateName","profileAccessGatePin","profileAccessGateError","profileAccessGateUnlock","profileAccessGateSwitch","exportProfiles","importProfiles","profileBackupFile","kidsModeToggle","kidsAgeBand","setParentPin","removeParentPin","dailyScreenLimit","screenTimeTitle","screenTimeSummary","screenTimeProgress","screenTimeProgressFill","screenTimeHint","screenTimeWeekSummary","screenTimeWeek","breakReminderMinutes","quietHoursStart","quietHoursEnd","quietHoursStart","quietHoursEnd","familyUsageList","kidsWelcome","kidsSection","kidsPicksRow","kidsPicksCount","playerCaptionTrack","playerCaptionStyle","playerAudioTrack","playerSettingsNotice","playerRecovery","playerRetry","profilesBackdrop","profileSelect","addProfile","deleteProfile","browseType","browseRating","browseYear","resetBrowseFilters","universeSort","universeGenre","skipBack","skipForward","playerSpeed","playerPip","playerFullscreen","playerSeek","playerStage","playerGestureFeedback","playerGesturesToggle","playerGestureHint","playerCurrentTime","playerDuration","playerShortcutHelp","playerShortcutGuide"];for(const id of ids)if(!h.includes('id="'+id+'"'))throw Error("Missing interface id: "+id);for(const token of ["KIDS_AGE_RATINGS","KIDS_FRIENDLY_GENRES","kidsSafe","visibleCatalog","renderKidsHub","deriveParentPin","deriveParentPin","PBKDF2","PARENT_PIN_ITERATIONS","verifyParentPin","handleKidsModeToggle","handleKidsAgeBandChange","SCREEN_TIME_LIMITS","normalizeScreenTime","recentScreenTimeDays","weeklyScreenTimeRows","renderScreenTimeDashboard","handleDailyScreenLimitChange","BREAK_REMINDER_INTERVALS","handleBreakReminderChange","handleQuietHoursChange","isWithinQuietHours","quietHoursResumeLabel","notifyQuietHoursLock","startScreenTimeTicker","stopScreenTimeTicker","accrueScreenTime","Time for a quick break","Quiet hours are active","weeklyScreenTimeRows","recentScreenTimeDays","profile-switching","kidsCategory","parentPin:","activeLocalProfile.parentPin","Kids content age guide","initializeLocalProfiles","switchLocalProfile","persistLocalProfiles","renderProfilePrivacy","clearProfileWatchHistory","clearProfileMyUniverse","profileLock","verifyProfileAccess","changeProfileAccessPin","removeProfileAccessPin","showProfileAccessGate","unlockProfileAccessGate","useUnlockedProfileInstead","exportProfileBackup","importProfileBackup","storyspace-profile-backup","Restore","profile(s) restored","localProfiles.length+data.profiles.length>8","Existing profiles will not be replaced","storyspace-profiles-backup.json","defaultProgress","browseRating","browseYear","playerSpeed","updatePlayerTimeline","aria-valuetext","setPlayerRecovery","Buffering","Retrying playback","playerVideo.error?.code","playerRetry","normalizeResumePoints","maxAge=180*24*60*60*1000","normalizeHistory","new Map()","previous.count=Math.max(previous.count,entry.count)","sort((a,b)=>b.at-a.at)","addEventListener(\"seeked\"","addEventListener(\"pause\"","addEventListener(\"ended\"","persistPlayerProgress(true)"])if(!a.includes(token))throw Error("Missing feature implementation: "+token);for(const sel of [".profiles-panel",".universe-controls",".player-tools",".screen-time-panel",".screen-time-track",".family-usage-item",".screen-time-week",".screen-time-day",".kids-routine-settings",".quiet-hours-row",".profile-backup-actions",".profile-privacy-panel",".profile-privacy-actions",".profile-access-panel",".profile-access-actions",".profile-access-gate",".profile-access-gate-card",".kids-welcome",".kids-category",".kids-age-setting",".kids-pin-actions","storyspaceProfileSwap"])if(!c.includes(sel))throw Error("Missing stylesheet: "+sel);for(const token of ["userTaste","historyGenres","preferenceHits","selectDiverse","__storyspaceReason","rankedPool(shuffleMix)","storyspace.discoveryDismissed.v2.","function loadDismissed()","completionBoost=progress>=95?-2.2:progress>0?Math.min(1.4,progress/60):0","const recency=Math.max(0.25,1-ageDays/120)"])if(!e.includes(token))throw Error("Missing recommendation upgrade: "+token);if(!ec.includes(".mix-reason"))throw Error("Missing recommendation reason style");for(const token of ["/api/auth/verify/uploader","/api/auth/verify/admin","selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size","refreshCommunityCatalog();resumeAll()","method:\"DELETE\"","Cancel upload","UPLOAD_CANCELLED","Cancelling upload"])if(!m.includes(token))throw Error("Missing media reliability feature: "+token);for(const token of ["resumePositionSeconds","durationSeconds","lastPlayedAt","currentTime,duration:video.duration","progressPercent:100,currentTime:video.duration"])if(!a.includes(token))throw Error("Missing cloud resume feature: "+token);for(const token of ["cinematic-toolbar","Toggle spatial 3D shelf view","Toggle cinematic motion effects","nextFeatured","previousFeatured","pointerdown","pointerup","cinematic-dragging","IntersectionObserver","MutationObserver","prefers-reduced-motion","StoryspaceCinematic"])if(!cine.includes(token))throw Error("Missing cinematic interaction: "+token);for(const token of [".cinematic-spatial .movie-row>.movie-card",".cinematic-spatial .movie-grid>.movie-card",".cinematic-stars",".cinematic-hero-dots",".cinematic-reveal","@media(prefers-reduced-motion:reduce)"])if(!cc.includes(token))throw Error("Missing cinematic style: "+token);if(!h.includes("Little explorers"))throw Error("Missing Kids welcome interface");if(!h.includes("cinematic.css")||!h.includes("cinematic.js"))throw Error("Cinematic assets are not wired into the app");for(const token of ["pointerdown","pointerup","storyspace.playerGestures","playerGestureFeedback","playerGesturesToggle","Math.abs(dx) >= 48","Math.abs(dx) > Math.abs(dy) * 1.25","Math.abs(dy) >= 42","video.style.filter","brightness(","video.volume","formatTime"])if(!pg.includes(token))throw Error("Missing player gesture implementation: "+token);for(const token of [".player-stage",".player-gesture-feedback",".player-gesture-row","prefers-reduced-motion"])if(!pgc.includes(token))throw Error("Missing player gesture style: "+token);if(!h.includes("player-gestures.css")||!h.includes("player-gestures.js"))throw Error("Player gesture assets are not wired into the app");for(const token of ["playerShortcutHelp","playerShortcutGuide","Keyboard shortcuts"])if(!h.includes(token))throw Error("Missing keyboard shortcut UI: "+token);for(const token of ["activeOverlay","aria-hidden","isContentEditable","playerBackdrop:not([hidden])","prefers-reduced-motion"])if(!a.includes(token))throw Error("Missing TV navigation behavior: "+token);for(const token of ["keydown","video.paused","arrowleft","arrowright","arrowup","arrowdown","event.shiftKey","playerShortcutGuide","escape","isEditable"])if(!ps.includes(token))throw Error("Missing keyboard shortcut implementation: "+token);for(const sel of [".player-shortcut-guide","kbd","prefers-reduced-motion"])if(!psc.includes(sel))throw Error("Missing keyboard shortcut styles: "+sel);if(!h.includes("player-shortcuts.css")||!h.includes("player-shortcuts.js"))throw Error("Keyboard shortcut assets not wired");for(const token of ["storyspace.playerSpeed","playbackRate","playerCaptionTrack","playerCaptionStyle","playerAudioTrack","loadedmetadata","addtrack","removetrack","textTracks","audioTracks"])if(!settings.includes(token))throw Error("Missing player preference behavior: "+token);for(const token of [".player-settings-row",".player-caption-large",".player-caption-high-contrast"])if(!settingsCss.includes(token))throw Error("Missing player preference styling: "+token);if(!h.includes("player-settings.css")||!h.includes("player-settings.js"))throw Error("Player settings assets not wired");
+if(!settings.includes('replace(/_/g,"-").toLowerCase()')||!settings.includes("function languageMatches(trackLanguage,preferredLanguage)")||!settings.includes("languageMatches(trackKey(entry.track),language)"))throw Error("Caption language preferences must match regional language variants safely");if(!h.includes("tv-navigation.js")||!sw.includes("./tv-navigation.js")||!tv.includes("StoryspaceTVNavigation")||!tv.includes("ArrowDown")||!tv.includes("focusin"))throw Error("TV navigation missing/unwired");if(!h.includes("playerCaptionSize")||!settings.includes("storyspace.captionSize")||!settings.includes("extra-large")||!ps.includes('case "c":'))throw Error("Caption size controls or toggle shortcut missing");if(!h.includes('id="playerTheater"')||!ps.includes('setTheater')||!ps.includes('case "t":')||!pgc.includes('player-theater-mode'))throw Error("Theater mode feature missing");for(const token of ["storyspace.playerSpeed","playbackRate","playerCaptionTrack","playerCaptionStyle","playerAudioTrack","loadedmetadata","textTracks","audioTracks"])if(!settings.includes(token))throw Error("Missing player preference behavior: "+token);for(const token of [".player-settings-row",".player-caption-large",".player-caption-high-contrast"])if(!settingsCss.includes(token))throw Error("Missing player preference styling: "+token);if(!h.includes("player-settings.css")||!h.includes("player-settings.js"))throw Error("Player settings assets not wired");if(!h.includes("player-next.js")||!sw.includes("./player-next.js")||!next.includes("StoryspacePlayerNext")||!next.includes("playerAutoNext")||!next.includes("addEventListener(\"ended\""))throw Error("Up-next recommendations missing/unwired");if(!h.includes("playerUpNext")||!a.includes("StoryspacePlayerNext?.setContext")||!a.includes("StoryspacePlayerNext?.reset"))throw Error("Up-next panel integration missing");if(!h.includes("player-mini.js")||!sw.includes("./player-mini.js")||!sm.includes("StoryspaceMiniPlayer"))throw Error("Mini-player module missing or unwired");for(const token of ["player-mini-mode","player-mini-toggle","restore","minimize","MutationObserver"])if(!css.includes(token)&&!read("player-mini.js").includes(token))throw Error("Mini-player behavior/style missing: "+token);for(const asset of ["./player-settings.css","./player-settings.js","./cinematic.css","./cinematic.js","./player-gestures.css","./player-gestures.js","./player-shortcuts.css","./player-shortcuts.js","./media-uploads.js"])if(!sw.includes(asset))throw Error("Missing offline shell asset: "+asset);if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache was not versioned for new assets");console.log("Storyspace UI, discovery, media authentication, upload-resume and cloud playback-sync, cinematic 3D and gesture smoke checks passed");
 // Library & performance batch v1 guards
 if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""))throw Error("poster lazy-loading missing");
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("shell cache version not bumped for cinematic fix");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("shell cache version not bumped for cinematic fix");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
 if(!h.includes("player-ux.js"))throw Error("player UX script not wired");
-if(!sw.includes("player-ux.js")||!sw.includes("storyspace-shell-v61"))throw Error("player UX offline shell not updated");
+if(!sw.includes("player-ux.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("player UX offline shell not updated");
 if(!pux.includes("player-seek-preview")||!pux.includes("dy>90")||!pux.includes("fullscreenchange"))throw Error("seek preview/swipe-dismiss/fullscreen UX missing");
 if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:reduce"))throw Error("fullscreen transition styles missing");
 
 // Player resilience batch v1 guards
-const resilience=read("player-resilience.js"),resilienceCss=read("player-resilience.css");
+const playerResilience=read("player-resilience.js");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
-if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes("storyspace-shell-v61"))throw Error("player resilience offline shell not updated");
-for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience"])if(!resilience.includes(token))throw Error("player recovery behavior missing: "+token);
+if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("player resilience offline shell not updated");
+for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","Math.min(45000"])if(!playerResilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
 // Demo streaming library guards
@@ -29,7 +30,7 @@ if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source 
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");if(!a.includes("function ranked(items=movies.filter(m=>!m.demo))"))throw Error("Curated ranking must exclude demo streams by default");if(!a.includes("const ordered=ranked(movies.filter(m=>!m.demo));"))throw Error("Home curated rows must use the non-demo catalog");if(!a.includes("function chooseHero(){const available=visibleCatalog(movies.filter(m=>!m.demo))"))throw Error("Featured hero must exclude demo streams");if(!a.includes("pool=movies.filter(m=>!m.demo&&kidsSafe(m)&&m.id!==current?.id)"))throw Error("Surprise hero must respect demo and Kids Mode filters");if(!a.includes('if(view==="movies")filtered=movies.filter(m=>m.type==="movie"&&!m.demo);'))throw Error("Films browse must keep sample streams in Demo Cinema");if(!a.includes('if(view==="top")filtered=ranked(movies.filter(m=>!m.demo));'))throw Error("Top picks browse must exclude demo streams");
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
 if(!h.includes("13 sample streams")||!h.includes("Not a commercial film catalog"))throw Error("Demo Cinema sample-content disclaimer/count missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Demo Cinema shell cache version not bumped");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Demo Cinema shell cache version not bumped");
 
 // Visible demo tag on sample video cards.
 if(!a.includes('demoBadge.textContent="DEMO"')||!c.includes(".card-demo-badge"))throw Error("Demo card badge styling/markup missing");
@@ -42,27 +43,27 @@ if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))thro
 
 // Demo-stream error messaging and cache-version regression checks
 if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
-if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Demo recovery cache version not bumped");
+if(!playerResilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Demo recovery cache version not bumped");
 
 // Player media metadata readout
 if(!h.includes('id="playerMediaInfo"'))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v61"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player media metadata readout
 if(!h.includes("playerMediaInfo"))throw Error("Player media info element missing");
 if(!h.includes("player-media-info.js"))throw Error("Player media metadata module not included");
 if(!c.includes(".player-media-info"))throw Error("Player media metadata styling missing");
-if(!sw.includes("player-media-info.js")||!sw.includes("storyspace-shell-v61"))throw Error("Player media metadata shell cache missing");
+if(!sw.includes("player-media-info.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Player media metadata shell cache missing");
 if(!mediaInfo.includes("loadedmetadata")||!mediaInfo.includes("video.videoWidth")||!mediaInfo.includes("video.videoHeight"))throw Error("Player metadata details missing");
 
 // Player playback diagnostics
 const diagnostics=read("player-playback-diagnostics.js");
 if(!h.includes("playerPlaybackHealth")||!h.includes("player-playback-diagnostics.js"))throw Error("Playback health status UI/module missing");
-if(!sw.includes("player-playback-diagnostics.js")||!sw.includes("storyspace-shell-v61"))throw Error("Playback diagnostics cache entry missing");
+if(!sw.includes("player-playback-diagnostics.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Playback diagnostics cache entry missing");
 for(const token of ["waiting","stalled","playing","navigator.onLine","buffered","StoryspacePlaybackDiagnostics","Math.floor(buffer)","Buffer ahead","label.toLowerCase().includes(\"stall\")?\"stalled\"","seeking","seeked","timeupdate"])if(!diagnostics.includes(token))throw Error("Playback diagnostics behavior missing: "+token);
 if(!c.includes(".player-playback-health"))throw Error("Playback diagnostics style missing");
 
@@ -77,30 +78,31 @@ if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.
 // Preserve responsive polish already merged to main.
 if(!h.includes("interaction-polish.css")||!sw.includes("./interaction-polish.css"))throw Error("Responsive polish asset missing from consolidated shell");
 if(!read("player-queue.js").includes("StoryspaceQueue")||!sw.includes("./player-queue.js"))throw Error("Smart Queue module missing from consolidated shell");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Consolidated shell cache not bumped");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Consolidated shell cache not bumped");
 
 // Discovery shortcuts and year search from merged PR #118
 if(!h.includes("data-discovery=\"genre:Sci-Fi\"")||!h.includes("data-discovery=\"year:2026\""))throw Error("Quick discovery markup missing");
 if(!a.includes("event.target.closest(\"[data-discovery]\")")||!a.includes("filters.year")||!a.includes("matchesYear"))throw Error("Discovery year filter wiring missing");
-if(!c.includes(".discovery-shortcuts")||!sw.includes("storyspace-shell-v61"))throw Error("Discovery styles/cache missing");
+if(!c.includes(".discovery-shortcuts")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Discovery styles/cache missing");
 
 // Similar-story rail added to consolidated branch
 if(!h.includes("similarStoriesRow")||!h.includes("similarStoriesTitle"))throw Error("Similar-story markup missing");
 if(!a.includes("renderRow(\"similarStoriesRow\",similar)")||!a.includes("targetGenres"))throw Error("Similar-story ranking missing");
-if(!c.includes(".details-recommendations")||!sw.includes("storyspace-shell-v61"))throw Error("Similar-story styles/cache missing");
+if(!c.includes(".details-recommendations")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Similar-story styles/cache missing");
 
 // Integrated details modal save/resume/highlights and surprise picker
 if(!h.includes("modalSignals")||!h.includes("modalSave")||!h.includes("modalResumeProgress")||!h.includes("heroSurprise"))throw Error("Details modal controls missing");
 if(!a.includes("syncSignals")||!a.includes("syncSave")||!a.includes("Continue where you left off")||!a.includes("function surpriseHero"))throw Error("Details save/resume/surprise behavior missing");
-if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!sw.includes("storyspace-shell-v61"))throw Error("Details modal styles/cache missing");
+if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includes(".modal-resume-track")||!c.includes(".hero-surprise")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Details modal styles/cache missing");
 
 // Main-based Queue and Up Next polish guards
 if(!h.includes('id="playerUpNextPoster"')||!h.includes('id="playerUpNextProgress"'))throw Error("Up Next poster/countdown bar missing");
 if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.includes("StoryspaceQueue?.playNext"))throw Error("Queue-aware next-item playback missing");
 if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
+if(!next.includes('backdrop.addEventListener("transitionend",event=>{if(event.target===backdrop&&backdrop.hidden)clear()})'))throw Error("Up Next auto-play timer must cancel when player closes");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
 if(!h.includes('id="queueShuffle"')||!read("player-queue.js").includes("Queue shuffled")||!read("player-queue.js").includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Shell cache v36 not bumped");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Shell cache v36 not bumped");
 
 // Full Smart Queue controls: auto-advance, repeat, playlist import/export, direct actions and demo bulk-add.
 const queue=read("player-queue.js");
@@ -108,24 +110,24 @@ for(const id of ["queueExport","queueImport","queueImportFile","queueRepeat","qu
 for(const token of ["storyspace-playlist","version:1","queue.length>=100","queuePlay","autoPlayQueue","repeatAll","queueExport","queueImportFile","queue-play-item","queue-play-next","aria-label","Queue limit reached","demoQueueAll"])if(!queue.includes(token))throw Error("Smart Queue behavior missing: "+token);
 if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up Next must not conflict with active queue autoplay");
 if(!css.includes(".queue-import-export")||!css.includes(".queue-play-next")||!css.includes(".demo-queue-all"))throw Error("Queue extended styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Queue feature cache v36 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Queue feature cache v36 missing");
 
 // Expanded 13-item sample catalog is included in the existing Demo Cinema row.
 for(const title of ["For Bigger Fun · Demo","For Bigger Blazes · Demo","Tears of Steel · Open Film","Subaru Outback · Sample","Volkswagen GTI Review · Sample","Bullrun Road Rally · Sample","What Car for $1,000? · Sample"])if(!demoApp.includes(title))throw Error("Expanded sample catalog missing: "+title);
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Expanded Demo Cinema row render missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Expanded demo shell cache v37 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Expanded demo shell cache v37 missing");
 
 // Local profile identity and theme persistence guards
 for(const id of ["renameProfile","profileAvatarChoice","profileThemeChoice"])if(!h.includes('id="'+id+'"'))throw Error("Missing profile personalization control: "+id);
 for(const token of ["PROFILE_AVATARS","PROFILE_THEMES","profileCleanName(raw)","Profile renamed","activeLocalProfile.theme","activeLocalProfile.avatar","dataset.profileTheme"])if(!a.includes(token))throw Error("Profile identity/theme behavior missing: "+token);
 for(const theme of ["data-profile-theme=\"ocean\"","data-profile-theme=\"ember\"","data-profile-theme=\"forest\""])if(!c.includes(theme))throw Error("Missing theme palette: "+theme);
-if(!sw.includes("storyspace-shell-v61"))throw Error("Profile theme shell v38 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Profile theme shell v38 missing");
 
 // Discovery taste balance and Not-for-me controls
 for(const token of ["taste-panel","taste-mode","tasteInsight","storyspace:interest-updated","storyspace:profile-updated","comfort","balanced","explore"])if(!e.includes(token))throw Error("Taste balance feature missing: "+token);
 for(const token of ["storyspace.discoveryDismissed","dismissed.add(String(movie.apiId||movie.id))","restore.hidden=dismissed.size===0","dismissed.clear()"])if(!e.includes(token))throw Error("Not-for-me persistence/restore missing: "+token);
 for(const token of [".taste-panel",".taste-mode[aria-pressed=\"true\"]",".discovery-restore",".discovery-dismiss"])if(!ec.includes(token))throw Error("Discovery personalization styles missing: "+token);
-if(!sw.includes("storyspace-shell-v61"))throw Error("Discovery personalization shell v39 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Discovery personalization shell v39 missing");
 
 // Watch Later and Resume Hub controls, modules and offline assets
 for(const id of ["watchLaterOpen","watchLaterCount","storyspaceWatchLater","watchLaterClose","watchLaterList","resumeHub","resumeHubClose","resumeHubList"])if(!h.includes('id="'+id+'"'))throw Error("Missing personal list/hub interface: "+id);
@@ -134,7 +136,7 @@ for(const token of ["storyspace.watchLater.v1.","profileKey()","MAX","watchLater
 for(const token of ["storyspace.resumePoints","resumeHubList","resumeHubClose","Clear progress","refreshContinueRow","storyspaceResumeHub"])if(!read("resume-hub.js").includes(token))throw Error("Resume Hub behavior missing: "+token);
 if(!e.includes("watch-later")||!e.includes("storyspaceWatchLater.toggle"))throw Error("Discovery Studio Watch Later actions missing");
 if(!c.includes(".watch-later-panel")||!c.includes(".resume-hub-card"))throw Error("Watch Later/Resume Hub responsive styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Personal lists shell v40 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Personal lists shell v40 missing");
 
 // Command palette and saved My Universe layout
 for(const id of ["commandPaletteOpen","universeLayoutToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing quick navigation/layout control: "+id);
@@ -144,18 +146,18 @@ for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching acti
 if(!read("resume-hub.js").includes("resumeHub"))throw Error("Continue Watching hub asset missing");
 for(const sel of [".command-palette",".command-palette-item",".command-palette-input","prefers-reduced-motion"])if(!read("command-palette.css").includes(sel))throw Error("Command palette styles missing: "+sel);
 if(!c.includes(".movie-row.universe-grid"))throw Error("My Universe grid styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Quick navigation shell v41 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Quick navigation shell v41 missing");
 
 // Profile-aware welcome context
 for(const token of ["refreshProfileWelcome","Good morning, ","Good afternoon, ","Good evening, ","stories","My Universe","resume","kidsMode"])if(!a.includes(token))throw Error("Profile-aware welcome behavior missing: "+token);
 if(!c.includes(".welcome-line span")||!c.includes(".welcome-line small"))throw Error("Welcome context styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Welcome context cache v42 missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Welcome context cache v42 missing");
 
 // Quick Discovery collections, dynamic genre shortcuts and platform asset guard
 if(!h.includes('quick-discovery.js')||!h.includes('quick-discovery.css'))throw Error('Quick Discovery assets missing from page');
 if(!read('quick-discovery.js').includes('storyspace:catalog-updated')||!read('quick-discovery.js').includes('Demo Cinema'))throw Error('Quick collections/genre refresh missing');
 if(!c.includes('.quick-discovery')||!c.includes('.quick-discovery-chip'))throw Error('Quick Discovery styles missing');
-if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!sw.includes('storyspace-shell-v61'))throw Error('Quick Discovery offline shell missing');
+if(!sw.includes('./quick-discovery.js')||!sw.includes('./quick-discovery.css')||!/storyspace-shell-v\d+/.test(sw))throw Error('Quick Discovery offline shell missing');
 if(!read('../platforms/check-platform-config.js').includes('quick-discovery.js'))throw Error('Platform asset configuration check missing Quick Discovery');
 
 // Watch Later event wiring guard
@@ -177,12 +179,13 @@ if(!read("enhancements.js").includes('details.setAttribute("aria-label", "Explor
 
 
 // Player reconnect/resume recovery regression guard
-for(const token of ["resume:true","position>0&&Number.isFinite(video.duration)","Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
-if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes("storyspace-shell-v61"))throw Error("Player recovery module/cache wiring missing");
+for(const token of ["resume:true","if(position>0)","else if(Number.isFinite(video.duration)&&video.duration>0)video.currentTime=Math.min(position,Math.max(0,video.duration-.25))","recoveryTimer=setTimeout","Recovery timed out","removeEventListener","retry.disabled=true","Still offline · Check your internet connection"])if(!read("player-resilience.js").includes(token))throw Error("Player reconnect recovery regression missing: "+token);
+for(const token of ["const ranges=video.seekable","ranges.length-1","Math.max(start,Math.min(end-.1,position))","Number.isFinite(start)&&Number.isFinite(end)&&end>start"])if(!read("player-resilience.js").includes(token))throw Error("Live/DVR playback recovery must restore position within the current seekable window");
+if(!h.includes("player-resilience.js")||!sw.includes("./player-resilience.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Player recovery module/cache wiring missing");
 
 // Live gesture preview regression checks
 for(const token of ['function previewGesture(event)','Seek preview · ','Brightness preview · ','Volume preview · ','pointermove'])if(!read('player-gestures.js').includes(token))throw Error('Gesture preview missing: '+token);
-if(!sw.includes('storyspace-shell-v61'))throw Error('Gesture preview shell cache not bumped');
+if(!/storyspace-shell-v\d+/.test(sw))throw Error('Gesture preview shell cache not bumped');
 
 // Persistent player volume/mute controls
 for(const id of ["playerVolume","playerMuteToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing volume preference control: "+id);
@@ -193,24 +196,24 @@ if(!read("player-settings.css").includes(".player-volume-control")||!read("playe
 for(const id of ["markIntroEnd","skipIntro","markCreditsStart","skipCredits"])if(!h.includes('id="'+id+'"'))throw Error("Player segment skip control missing: "+id);
 for(const token of ["storyspace.playerSegments.v1.","introEnd","creditsStart","timeupdate","loadedmetadata"])if(!read("player-ux.js").includes(token))throw Error("Custom skip marker behavior missing: "+token);
 if(!h.includes(">Skip intro</button>")||!h.includes(">Skip credits</button>"))throw Error("Custom skip labels missing from player UI");
-if(!read("player-shortcuts.css").includes(".player-segment-button")||!sw.includes("storyspace-shell-v61"))throw Error("Player skip control styles/cache missing");
+if(!read("player-shortcuts.css").includes(".player-segment-button")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Player skip control styles/cache missing");
 
 // Theater-mode keyboard/button control must have a defined handler and synchronized state.
 if(!read("player-shortcuts.js").includes("function setTheater(open)")||!read("player-shortcuts.js").includes("playerTheater"))throw Error("Theater mode control handler missing");
 if(!h.includes("playerTheater")||!h.includes("<kbd>T</kbd> theater mode"))throw Error("Theater mode button/shortcut help missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Theater mode shell cache not bumped");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Theater mode shell cache not bumped");
 
 // Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
 if(!settings.includes("toggleCaptionsShortcut")||!settings.includes("event.altKey")||!settings.includes("storyspace.captionLastEnabled"))throw Error("Caption on/off shortcut missing");
 if(!h.includes("Alt+C</kbd> captions on/off"))throw Error("Caption shortcut help text missing");
-for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","preferredTrack(tracks,language,fallback)","trackKey(track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
+for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","function preferredTrack(entries,language,fallback)","trackKey(entry.track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
 
 // Mobile theater mode viewport and safe-area regression guards.
 const theaterCss=read("player-gestures.css");
 for(const token of ["100dvh","72dvh","55dvh","env(safe-area-inset-top)","env(safe-area-inset-bottom)","overscroll-behavior:contain"])if(!theaterCss.includes(token))throw Error("Mobile theater viewport/safe-area polish missing: "+token);
-if(!sw.includes("storyspace-shell-v61"))throw Error("Mobile theater polish shell cache missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Mobile theater polish shell cache missing");
 if(!theaterCss.includes("orientation:landscape")||!theaterCss.includes("100dvh - 150px"))throw Error("Short landscape theater layout missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Short landscape theater shell cache missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Short landscape theater shell cache missing");
 
 
 // Profile-aware My Collections studio
@@ -218,14 +221,14 @@ for(const id of ["collectionExport","collectionImportToggle","collectionImportFi
 for(const token of ["uniqueItems","skipped += uniqueItems.length - items.length","skipped += combined.length - existing.items.length","limits or invalid data","storyspace-collections","exportBackup","importBackup","file.size > 1024 * 1024","Matching names will merge stories","newCollectionId","collectionBackupStatus","storyspace.collections.v1.","MAX_COLLECTIONS = 20","MAX_ITEMS = 100","cleanName","readCollections","saveCollections","renderCollectionGrid","renderCollectionDetail","storyspace:profile-updated","modalCollectionsToggle","storyspace:collections-updated","aria-pressed"])if(!collections.includes(token))throw Error("Custom collections behavior missing: "+token);
 for(const token of [".collection-toolbar",".collection-backup-status",".collections-grid",".collection-tile",".collection-mosaic",".collection-create-form",".collection-detail",".collection-card-remove",".modal-collections-panel",".collection-choice","prefers-reduced-motion"])if(!collectionsCss.includes(token))throw Error("Custom collections styling missing: "+token);
 if(!h.includes("collections.css")||!h.includes("collections.js"))throw Error("Collections assets are not wired into the app");
-if(!sw.includes("./collections.css")||!sw.includes("./collections.js")||!sw.includes("storyspace-shell-v61"))throw Error("Collections assets missing from offline shell");
+if(!sw.includes("./collections.css")||!sw.includes("./collections.js")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Collections assets missing from offline shell");
 if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('if($("collectionsSection"))$("collectionsSection").hidden=true'))throw Error("Collections hub must hide in browse/search modes");
 
  // Collection management: safe rename and persisted presentation sorting.
  for(const id of ["collectionRename","collectionSort"])if(!h.includes('id="'+id+'"'))throw Error("Collection management control missing: "+id);
  for(const token of ["collection.sort","collectionRename","collectionSort","sortMode === \"title\"","sortMode === \"recent\"","sortMode === \"rating\"","sortMode === \"year\"","A collection with that name already exists","sort:item.sort"])if(!collections.includes(token))throw Error("Collection rename/sort persistence missing: "+token);
  for(const token of [".collection-sort-label","collection-sort-label select:focus-visible"])if(!collectionsCss.includes(token))throw Error("Collection sort styling missing: "+token);
- if(!sw.includes("storyspace-shell-v61"))throw Error("Collection management cache version missing");
+ if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Collection management cache version missing");
 
 // Custom Collection ordering: accessible move buttons and drag/drop, while preserving filtered slots.
 for(const token of ["reorderVisibleItems","collection-order-controls","Move ","dragstart","dragend","dragover","tile.dataset.collectionItemId",'collection.sort = "custom"'])if(!collections.includes(token))throw Error("Collection reorder implementation missing: "+token);
@@ -235,7 +238,7 @@ for(const token of [".collection-order-controls",".collection-order-button",".co
 for(const token of ["coverIcons","validIcon(item.icon)","icon: validIcon(item.icon)","validIcon(collection.icon)","collectionIcon"])if(!collections.includes(token))throw Error("Collection cover personalization missing: "+token);
 if(!h.includes('id="collectionIcon"')||!h.includes('id="collectionDetailIcon"'))throw Error("Collection icon controls missing");
 for(const token of [".collection-cover-icon","#collectionDetailIcon"])if(!collectionsCss.includes(token))throw Error("Collection icon styles missing: "+token);
-if(!sw.includes("storyspace-shell-v61"))throw Error("Collection cover cache version missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Collection cover cache version missing");
 
 // Per-profile storage schema retains sort and cover personalization across reloads.
 if(!collections.includes("icon: validIcon(item.icon)")||!collections.includes('sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom"'))throw Error("Collection cover/sort profile persistence missing");
@@ -244,9 +247,354 @@ if(!collections.includes("icon: validIcon(item.icon)")||!collections.includes('s
 for(const token of ["cleanDescription(item.description)","description: cleanDescription(item.description)","collection.description","collectionDescription"])if(!collections.includes(token))throw Error("Collection descriptions missing: "+token);
 if(!h.includes('id="collectionDescription"')||!h.includes('id="collectionDetailDescription"'))throw Error("Collection description controls missing");
 if(!collectionsCss.includes(".collection-tile-description"))throw Error("Collection description styles missing");
-if(!sw.includes("storyspace-shell-v61"))throw Error("Collection descriptions cache version missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Collection descriptions cache version missing");
 
 // Collection hub manual shelf ordering: drag/drop + accessible move controls.
 for(const token of ["reorderCollections","collection-shelf-card","collection-shelf-controls","collection-shelf-move","dragstart","dragover","dragend"])if(!collections.includes(token))throw Error("Collection hub reorder feature missing: "+token);
 for(const token of [".collection-shelf-card",".collection-shelf-controls",".collection-shelf-move",".collection-shelf-dragging"])if(!collectionsCss.includes(token))throw Error("Collection hub reorder styles missing: "+token);
-if(!sw.includes("storyspace-shell-v61"))throw Error("Collection hub cache version missing");
+if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Collection hub cache version missing");
+
+// My Universe search/empty-state behavior regression checks.
+for(const id of ["universeSearch","universeSearchClear","universeEmptyState"])if(!h.includes('id="'+id+'"'))throw Error("My Universe search/empty-state interface missing: "+id);
+for(const token of ["universeSearch","universeSearchClear","universeEmptyState","toLocaleLowerCase()","No saved titles match","savedMovies.length","m.description,m.cast,m.genre,m.genres,m.year,m.releaseYear"])if(!a.includes(token))throw Error("My Universe search/empty-state behavior missing: "+token);
+for(const token of [".universe-search-label input",".universe-search-clear",".universe-empty-state","focus-visible"])if(!c.includes(token))throw Error("My Universe search/empty-state styling missing: "+token);
+
+// My Universe bulk-selection regression guards.
+for(const id of ["universeSelectToggle","universeBulkActions","universeSelectAll","universeClearSelection","universeRemoveSelected","universeSelectedCount"])if(!h.includes('id="'+id+'"'))throw Error("Bulk selection control missing: "+id);
+for(const token of ["universeSelection","universeSelectMode","universeSelectAll","universeClearSelection","universeRemoveSelected","universe-selected","Select all visible","Removed ","syncUniverseBulkControls"])if(!a.includes(token))throw Error("Bulk selection behavior missing: "+token);
+for(const token of [".universe-bulk-actions",".universe-selection-action",".movie-card.universe-selected",".universe-select-toggle"])if(!c.includes(token))throw Error("Bulk selection styling missing: "+token);
+
+// Collection bulk tools regression guards.
+for(const id of ["collectionBulkToggle","collectionBulkToolbar","collectionSelectAll","collectionClearSelection","collectionRemoveSelected","collectionBulkCount","universeCollectionAssign","universeAssignCollection","universeAssignSelected"])if(!h.includes('id="'+id+'"'))throw Error("Collection bulk UI missing: "+id);
+for(const token of ["collectionBulkSelection","collectionBulkMode","collectionSelectAll","collectionRemoveSelected","bulkAdd","collection-bulk-selected","syncCollectionBulkToolbar"])if(!collections.includes(token))throw Error("Collection bulk behavior missing: "+token);
+for(const token of ["universeCollectionAssign","universeAssignCollection","universeAssignSelected","bulkAdd","syncUniverseCollectionAssignment"])if(!a.includes(token))throw Error("Universe-to-collection bulk assignment missing: "+token);
+for(const token of [".collection-bulk-toolbar",".collection-bulk-selected",".universe-collection-assign"])if(!collectionsCss.includes(token))throw Error("Collection bulk styles missing: "+token);
+
+// Collection search, move and duplicate smoke checks.
+for(const id of ["collectionSearch","collectionDuplicate","collectionMoveTarget","collectionMoveSelected"])if(!h.includes('id="'+id+'"'))throw Error("Collection search/move/duplicate UI missing: "+id);
+for(const token of ["collectionSearchQuery","collectionMoveSelected","collectionMoveTarget","collectionDuplicate","newCollectionId","Moved ","Duplicated collection"])if(!collections.includes(token))throw Error("Collection search/move/duplicate behavior missing: "+token);
+for(const token of [".collection-search-label",".collection-bulk-toolbar select"])if(!collectionsCss.includes(token))throw Error("Collection search/move styles missing: "+token);
+
+// Smart genre suggestions derive from current catalog data and create prefilled shelves.
+if(!h.includes('id="smartCollectionChips"'))throw Error("Smart collection suggestions UI missing");for(const token of ["renderSmartSuggestions","smartCollectionChips","genres","Created "])if(!collections.includes(token))throw Error("Smart collection suggestion logic missing: "+token);for(const token of [".smart-collection-chip",".smart-collection-chips"])if(!collectionsCss.includes(token))throw Error("Smart collection suggestion styling missing: "+token);
+
+// Continue Watching resume polish: recent-first ordering and remaining-time labels.
+for(const token of ["refreshContinueRow();","resume-time-label","updatedAt","min left","const items=movies.filter(m=>Number(m.progress)>0).sort"])if(!a.includes(token))throw Error("Continue Watching resume polish missing: "+token);
+if(!css.includes(".resume-time-label"))throw Error("Continue Watching resume-time style missing");
+
+
+// Guarded VOD and live/DVR seeking regression checks
+for(const token of ["function getPlayerSeekWindow()","playerVideo.seekable","Number.isFinite(raw)","Math.max(range.start,Math.min(range.end,target))","Seeking unavailable","live window"])if(!a.includes(token))throw Error("Missing guarded seek behavior: "+token);
+const seekUx=read("player-ux.js");
+for(const token of ["function seekWindow()","video.seekable","range.live?\"live window\"","pointercancel"])if(!seekUx.includes(token))throw Error("Missing seek preview range behavior: "+token);
+
+
+const playbackDiagnostics=read("player-media-info.js");
+for(const token of ["function bufferedAhead()","video.buffered","networkState","readyState","getVideoPlaybackQuality","droppedVideoFrames","ratechange","bufferedAhead"])if(!playbackDiagnostics.includes(token))throw Error("Missing playback diagnostics: "+token);
+
+// Copyable diagnostics should be user-triggered and provide clipboard fallback.
+for(const token of ['diagnosticReport()','navigator.clipboard.writeText(report)','execCommand("copy")','player-diagnostics-copy','Dropped frames:','User agent:'])if(!mediaInfo.includes(token))throw Error('Playback diagnostics export missing: '+token);
+if(!resilienceCss.includes('.player-diagnostics-copy')||!resilienceCss.includes('focus-visible'))throw Error('Playback diagnostics copy button styling missing');
+
+// Exported diagnostics should not reveal full URLs or query/fragment secrets.
+for(const token of ["function safeSource()","Source origin:","Privacy: URL query, fragment and path omitted","video.ended?","video.paused?"])if(!mediaInfo.includes(token))throw Error("Privacy-safe playback diagnostics missing: "+token);
+
+// Buffer health classifier guards: offline/loading/paused/waiting/low/building/healthy.
+for(const token of ["function bufferHealth()","Offline","Loading media","Paused","Waiting for data","Buffer low","Buffer building","Buffer healthy","bufferHealth()","window.StoryspaceMediaInfo=Object.freeze({refresh:update,formatTime,bufferedAhead,bufferHealth})"])if(!mediaInfo.includes(token))throw Error("Player buffer health classification missing: "+token);
+
+// Keyboard seeking must use a finite VOD window or the latest live DVR range and clamp targets.
+const shortcuts=read("player-shortcuts.js");
+for(const token of ["const seekWindow=()=>","video.seekable","return {start,end,live:true}","const target=clamp(video.currentTime+delta,range.start,range.end)","case \"j\":event.preventDefault();{const target=seek(-10);if(target!==false)announceSeek(\"Seek to \"+formatSeekTime(target))};break","case \"l\":event.preventDefault();{const target=seek(10);if(target!==false)announceSeek(\"Seek to \"+formatSeekTime(target))};break","seekWindow,goLive,setGuide"])if(!shortcuts.includes(token))throw Error("Player keyboard seek guard missing: "+token);
+
+// Restart shortcut must honor VOD/live seek-window start and guard assignment.
+if(!shortcuts.includes('case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;'))throw Error("Restart shortcut must use seek-window start");
+// Seek shortcuts give screen-reader/visual feedback after successful seeking.
+for(const token of ["const feedback=document.getElementById(\"playerGestureFeedback\")","announceSeek(\"Seek to \"+formatSeekTime(target))","aria-live","Restarted at DVR window start"])if(!shortcuts.includes(token))throw Error("Accessible keyboard seek feedback missing: "+token);
+// Seek feedback should announce the clamped target (not a stale currentTime).
+if(!shortcuts.includes("video.currentTime=target;return target")||!shortcuts.includes("formatSeekTime(target)"))throw Error("Seek feedback must announce the seek target");
+
+// Percentage seeking maps digits to a clamped fraction of the current VOD/DVR window.
+if(!shortcuts.includes("const seekPercent=percent=>")||!shortcuts.includes("range.start+(range.end-range.start)*clamp(percent,0,100)/100")||!shortcuts.includes('case "0":case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":'))throw Error("Percentage seeking must clamp numeric shortcuts to the seek window");
+if(!h.includes("<kbd>0</kbd>–<kbd>9</kbd> seek to 0–90%"))throw Error("Percentage seek shortcuts missing from keyboard guide");
+
+// Home/End jump within valid VOD/DVR boundaries with accessible status.
+if(!shortcuts.includes('case "home":{const range=seekWindow();if(range){try{video.currentTime=range.start;announceSeek(range.live?"DVR window start":"Beginning"'))throw Error("Home must jump to the beginning or DVR window start");
+if(!shortcuts.includes('case "end":{const range=seekWindow();if(range){try{video.currentTime=range.end;announceSeek(range.live?"Jumped to live":"End"'))throw Error("End must jump to the VOD end or DVR live edge");
+if(!h.includes("<kbd>Home</kbd> beginning · <kbd>End</kbd> end/live edge"))throw Error("Home/End shortcuts missing from guide");
+
+// Keyboard volume and mute changes must persist just like slider/toggle changes.
+if(!settings.includes('const persistVolume=()=>{save("storyspace.playerVolume",String(video.volume));save("storyspace.playerMuted",String(video.muted));syncVolume()}')||!settings.includes('video.addEventListener("volumechange",persistVolume)'))throw Error("Keyboard volume/mute preferences must persist");
+
+// Keyboard volume adjustments support 5% and Shift+10% increments with spoken feedback.
+if(!shortcuts.includes('video.volume=clamp(video.volume+step,0,1);video.muted=false;announceSeek("Volume "+Math.round(video.volume*100)+"%")')||!shortcuts.includes('video.volume=clamp(video.volume-step,0,1);announceSeek("Volume "+Math.round(video.volume*100)+"%")'))throw Error("Volume shortcuts must provide 5/10% steps and feedback");
+if(!h.includes("<kbd>Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%"))throw Error("Shift+arrow volume increment guide missing");
+
+
+// Custom speed options must remain selectable and bounded, including intermediate rates.
+if(!settings.includes('speed.addEventListener("change",()=>{const raw=Number(speed.value),next=Number.isFinite(raw)?Math.min(2,Math.max(0.25,raw)):1,v=String(next);speed.value=v;video.playbackRate=next;save("storyspace.playerSpeed",v)})'))throw Error("Custom playback speed options must remain selectable and bounded");
+
+// Custom keyboard rates must be restored on reload, not reset to the preset list.
+if(!settings.includes('initialRate=Number.isFinite(savedRate)?Math.min(2,Math.max(0.25,savedRate)):1')||!settings.includes('if(!rates.includes(initialRateValue))speed.add(new Option(initialRateValue+"×",initialRateValue))'))throw Error("Saved intermediate playback rates must be restored");
+
+// Keyboard playback-rate changes must persist and stay reflected in the speed selector.
+if(!settings.includes('video.addEventListener("ratechange",syncPlaybackRate)')||!settings.includes('save("storyspace.playerSpeed",value)')||!settings.includes('speed.value=value'))throw Error("Keyboard playback speed must sync the selector and saved preference");
+
+// Playback speed shortcuts are bounded and announce the active rate.
+if(!shortcuts.includes('case "<":{video.playbackRate=Math.max(0.25'))throw Error("Slow playback shortcut missing");
+if(!shortcuts.includes('case ">":{video.playbackRate=Math.min(2'))throw Error("Fast playback shortcut missing");
+if(!h.includes("0.25×–2×"))throw Error("Playback speed shortcut guide missing");
+
+
+// Touch seek gestures use the latest seekable range, including live DVR windows.
+if(!pg.includes("function getSeekRange()")||!pg.includes("video.seekable.length"))throw Error("Touch gestures must discover DVR seekable ranges");
+if(!pg.includes("clamp(before + delta, range.start, range.end)"))throw Error("Touch seek must clamp to the active DVR/VOD range");
+if(!pg.includes('if (pointer && event.pointerId === pointer.id) { pointer = null; lastTap = { at: 0, zone: "" }; }'))throw Error("Cancelled touch gestures must clear double-tap state");
+if(!pgc.includes(".player-stage:not(.player-gestures-disabled)>video{touch-action:none;}"))throw Error("Enabled touch gestures must prevent browser pan cancellation");
+
+
+// Caption menus must exclude metadata, chapter and description text tracks while retaining native track indexes.
+if(!settings.includes('function captionTrackEntries(tracks)')||!settings.includes('["captions","subtitles",""].includes(String(track.kind||"").toLowerCase())'))throw Error("Caption selector must omit non-caption text tracks");
+if(!settings.includes("preferredTrack(captionEntries,captionLanguage,savedCaption)"))throw Error("Caption language preference must resolve against visible caption tracks");
+
+if(!settings.includes('const audioEntries=Array.from(ats||[]).map((track,index)=>({track,index}))')||!settings.includes("preferredTrack(audioEntries,audioLanguage,savedAudio)"))throw Error("Saved regional audio language preferences must resolve through indexed audio tracks");
+if(!settings.includes("nativeDefaultAudioIndex=enabledIndex>=0?enabledIndex:0")||!settings.includes("ats?.length&&video.readyState>=1"))throw Error("Native default audio must be captured only after media metadata is available");
+if(!settings.includes("nativeDefaultAudioIndex=enabledIndex>=0?enabledIndex:0")||!settings.includes('audio.value==="-1"?i===nativeDefaultAudioIndex:i===Number(audio.value)'))throw Error("Default audio selection must respect the browser-provided native track rather than blindly choosing the first track");
+if(!settings.includes('video.addEventListener("emptied",()=>{nativeDefaultAudioIndex=-1;refreshTracks()})'))throw Error("Native audio default must be recalculated when the media source changes");
+const recovery=read("player-resilience.js");if(!recovery.includes('const onError=()=>{if(id!==recoveryId)return;stopRecovery();show("Source unavailable · Check the video URL or try another stream",true)}')||!recovery.includes("recoveryCleanup=()=>{video.removeEventListener(\"loadedmetadata\",restore);video.removeEventListener(\"error\",onError)}"))throw Error("Recovery source errors must route through centralized listener/timer cleanup");
+if(!recovery.includes('video.addEventListener("loadedmetadata",restore,{once:true});video.addEventListener("error",onError,{once:true});try{video.load()}catch{stopRecovery();show("Could not restart this source · Check the video URL",true)}'))throw Error("Thrown video.load errors must route through centralized recovery cleanup");
+if(!recovery.includes('stopRecovery();if(autoplay&&!backdrop.hidden)video.play().catch(()=>show("Video is ready · Press Play to continue"));else hide()}'))throw Error("Recovery must not autoplay after player is closed");
+if(!recovery.includes("recoveryCleanup=()=>{video.removeEventListener(\"loadedmetadata\",restore);video.removeEventListener(\"error\",onError)}")||!recovery.includes('if(recovering){recoveryId++;stopRecovery()}'))throw Error("Recovery listeners must be cleaned and invalidated when the media source changes");
+
+
+// Caption/audio selector status is specific and announces user selections through the polite status region.
+for(const token of ["captionSummary","audioSummary","Captions off","Captions: ","Audio: Default","Audio: "])if(!settings.includes(token))throw Error("Accessible caption/audio selection feedback missing: "+token);
+
+
+// Native text/audio track changes must keep player selectors and persisted preferences synchronized.
+if(!settings.includes("function syncExternalCaptionChange()")||!settings.includes('video.textTracks.addEventListener?.("change",syncExternalCaptionChange)'))throw Error("Native caption track changes must sync the selector and saved language");
+if(!settings.includes("function syncExternalAudioChange()")||!settings.includes('video.audioTracks?.addEventListener?.("change",syncExternalAudioChange)'))throw Error("Native audio track changes must sync the selector and saved language");
+
+
+// Shortcut help must distinguish directional seek/volume modifiers and document caption-size cycling.
+const shortcutGuide=h.slice(h.indexOf('id="playerShortcutGuide"'),h.indexOf('</div>',h.indexOf('id="playerShortcutGuide"')));
+for(const token of ['Shift</kbd> + <kbd>←</kbd>/<kbd>→</kbd> seek 10 sec','Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%','<kbd>C</kbd> cycle caption size','<kbd>Alt+C</kbd> captions on/off'])if(!shortcutGuide.includes(token))throw Error("Shortcut guide is missing or ambiguous: "+token);
+
+
+// Static assets should prefer fresh network responses and use cached assets only as fallback.
+if(!sw.includes("const networkFirst = Promise.race(["))throw Error("Static assets must race network refresh against a bounded timeout");
+if(!sw.includes("return (await cachedAsset()) || response || Response.error();"))throw Error("Failed HTTP responses must fall back to cached asset or network error");
+if(!sw.includes("const refresh = fetch(request).then(async response => {")||!sw.includes("event.waitUntil(refresh.then(() => undefined).catch(() => {}))"))throw Error("Timed-out assets should continue refreshing cache in the background");
+if(sw.includes("if (cached) return cached;"))throw Error("Static assets must not return stale cache before network refresh");
+
+// Failed navigation HTTP responses should recover with the cached app shell.
+if(!sw.includes('if(response?.ok)return response;')||!sw.includes('return response||Response.error();'))throw Error("Navigation should use the network response or cached shell fallback");
+if(!sw.includes('cache.match("./index.html")'))throw Error("Offline navigation must attempt cached app shell fallback");
+
+
+// Continue Watching hub acts as an accessible modal with focus restoration/trapping.
+if(!h.includes('id="resumeHub" hidden role="dialog" aria-modal="true" aria-labelledby="resumeHubTitle"'))throw Error("Resume Hub must expose dialog semantics");
+if(!h.includes('id="resumeHubTitle" tabindex="-1"'))throw Error("Resume Hub needs a focusable labelled heading");
+for(const token of ["let returnFocus=null;","close.focus({preventScroll:true})","returnFocus.focus({preventScroll:true})","event.key===\"Escape\"","event.key!==\"Tab\"","first.focus()","last.focus()","closeHub();if(typeof playMovie==="])if(!read("resume-hub.js").includes(token))throw Error("Resume Hub keyboard/focus behavior missing: "+token);
+// Quick-action palette preserves the opener focus, safely navigates empty result sets and exposes selected options.
+const palette=read("command-palette.js");
+for(const token of ["let panel,input,list,trigger,openState=false,returnFocus=null,activeIndex=-1;","if(!rows.length)return;","returnFocus.focus({preventScroll:true})","button.setAttribute(\"aria-selected\",\"false\")","button.onfocus=()=>{activeIndex=index;button.setAttribute(\"aria-selected\",\"true\")","empty.setAttribute(\"role\",\"status\")"])if(!palette.includes(token))throw Error("Command palette focus/navigation regression: "+token);
+if(!palette.includes("if(!rows.length)return;")||!palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Palette arrow navigation must guard empty lists before modulo");
+// Watch Later changes roll back failed persistence and synchronize other same-origin tabs.
+const watchLater=read("watch-later.js");
+for(const token of ["return false;","Watch Later could not be saved","if(!save()){items.shift();return false}","if(!save())items=previous","window.addEventListener(\"storage\",event=>{if(event.key===key())"])if(!watchLater.includes(token))throw Error("Watch Later persistence regression: "+token);
+// Command palette and Watch Later refinements must invalidate the app shell.
+// Collection import/create must roll back in-memory mutations if storage fails.
+const collectionSource=read("collections.js");
+for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collectionSource.includes(token))throw Error("Collection transaction regression missing: "+token);
+// Collection transaction changes ship in the refreshed app shell.
+// A stalled network fetch should not block cached assets indefinitely.
+if(!sw.includes("setTimeout(()=>resolve(null),4500)"))throw Error("Static asset network requests must have a bounded fallback delay");
+if(!sw.includes("Promise.race([")||!sw.includes("finally(()=>clearTimeout(timeoutId))"))throw Error("Asset timeout race must clean its timer");
+if(!sw.includes("const refresh = fetch(request).then(async response => {"))throw Error("Background asset refresh should still populate cache after timeout");
+
+
+// API requests must enforce a deadline even when AbortController is unavailable.
+const apiSource=read("app.js");
+if(!apiSource.includes('Promise.race([request,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error("Request timed out. Check your connection and try again.")),15000)})])'))throw Error("API requests need a timeout fallback when AbortController is unavailable");
+if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. Check your connection and try again."))'))throw Error("AbortController API timeout should reject promptly with a clear message");
+
+
+// Player resilience cancels deferred work and pending recovery on pagehide.
+const playerLifecycleResilience=read("player-resilience.js");
+if(!playerLifecycleResilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
+if(!playerLifecycleResilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}else if(active()&&stalledAt&&video.readyState<3){scheduleStallRecovery()}})'))throw Error("Hidden page must cancel and visible page must re-arm stall recovery work");
+
+
+// Navigation network fetches have a bounded wait and retain background shell refresh.
+const navigationSW=read("sw.js");
+if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
+if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
+if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
+if(!/const SHELL_CACHE = "storyspace-shell-v\d+"/.test(navigationSW))throw Error("Service worker shell cache must use a versioned cache key");
+
+ 
+// Navigation cache failures must never convert a valid network response into an error.
+if(!navigationSW.includes('const shellPromise=caches.open(SHELL_CACHE).catch(()=>null)'))throw Error("Navigation cache open failures must be tolerated");
+if(!navigationSW.includes('if(cache)try{await cache.put("./index.html",response.clone())}catch{/* Cache quota must not block navigation. */}'))throw Error("Shell cache writes must be guarded when Cache Storage is unavailable");
+if(!navigationSW.includes('if(cache)try{const fallback=await cache.match("./index.html");if(fallback)return fallback}catch{/* Cache access failure should not block the network response. */}'))throw Error("Shell cache reads must not block navigation fallback");
+if(!navigationSW.includes('return response||Response.error();'))throw Error("Network response must remain fallback when cache lookup fails");
+
+ 
+// Runtime/shell cache lookup failures are non-fatal to network-first asset delivery.
+if(!navigationSW.includes('const runtimePromise = caches.open(RUNTIME_CACHE).catch(() => null)'))throw Error("Runtime cache open failures must be tolerated");
+if(!navigationSW.includes('const shellPromise = caches.open(SHELL_CACHE).catch(() => null)'))throw Error("Shell cache open failures must be tolerated during asset requests");
+if(!navigationSW.includes('return (runtime && await runtime.match(request)) || (shell && await shell.match(request)) || null;'))throw Error("Asset cache reads must guard unavailable cache handles");
+if(!navigationSW.includes('Cache read failures should not reject the fetch event.'))throw Error("Asset cache read failure must be contained");
+
+ 
+// Up-next countdown pauses in hidden tabs and releases timers on pagehide.
+if(!next.includes("function startTimer(reset=true)"))throw Error("Up-next timer must preserve remaining time when resumed");
+if(!next.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){stopTimer();'))throw Error("Up-next countdown must pause when tab is hidden");
+if(!next.includes('else if(!panel.hidden&&auto.checked&&remaining>0)startTimer(false)'))throw Error("Up-next countdown must resume with preserved remaining time");
+if(!next.includes('window.addEventListener("pagehide",clear)'))throw Error("Up-next timers must be cleaned up on pagehide");
+if(!next.includes("timer=setTimeout(tick,1000)"))throw Error("Up-next countdown must use cancellable timeout");
+
+ 
+// Media server API calls (except explicitly signalled chunk uploads) have bounded deadlines.
+const uploads=read("media-uploads.js");
+if(!uploads.includes('"Media server request timed out after "+Math.round(deadlineMs/1000)+" seconds.'))throw Error("Media server API requests need configurable timeout messaging");
+if(!uploads.includes("const deadline=new Promise((_,reject)=>{timeout=setTimeout(()=>{controller?.abort();reject(new Error("))throw Error("Media API requests should race against a deadline");
+if(!uploads.includes("Promise.race([fetchPromise,deadline])"))throw Error("Media API timeout must work even without AbortController");
+if(!uploads.includes("...fetchOptions,credentials:\"omit\",headers:requestHeaders"))throw Error("Media requests must preserve caller options and omit credentials");
+if(!uploads.includes("!options.signal&&typeof AbortController!==\"undefined\"?new AbortController():null"))throw Error("Upload chunk cancellation signals must be preserved");
+
+
+// Media uploader timeouts distinguish ordinary API requests from explicitly long chunk uploads.
+if(!uploads.includes('const {timeoutMs:deadlineMs=25000,...fetchOptions}=options'))throw Error("Media request deadlines must be configurable per request");
+if(!uploads.includes('body:blob,signal:controller.signal,timeoutMs:120000'))throw Error("Chunk uploads must retain their 120-second deadline");
+if(!uploads.includes('Math.round(deadlineMs/1000)'))throw Error("Deadline errors should report their configured duration");
+if(!uploads.includes('const catalog=await request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"})'))throw Error("Admin catalog refresh must use bounded request helper");
+if(!uploads.includes('request(root,"/api/catalog",cfg.uploadToken||"",{cache:"no-store"})'))throw Error("Community catalog refresh must use bounded request helper");
+if(!uploads.includes('const healthData=await request(root,"/health","",{cache:"no-store",timeoutMs:8000})'))throw Error("Media connection validation must be bounded");
+
+
+// Community library retains the last public catalog for offline display without blocking server refresh.
+const communityUploads=read("media-uploads.js");
+for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array.isArray(cached.items)","saveCommunityCatalogCache(root,items)","items=readCommunityCatalogCache(root)||[]","Offline · showing saved catalog","communityCatalogStatus"])if(!communityUploads.includes(token))throw Error("Offline community catalog cache behavior missing: "+token);
+
+
+// Continue Watching hub refreshes saved progress from other tabs and preserves keyboard focus during updates.
+const resumeHub=read("resume-hub.js");
+for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null","window.addEventListener(\"focus\",()=>{if(hub.hidden)render()})","document.addEventListener(\"visibilitychange\",()=>{if(!document.hidden&&hub.hidden)render()})","resume.dataset.resumeAction=\"resume\"","remove.dataset.resumeAction=\"clear\"","focus({preventScroll:true})"])if(!resumeHub.includes(token))throw Error("Continue Watching live-sync behavior missing: "+token);
+
+
+// Expired upload sessions are cleaned periodically without deleting sessions currently locked by active requests.
+const mediaServerSource=read("../home-media/server.mjs");
+if(!mediaServerSource.includes("if(sessionLocks.has(id))continue;"))throw Error("Expired-session cleanup must skip locked uploads");
+if(!mediaServerSource.includes("setInterval(()=>{try{removeExpiredUploadSessions()}catch(error){console.warn(\"Upload session cleanup failed\",error)}},30*60*1000)"))throw Error("Upload session cleanup must run periodically");
+if(!mediaServerSource.includes("uploadSessionCleanup.unref?.()"))throw Error("Session cleanup timer must not hold the server process open");
+
+
+// Player stall recovery uses bounded exponential backoff and resumes scheduling when a hidden tab becomes visible.
+const recoveryCooldown=read("player-resilience.js");
+for(const token of ["autoRecoveryAttempts=0","function scheduleStallRecovery()","autoRecoveryAttempts>=3","8500*Math.pow(2,autoRecoveryAttempts)","autoRecoveryAttempts=0;lastAutoRecoveryAt=0","else if(active()&&stalledAt&&video.readyState<3){scheduleStallRecovery()}"])if(!recoveryCooldown.includes(token))throw Error("Player recovery cooldown/visibility behavior missing: "+token);
+
+
+// Upload-session cleanup tolerates a missing staging directory, reports removals, and isolates per-session filesystem failures.
+const cleanupServer=read("../home-media/server.mjs");
+for(const token of ["if(error.code===\"ENOENT\")return removed;","if(sessionLocks.has(id))continue;","return removed;","Could not remove expired upload session","Initial upload session cleanup failed"])if(!cleanupServer.includes(token))throw Error("Upload cleanup resilience missing: "+token);
+
+
+// Upload initialization rolls back partial staging files when session metadata cannot be persisted.
+const initSource=read("../home-media/server.mjs");
+if(!initSource.includes("Session creation is atomic from the client's perspective"))throw Error("Upload initialization must document transactional cleanup");
+if(!initSource.includes('fs.rmSync(files.data+".tmp",{force:true});'))throw Error("Upload initialization must remove a failed metadata temp file");
+if(!initSource.includes('fs.rmSync(files.part,{force:true});\n      throw error;'))throw Error("Upload initialization must remove its orphaned partial file");
+const chunkRollbackSource=read("../home-media/server.mjs");
+for(const token of ["fs.truncateSync(files.part,current)","Chunk rollback failed; upload session was discarded","offset:current"])if(!chunkRollbackSource.includes(token))throw Error("Failed upload chunks must roll back to the last committed offset: "+token);
+
+
+// Search results use watch-history affinity and expose language alongside genre, type and year filters.
+const searchRanking=read("app.js");
+if(!searchRanking.includes("genreAffinity+=Math.min(1.8,overlap*.55)*recency*completion"))throw Error("Search ranking must include recency- and completion-weighted watch-history genre affinity");
+if(!searchRanking.includes('languageControl=$("browseLanguage")'))throw Error("Browse filters must include language selection");
+if(!searchRanking.includes('languageControl.value.toLowerCase()'))throw Error("Browse language filter must be applied to results");
+
+
+// Player track pickers expose language and accessibility/channel metadata when available.
+const playerSettings=read("player-settings.js");
+if(!playerSettings.includes("function trackLabel(track,index,kind)"))throw Error("Player track labels should include descriptive metadata");
+if(!playerSettings.includes("trackLabel(track,entry.index,\"caption\")"))throw Error("Caption picker must use descriptive track labels");
+if(!playerSettings.includes("trackLabel(ats[i],i,\"audio\")"))throw Error("Audio picker must use descriptive track labels");
+
+
+// Profile and watchlist changes sync across tabs without switching the active profile.
+const profileSyncSource=read("app.js");
+if(!profileSyncSource.includes('window.addEventListener("storage",event=>'))throw Error("Cross-tab profile sync must listen for storage updates");
+if(!profileSyncSource.includes('event.key!==PROFILE_STORE||!event.newValue'))throw Error("Cross-tab sync must only consume profile-store changes");
+if(!profileSyncSource.includes('remote.updatedAt<=(Number(current?.updatedAt)||0)'))throw Error("Cross-tab profile sync must reject stale profile snapshots");
+if(!profileSyncSource.includes('showToast("Profile and watchlist synced from another tab")'))throw Error("Cross-tab profile sync should announce applied changes");
+if(!profileSyncSource.includes("const LIBRARY_OPS_PREFIX=\"storyspace.libraryOps.v1:\""))throw Error("Cross-device library conflict queue must be versioned");
+if(!profileSyncSource.includes("async function reconcileLibraryOps(serverItems)"))throw Error("Cross-device library changes must be reconciled against server snapshots");
+if(!profileSyncSource.includes("remoteAt>=(Number(op?.updatedAt)||0)"))throw Error("Newer server library changes must win over stale local operations");
+if(!profileSyncSource.includes("queueLibraryOp(m.apiId,present)"))throw Error("Offline watchlist mutations must be queued before network requests");
+if(!profileSyncSource.includes("Saved locally · will sync when you reconnect:"))throw Error("Failed watchlist writes must remain locally visible and retryable");
+if(!profileSyncSource.includes("function clearLibraryOp(titleId,expected)"))throw Error("A completed stale request must not clear a newer watchlist intent");
+if(!profileSyncSource.includes("const queuedOp=queueLibraryOp(m.apiId,present)"))throw Error("Each watchlist request must retain its own operation version");
+if(!profileSyncSource.includes("clearLibraryOp(m.apiId,queuedOp)"))throw Error("Watchlist completion must clear only its matching queued operation");
+if(!profileSyncSource.includes("ops[id]?.updatedAt===op.updatedAt&&ops[id]?.present===op.present&&ops[id]?.sequence===op.sequence"))throw Error("Background reconciliation must preserve newer in-flight watchlist changes");
+if(!profileSyncSource.includes("const libraryWriteQueues=new Map()"))throw Error("Watchlist writes must be serialized per title to avoid out-of-order server state");
+if(!profileSyncSource.includes("function sendLibraryOp(titleId,op)"))throw Error("Watchlist writes must share a per-title operation queue");
+if(!profileSyncSource.includes("sequence:++libraryOpSequence"))throw Error("Rapid repeated watchlist actions need distinct operation identities even within one millisecond");
+if(!profileSyncSource.includes("current.sequence!==expected?.sequence"))throw Error("Watchlist cleanup must match the exact operation sequence");
+if(!profileSyncSource.includes("sendLibraryOp(m.apiId,queuedOp)"))throw Error("Interactive watchlist writes must use the serialized operation queue");
+if(!profileSyncSource.includes("await sendLibraryOp(id,op)"))throw Error("Background watchlist reconciliation must use the serialized operation queue");
+
+
+
+// Explicit offline media saves are bounded, removable, and restore playback after a network loss.
+const offlinePlayer=read("player-offline.js");
+if(!offlinePlayer.includes('const CACHE="storyspace-offline-media-v1",MAX_BYTES=250*1024*1024'))throw Error("Offline media cache must use a dedicated cache and bounded size");
+if(!offlinePlayer.includes("cache.put(url,cachedResponse.clone())"))throw Error("Offline media save must persist the complete response");
+if(!offlinePlayer.includes("async function evictForQuota(cache,requiredBytes,keepUrl)"))throw Error("Offline cache must evict least-recent copies before exhausting device quota");
+if(!offlinePlayer.includes("async function touchCached(cache,url,response)"))throw Error("Offline cache recency must refresh when a saved video is played");
+if(!offlinePlayer.includes('x-storyspace-cached-at'))throw Error("Offline cache entries must retain recency metadata for eviction");
+if(!offlinePlayer.includes('error?.name!=="QuotaExceededError"'))throw Error("Quota errors must trigger a single safe eviction retry");
+if(!offlinePlayer.includes('Math.min(500*1024*1024,quota*.35)'))throw Error("Offline cache must enforce a bounded per-origin storage budget");
+
+if(!offlinePlayer.includes("await cache.delete(url)"))throw Error("Offline copies must be removable from device storage");
+if(!offlinePlayer.includes('window.addEventListener("offline",()=>switchToCached()'))throw Error("Player must recover from a network loss using a saved copy");
+if(!offlinePlayer.includes('window.addEventListener("online",restoreNetwork)'))throw Error("Player must restore the network stream after connectivity returns");
+if(!offlinePlayer.includes("if(switching)return;if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=\"\"}"))throw Error("Offline blob URLs must be released when the player closes or changes source");
+if(!offlinePlayer.includes("getElementById(\"playerClose\")?.addEventListener(\"click\""))throw Error("Closing the player must release an offline blob URL");
+if(!h.includes('id="playerOfflineToggle"')||!h.includes('src="player-offline.js"'))throw Error("Player offline controls must be available in the player UI");
+if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module must be included in the service worker shell");
+
+
+// Responsive browse and player settings retain usable controls at mobile widths.
+const responsiveStyles=read("styles.css"),responsivePlayer=read("player-settings.css");
+if(!responsiveStyles.includes("@media(max-width:640px)"))throw Error("Browse filters need a compact mobile layout");
+if(!responsiveStyles.includes("grid-template-columns:repeat(2,minmax(0,1fr))"))throw Error("Browse controls must use a two-column mobile grid");
+if(!responsivePlayer.includes("@media(max-width:620px)"))throw Error("Player settings need a mobile layout");
+if(!responsivePlayer.includes(".player-offline-status{grid-column:1/-1}"))throw Error("Offline status must span the mobile player controls");
+
+// Personalized search ranking is deterministic and responds to history, recency and completion.
+const vm=require("node:vm"),rankingStart=a.indexOf("function currentDaypart(){"),rankingEnd=a.indexOf("function recordInterest(",rankingStart);
+if(rankingStart<0||rankingEnd<=rankingStart)throw Error("Search ranking functions must remain independently testable");
+const rankingContext={personalized:{preferences:{genres:[],moods:[],languages:[],balance:"explore"},history:[{id:1,count:4,at:Date.now()}]},movies:[{id:1,genre:"Sci-Fi",progress:60}],titleTokens:s=>String(s||"").split(/[,|]/).map(x=>x.trim().toLowerCase()).filter(Boolean)};
+vm.runInNewContext(a.slice(rankingStart,rankingEnd)+";globalThis.__ranked=ranked;globalThis.__scoreTitle=scoreTitle;",rankingContext);
+const rankTitles=[{id:2,genre:"Sci-Fi",score:7},{id:3,genre:"Drama",score:7}];
+if(rankingContext.__ranked(rankTitles)[0].id!==2)throw Error("Recent Sci-Fi watch history should improve related search ranking");
+const incomplete={id:4,genre:"Drama",score:8,progress:0},completed={id:4,genre:"Drama",score:8,progress:96};
+if(!(rankingContext.__scoreTitle(incomplete)>rankingContext.__scoreTitle(completed)))throw Error("Nearly completed titles should receive a relevance penalty");
+const firstOrder=rankingContext.__ranked(rankTitles).map(item=>item.id).join(",");
+const secondOrder=rankingContext.__ranked(rankTitles).map(item=>item.id).join(",");
+if(firstOrder!==secondOrder)throw Error("Personalized search ranking must be deterministic for a fixed session state");
+rankingContext.personalized.preferences.genres=["Drama"];
+if(!(rankingContext.__scoreTitle(rankTitles[1])>rankingContext.__scoreTitle(rankTitles[0])))throw Error("Explicit genre preferences should affect personalized relevance");
+
+// TV directional navigation wraps at shelf boundaries and preserves reduced-motion support.
+const tvNavigation=read("tv-navigation.js");
+if(!tvNavigation.includes("const wrap=list.filter(e=>e!==cur)"))throw Error("TV remote navigation must wrap when no directional neighbor exists");
+if(!tvNavigation.includes("editable(e.target)"))throw Error("TV remote navigation must not steal arrow keys from text inputs");
+if(!tvNavigation.includes('matchMedia("(prefers-reduced-motion: reduce)")'))throw Error("TV focus scrolling must honor reduced-motion preferences");
+if(!tvNavigation.includes('e.matches(":disabled")'))throw Error("TV navigation must skip controls disabled directly or by a fieldset");
+if(!tvNavigation.includes('e.getAttribute("aria-disabled")==="true"'))throw Error("TV navigation must skip ARIA-disabled controls");
+if(!tvNavigation.includes('e.closest("[hidden],[inert],[aria-hidden=\'true\']")'))throw Error("TV navigation must skip descendants of hidden, inert and aria-hidden regions");
+if(!tvNavigation.includes("!e.isConnected"))throw Error("TV navigation must ignore detached stale focus candidates");
+

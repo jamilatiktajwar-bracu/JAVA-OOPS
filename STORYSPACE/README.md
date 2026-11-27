@@ -38,3 +38,13 @@ No trademark clearance or patentability/freedom-to-operate determination has bee
 - Living-room focus navigation is available by launching the web app with `?tv=1` (example `http://localhost:5173/?tv=1`).
 - Desktop Electron, Capacitor mobile, tvOS SwiftUI, and Android TV integration scaffolds live in `platforms/`.
 - Platform build, signing, device testing, licensed streaming, and store approvals remain platform-specific. See [platform guide](platforms/README.md).
+
+- Player keyboard shortcuts: `←/→` seek 5 seconds, `Shift+←/→` seek 10 seconds, `J/L` seek 10 seconds, `R` restarts at the beginning of the current seekable window (VOD or live DVR), `T` toggles theater mode, and `?` opens the player shortcut guide. Successful seek actions announce the destination in player feedback.
+
+- Player caption selection filters out metadata, chapter and audio-description text tracks, while retaining the source track indexes so saved language preferences remain stable.
+
+- Saved regional audio-language preferences continue to resolve against indexed audio tracks independently of caption-track filtering.
+
+- Player caption and audio settings announce the available track counts and the currently selected track through a polite status message.
+
+- Native/browser caption and audio track changes synchronize the visible player selectors, saved language preferences, and accessible status feedback.

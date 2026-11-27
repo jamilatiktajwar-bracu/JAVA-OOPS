@@ -65,8 +65,10 @@
 
     let activeMood = "feel-good";
     const dismissed=new Set();
-    try{const saved=JSON.parse(localStorage.getItem("storyspace.discoveryDismissed")||"[]");if(Array.isArray(saved))saved.slice(0,300).forEach(id=>{if(typeof id==="string"||typeof id==="number")dismissed.add(String(id))})}catch{}
-    function persistDismissed(){try{localStorage.setItem("storyspace.discoveryDismissed",JSON.stringify([...dismissed].slice(0,300)))}catch{}}
+    const dismissalKey=()=>"storyspace.discoveryDismissed.v2."+String(localStorage.getItem("storyspace.activeProfile")||"guest");
+    function loadDismissed(){dismissed.clear();try{const saved=JSON.parse(localStorage.getItem(dismissalKey())||"[]");if(Array.isArray(saved))saved.slice(0,300).forEach(id=>{if(typeof id==="string"||typeof id==="number")dismissed.add(String(id))})}catch{}}
+    loadDismissed();
+    function persistDismissed(){try{localStorage.setItem(dismissalKey(),JSON.stringify([...dismissed].slice(0,300)))}catch{}}
     try {
       const savedMood = localStorage.getItem("storyspace.discoveryMood");
       if (moods.some(mood => mood.id === savedMood)) activeMood = savedMood;
@@ -80,7 +82,11 @@
       history.forEach(entry => {
         const title = catalog.find(m => String(m.id) === String(entry.id) || String(m.apiId || "") === String(entry.id));
         if (!title) return;
-        const weight = Math.min(3, Math.max(1, Number(entry.count) || 1));
+        const ageDays=Math.max(0,(Date.now()-(Number(entry.at)||Date.now()))/86400000);
+        const recency=Math.max(0.25,1-ageDays/120);
+        const progress=Math.max(0,Math.min(100,Number(title.progress)||0));
+        const completion=progress>=95?0.35:progress>0?1.2:1;
+        const weight=Math.min(3,Math.max(1,Number(entry.count)||1))*recency*completion;
         tokens(title.genre || title.genres).forEach(g => historyGenres.set(g, (historyGenres.get(g) || 0) + weight));
       });
       return { genres: tokens(prefs.genres), moods: tokens(prefs.moods), languages: tokens(prefs.languages), balance: prefs.balance || "balanced", historyGenres };
@@ -106,15 +112,17 @@
         const preferenceMoodHits = taste.moods.filter(m => movieMoods.includes(m) || details.includes(m)).length;
         const languageMatch = taste.languages.some(l => String(movie.language || "English").toLowerCase().includes(l));
         const historyAffinity = genres.reduce((sum, g) => sum + Math.min(2.2, (taste.historyGenres.get(g) || 0) * 0.28), 0);
-        const historyItem = typeof personalized !== "undefined" && personalized.history?.find(h => String(h.id) === String(movie.id));
+        const historyItem = typeof personalized !== "undefined" && personalized.history?.find(h => String(h.id) === String(movie.id) || String(h.id) === String(movie.apiId || ""));
         const familiarBoost = taste.balance === "comfort" && historyItem ? 1.1 : 0;
         const exploreBoost = taste.balance === "explore" && !historyItem && !preferenceHits ? 1.6 : 0;
+        const progress=Math.max(0,Math.min(100,Number(movie.progress)||0));
+        const completionBoost=progress>=95?-2.2:progress>0?Math.min(1.4,progress/60):0;
         const savedPenalty = typeof state !== "undefined" && state.list?.has(movie.id) ? 0.2 : 0;
         const rating = Number(movie.score || movie.communityScore || 0);
         const yearBoost = Number(movie.year || movie.releaseYear || 0) >= 2025 ? 0.25 : 0;
         const originalBoost = movie.original ? 0.2 : 0;
         const jitter = shuffleMix ? Math.random() * 1.7 : 0;
-        const score = rating * 0.55 + moodHits * 2.4 + preferenceHits * 4.8 + preferenceMoodHits * 2.2 + (languageMatch ? 1.1 : 0) + historyAffinity + familiarBoost + exploreBoost + yearBoost + originalBoost - savedPenalty + jitter;
+        const score = rating * 0.55 + moodHits * 2.4 + preferenceHits * 4.8 + preferenceMoodHits * 2.2 + (languageMatch ? 1.1 : 0) + historyAffinity + familiarBoost + exploreBoost + yearBoost + originalBoost + completionBoost - savedPenalty + jitter;
         return { movie, score, index, reason: explain(movie, taste, mood) };
       }).sort((a, b) => b.score - a.score || a.index - b.index);
     }
@@ -258,7 +266,7 @@
     document.getElementById("clearSearch")?.addEventListener("click", () => queueMicrotask(syncVisibility));
     render(false);
     document.addEventListener("storyspace:interest-updated",()=>render(false));
-    document.addEventListener("storyspace:profile-updated",()=>render(false));
+    document.addEventListener("storyspace:profile-updated",()=>{loadDismissed();render(false)});
     document.addEventListener("storyspace:watchlater-updated",()=>render(false));
     syncVisibility();
   }

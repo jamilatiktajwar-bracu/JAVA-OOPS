@@ -36,3 +36,87 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - Search: filter by genre, format, maturity rating and year; reset filters and result counts are available.
 - Preview player: ±10-second skips, playback speed, PiP (where supported), fullscreen and shortcut hints.
 - Local profiles are not backend accounts and do not sync across devices. Preview media remains sample content only.
+
+
+## Playback recovery
+
+- The preview player shows a buffering/recovery overlay for delayed media data and provides a manual retry action when a source fails.
+- A prolonged `stalled` event triggers one automatic source reload after 8.5 seconds, preserving the current playback position and attempting to resume playback.
+- Automatic stall recovery is rate-limited to one attempt per 25 seconds to avoid repeated reload loops. If recovery fails, the manual retry remains available.
+
+
+## Player seeking safeguards
+
+- The timeline clamps seek input to a finite, valid seek window and ignores non-numeric slider values.
+- Finite VOD media seeks from zero to its duration; live/DVR media uses the latest browser-reported seekable range and labels the timeline as LIVE.
+- Seek previews use the same seek window as the player, so preview time and committed seek position stay aligned.
+- Pointer cancellation clears the transient seek-preview state.
+
+
+## Playback diagnostics
+
+- The player status line reports the currently decoded video dimensions, media duration/live state, and buffered seconds ahead of the playhead.
+- Network and ready-state labels help distinguish loading, metadata-only, frame-ready, and buffered playback states.
+- When supported by the browser, dropped-frame counters expose rendering pressure; playback-rate changes are reflected immediately.
+- Diagnostics use native media element APIs and gracefully omit unsupported frame-quality details.
+
+
+## Shareable playback diagnostics
+
+- The preview player includes a **Copy diagnostics** action below the live media status.
+- The report captures source origin only (not the URL path, query or fragment), playback state, dimensions, playback position/duration, buffer ahead, ready/network state, playback rate, online status, dropped-frame support/count and browser user agent.
+- Avoid sharing the browser user-agent string if you prefer not to disclose device/browser details.
+- Copy uses the Clipboard API when available and a legacy selection fallback otherwise. It is user-triggered; the report is not uploaded automatically.
+
+
+## Buffer health hints
+
+- Player diagnostics classify buffering as offline, loading media, waiting for data, low buffer (<2 seconds), building buffer (2–8 seconds), or healthy buffer (8 seconds or more). Paused/ended playback is not misclassified as a low buffer.
+- The hint is descriptive only; it does not change bitrate, seek position, or playback automatically.
+
+
+## Keyboard seeking for live/DVR
+
+- Keyboard seek shortcuts (Left/Right, J/L) use the latest seekable DVR window when the source is live and does not expose a finite duration.
+- Seeking is clamped to the available DVR window or VOD duration; unavailable seek windows are ignored safely.
+
+
+## Live-edge shortcut
+
+- Press `G` in the player to jump to the current live edge of a seekable DVR stream. It is a safe no-op for VOD or when a valid live seek range is unavailable.
+
+
+## Percentage seeking
+
+- Press `0`–`9` to seek to 0%, 10%, …, 90% of the current VOD duration or live DVR seek window.
+- Percentage seeking is clamped to the current valid window, provides accessible feedback, and safely ignores unavailable seek ranges.
+
+
+## Home/End seeking
+
+- `Home` jumps to the beginning of VOD or the earliest available DVR seek point.
+- `End` jumps to the VOD end or current live edge for DVR. Both safely no-op when a seek range is unavailable.
+
+
+## Volume controls
+
+- Up/down arrows adjust volume in 5% increments and show accessible volume feedback.
+- Shift + up/down adjusts volume in 10% increments. Volume remains clamped from 0 to 100%.
+
+
+## Playback speed shortcuts
+
+- Press `<` to decrease playback speed by 0.25×, down to 0.25×.
+- Press `>` to increase playback speed by 0.25×, up to 2×.
+- The player announces the active speed accessibly.
+
+
+## Touch seeking on live streams
+
+Touch horizontal swipes and double-tap skip now use the active seekable range, so DVR streams stay inside their available rewind window instead of incorrectly clamping against an infinite live duration.
+
+
+## Caption language preferences
+
+- Caption language preferences normalize underscore and hyphen locale tags and match regional variants (for example, `en` and `en-US`) when tracks are refreshed.
+- Explicitly choosing captions Off remains respected; unavailable saved languages safely fall back to Off rather than selecting an unrelated track.

@@ -1,9 +1,9 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v61";
+const SHELL_CACHE = "storyspace-shell-v132";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
-  "./player-gestures.css", "./player-gestures.js", "./player-shortcuts.css", "./player-shortcuts.js", "./player-settings.css", "./player-settings.js", "./tv-navigation.js", "./player-next.js", "./player-mini.js", "./player-queue.js", "./player-ux.js", "./player-resilience.js", "./player-media-info.js", "./player-playback-diagnostics.js", "./player-resilience.css", "./interaction-polish.css", "./watch-later.css", "./watch-later.js", "./resume-hub.css", "./resume-hub.js", "./command-palette.css", "./command-palette.js", "./quick-discovery.css", "./quick-discovery.js", "./media-uploads.js", "./collections.css", "./collections.js", "./native-bridge.js",
+  "./player-gestures.css", "./player-gestures.js", "./player-shortcuts.css", "./player-shortcuts.js", "./player-settings.css", "./player-settings.js", "./player-offline.js", "./tv-navigation.js", "./player-next.js", "./player-mini.js", "./player-queue.js", "./player-ux.js", "./player-controls.js", "./player-resilience.js", "./player-media-info.js", "./player-playback-diagnostics.js", "./player-resilience.css", "./player-controls.css", "./interaction-polish.css", "./watch-later.css", "./watch-later.js", "./resume-hub.css", "./resume-hub.js", "./command-palette.css", "./command-palette.js", "./quick-discovery.css", "./quick-discovery.js", "./media-uploads.js", "./collections.css", "./collections.js", "./native-bridge.js",
   "./manifest.webmanifest", "./assets/storyspace-icon.svg"
 ];
 const MAX_RUNTIME_ENTRIES = 80;
@@ -50,37 +50,51 @@ self.addEventListener("fetch", event => {
   if (url.pathname.includes("/api/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request);
-        if (response.ok) {
-          const cache = await caches.open(SHELL_CACHE);
-          await cache.put("./index.html", response.clone());
-        }
-        return response;
-      } catch {
-        const shell = await caches.open(SHELL_CACHE);
-        return (await shell.match("./index.html")) || Response.error();
-      }
-    })());
+    const shellPromise=caches.open(SHELL_CACHE).catch(()=>null);
+    const network=fetch(request).then(async response=>{
+      if(response.ok){const cache=await shellPromise;if(cache)try{await cache.put("./index.html",response.clone())}catch{/* Cache quota must not block navigation. */}}
+      return response;
+    }).catch(()=>null);
+    let timeoutId=0;
+    const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})]).finally(()=>clearTimeout(timeoutId)).then(async response=>{
+      if(response?.ok)return response;
+      const cache=await shellPromise;
+      if(cache)try{const fallback=await cache.match("./index.html");if(fallback)return fallback}catch{/* Cache access failure should not block the network response. */}
+      return response||Response.error();
+    });
+    event.waitUntil(network.then(()=>undefined).catch(()=>{}));
+    event.respondWith(navigation);
     return;
   }
 
   if (["script", "style", "image", "font"].includes(request.destination)) {
-    const runtimePromise = caches.open(RUNTIME_CACHE);
-    const shellPromise = caches.open(SHELL_CACHE);
+    const runtimePromise = caches.open(RUNTIME_CACHE).catch(() => null);
+    const shellPromise = caches.open(SHELL_CACHE).catch(() => null);
+    const cachedAsset = async () => {
+      try {
+        const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
+        return (runtime && await runtime.match(request)) || (shell && await shell.match(request)) || null;
+      } catch {
+        // Cache read failures should not reject the fetch event.
+        return null;
+      }
+    };
     const refresh = fetch(request).then(async response => {
-      try { await updateRuntimeCache(request, response); } catch { /* Cache quota must not block a network response. */ }
+      if (response.ok) {
+        try { await updateRuntimeCache(request, response); } catch { /* Cache quota must not block a network response. */ }
+      }
       return response;
+    }).catch(() => null);
+    let timeoutId=0;
+    const networkFirst = Promise.race([
+      refresh,
+      new Promise(resolve => { timeoutId=setTimeout(()=>resolve(null),4500); })
+    ]).finally(()=>clearTimeout(timeoutId)).then(async response => {
+      if(response?.ok)return response;
+      return (await cachedAsset()) || response || Response.error();
     });
-    // Extend the service-worker lifetime before the event handler returns.
+    // Fresh assets win online, but slow/offline connections get cached fallback within 4.5 seconds.
     event.waitUntil(refresh.then(() => undefined).catch(() => {}));
-    event.respondWith((async () => {
-      const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
-      const cached = await runtime.match(request) || await shell.match(request);
-      if (cached) return cached;
-      try { return await refresh; }
-      catch { return (await runtime.match(request)) || (await shell.match(request)) || Response.error(); }
-    })());
+    event.respondWith(networkFirst);
   }
 });

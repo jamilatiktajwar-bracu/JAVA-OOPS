@@ -1,6 +1,8 @@
 # Storyspace Home Media (Windows PC host)
 
-This optional service streams owner-approved media from your Windows PC using HTTP byte ranges. It binds to **127.0.0.1 only**; never expose port 8787 directly through your router. You can publish it through a temporary Cloudflare Quick Tunnel (no domain or Cloudflare account required) or a stable named tunnel with your own domain.
+This optional service streams owner-approved media from your Windows PC using HTTP byte ranges. It binds only to loopback addresses (`127.0.0.1`, `::1`, or `localhost`) and rejects public bind addresses even if `STORYSPACE_MEDIA_HOST` is misconfigured; never expose port 8787 directly through your router. You can publish it through a temporary Cloudflare Quick Tunnel (no domain or Cloudflare account required) or a stable named tunnel with your own domain.
+
+Catalog entries are validated before use: media filenames must be the generated UUID plus a supported extension, and the stored MIME type, title, size, and timestamp must be valid. Unsafe or malformed entries are ignored, preventing a tampered catalog filename from being used for streaming or moderation file deletion.
 
 ## Requirements
 
@@ -68,11 +70,11 @@ Do not commit local Cloudflare credentials or config files. A named tunnel is op
 1. Open Storyspace and choose **Upload**.
 2. Enter the public HTTPS address printed by Cloudflared (Quick Tunnel) or your named hostname.
 3. Enter the `uploadToken` value from the private `media-host.json` file and save the connection.
-4. Enter a title, select an MP4/M4V/WebM/MOV file, and start the upload. The server accepts files up to 15 GB in 8 MiB resumable chunks.
+4. Enter a title, select an MP4/M4V/WebM/MOV file, and start the upload. The server accepts files up to 15 GB in 8 MiB resumable chunks, rejects empty or over-limit chunks before writing, and reports the authoritative byte offset when a client reconnects. Incomplete upload sessions and abandoned staging files are swept at startup and expired sessions are also removed when accessed during runtime; the default retention is 7 days. Set `STORYSPACE_MEDIA_SESSION_TTL_MS` to an integer of at least `3600000` milliseconds to change this retention period.
 5. Open the owner approval section in Upload, enter the private `adminToken`, load pending uploads, then approve or reject each item.
 6. Approved items appear in the Community Library and stream through the HTTPS tunnel.
 
-The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified.
+The app keeps connection settings in the current browser session. Its upload queue stores metadata in IndexedDB and, where supported, a file handle. If the browser cannot retain a handle or the app/browser is closed, you may need to reselect the original file to resume. Keep the source video until the upload is fully approved and verified. An uploader can explicitly cancel an unfinished server-side session with `DELETE /api/uploads/{uploadId}` using the `x-storyspace-upload-token` header; this removes both its partial data and session metadata. Cancellation does not delete completed or owner-approved media.
 
 ## 5. Verify keys and troubleshoot authorization
 
@@ -93,9 +95,24 @@ Paste each key only into its matching field. Never interchange the two keys. If 
 ## Security and operating limits
 
 - The upload invitation key is shared among invited uploaders. It does not provide individual user identity, per-user quotas, or per-user revocation. Do not embed either secret in the public app bundle. A secure registered-user integration needs the production Storyspace account backend and short-lived per-user upload credentials.
+- This prototype runs as a single Node.js server process. Upload-session and catalog locks serialize concurrent requests within that process; they are not distributed locks and do not protect multiple server instances sharing the same files. Run one media-server instance per storage directory.
+- Catalog updates use serialized read-modify-write transactions and atomic file replacement. If catalog persistence fails during chunked-upload completion, the completed media file is moved back into staging so the upload can be retried rather than silently orphaned.
+- Published media supports single byte ranges (including suffix and open-ended ranges), `HEAD`, ETag/Last-Modified validators, conditional `If-None-Match`, and `If-Range` fallback. Unsupported multi-range requests return `416`; stream errors terminate the response cleanly.
 - Owner admin requests use a separate admin header. The web client omits ambient browser credentials and does not send the admin key as the uploader key.
 - If the PC is off, asleep, offline, or either process stops, remote upload and playback stop. Configure Windows power settings so the PC does not sleep during hosting.
 - Home upload bandwidth limits concurrent viewers. This is a prototype origin, not a CDN or reliable global streaming service. Large files may use substantial upstream bandwidth and data allowance.
 - A Quick Tunnel URL is temporary and unlisted, not access control, DRM, or copy protection. Anyone with a published media URL can share it. Do not upload content you lack rights to distribute.
 - The script starts the media server and tunnel in separate windows; it does not install a Windows service or guarantee restart after reboot.
 - A successful CI build does not prove a 5–10 GB upload or playback from another country. Test with a small authorized file first, then a large file, and verify from a separate network before inviting viewers.
+
+### Startup configuration validation
+- The media listener accepts only loopback hostnames/addresses and validates the port as an integer from 0 through 65535 (port 0 is useful for automated tests).
+- Upload and chunk byte limits must be positive safe integers, and a chunk limit larger than the total upload limit is rejected at startup. Invalid values fail fast with a setting-specific error instead of silently disabling limits or creating confusing runtime failures.
+- The upload-session retention TTL is also validated before storage initialization: it must be an integer of at least one hour. The default remains seven days.
+
+### HTTP server lifecycle
+- Header parsing is capped at 15 seconds, request bodies at 30 minutes, keep-alive at 5 seconds, and header count at 100. The 30-minute request window supports large uploads on slower connections.
+- SIGINT/SIGTERM stops accepting new requests, closes idle connections, drains active work, and force-closes remaining sockets after a 30-second grace period.
+
+### Playback integrity
+- Before streaming, the server checks the media file's actual size against its catalog record and returns HTTP 503 for truncated or otherwise size-mismatched media instead of presenting a broken stream as healthy.

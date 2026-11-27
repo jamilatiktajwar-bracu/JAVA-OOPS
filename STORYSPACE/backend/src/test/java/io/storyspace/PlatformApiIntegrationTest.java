@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
   mvc.perform(put("/api/profile/preferences").header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("displayName","Test Explorer","genres",java.util.List.of("Sci-Fi"),"moods",java.util.List.of("Curious"),"languages",java.util.List.of("English"))))).andExpect(status().isOk()).andExpect(jsonPath("$.genres[0]").value("Sci-Fi"));
   MvcResult catalog=mvc.perform(get("/api/catalog")).andExpect(status().isOk()).andReturn();JsonNode first=mapper.readTree(catalog.getResponse().getContentAsString()).get(0);String titleId=first.get("id").asText();
   mvc.perform(get("/api/catalog/for-you").header("Authorization",bearer)).andExpect(status().isOk());
-  mvc.perform(put("/api/library/"+titleId).header("Authorization",bearer)).andExpect(status().isOk());
+  mvc.perform(put("/api/library/"+titleId).header("Authorization",bearer)).andExpect(status().isOk()).andExpect(jsonPath("$.updatedAt").isNotEmpty());
   mvc.perform(get("/api/library").header("Authorization",bearer)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
   mvc.perform(patch("/api/library/"+titleId+"/progress").header("Authorization",bearer).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(java.util.Map.of("progressPercent",40,"currentTime",480.0,"duration",1200.0))))
    .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("IN_PROGRESS")).andExpect(jsonPath("$.progressPercent").value(40))

@@ -365,3 +365,25 @@ html[data-profile-theme="forest"]{--bg:#07150f;--bg2:#0d2017;--surface:#142b20;-
 \n/* Profile-aware home welcome */\n.welcome-line span{display:block;font-family:var(--display);font-size:clamp(19px,2.2vw,26px);letter-spacing:-.35px;color:#eaf4ff}.welcome-line small{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.45;transition:opacity .2s}@media(prefers-reduced-motion:reduce){.welcome-line small{transition:none}}\n.quick-discovery{border-top:1px solid #ffffff14;margin-top:19px;padding-top:17px;position:relative}.quick-discovery-head h3{margin:0;color:#eaf4ff;font-family:var(--display);font-size:16px}.quick-discovery-head p{font-size:10px;color:#91a2b8;margin:5px 0 12px}.quick-discovery-subtitle{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:#8af4e5;margin:14px 0 8px}.quick-discovery-buttons{display:flex;flex-wrap:wrap;gap:7px}.quick-discovery-chip{border:1px solid #ffffff22;background:#ffffff08;color:#d2dfef;border-radius:999px;padding:8px 11px;font-size:10px;transition:all .16s}.quick-discovery-chip:hover{border-color:#8af4e577;background:#8af4e515;color:#b6fff1}.quick-discovery-chip.genre{color:#9caec4}.quick-discovery-chip.genre:hover{color:#b6fff1}.quick-discovery-taste{margin-top:13px;border-radius:10px;padding:10px 12px;background:#8af4e509;border:1px solid #8af4e51b;color:#92b9b7;font-size:10px;line-height:1.5}@media(prefers-reduced-motion:reduce){.quick-discovery-chip{transition:none}}
 /* Keyboard focus visibility for the modal fallback target and close affordance. */
 .player-panel:focus{outline:2px solid #8af4e5;outline-offset:3px}.player-panel .modal-close:focus-visible{outline:2px solid #8af4e5;outline-offset:3px;box-shadow:0 0 0 4px #8af4e522}
+
+/* My Universe search, clear action and useful empty states. */
+.universe-search-label input{width:min(220px,48vw);min-height:38px;background:#17243b;border:1px solid #ffffff24;border-radius:8px;color:var(--white);padding:7px 10px;font:inherit;outline:none}.universe-search-label input:focus-visible{border-color:var(--cyan);box-shadow:0 0 0 3px #8af4e51a}.universe-search-clear{border:1px solid #8af4e52b;border-radius:8px;background:#8af4e50b;color:#aaf9ed;padding:8px 10px;font-size:11px}.universe-search-clear[hidden],.universe-empty-state[hidden]{display:none!important}.universe-empty-state{border:1px dashed #8af4e52b;border-radius:12px;background:#8af4e508;padding:20px;color:#a8bbd1;font-size:12px;line-height:1.6;margin:4px 0 16px}.universe-empty-state:empty{display:none}@media(max-width:600px){.universe-search-label{flex:1 1 100%;justify-content:space-between}.universe-search-label input{width:100%;max-width:260px}.universe-search-clear{flex:1}}
+
+/* My Universe bulk selection actions. */
+.universe-bulk-actions{display:flex;gap:6px;flex-wrap:wrap}.universe-bulk-actions[hidden]{display:none!important}.universe-selection-action{border-color:#8af4e5!important;color:#aaffef!important}.movie-card.universe-selected{outline:2px solid #8af4e5;outline-offset:2px;border-radius:10px}.universe-select-toggle[aria-pressed="true"]{border-color:#8af4e5;color:#aaffef}.universe-bulk-actions .danger{border-color:#ff9b9b35;color:#ffc2c2}.universe-bulk-actions button:disabled{opacity:.4;cursor:not-allowed}
+
+.resume-time-label{display:block;margin:4px 0 0;color:var(--muted,#a8bdd2);font-size:10px;font-weight:650;letter-spacing:.02em}.movie-card:has(.resume-time-label) .progress-track{margin-top:5px}\n
+
+/* Compact browse filters and predictable touch targets on narrow screens. */
+@media(max-width:640px){
+  .browse-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px}
+  .browse-controls label{display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:5px;font-size:10px}
+  .browse-controls select{width:100%;min-width:0;min-height:42px}
+  .browse-count{grid-column:1/-1;margin:0;text-align:right}
+  .filter-reset{min-height:42px}
+}
+@media(max-width:380px){
+  .browse-controls{grid-template-columns:minmax(0,1fr)}
+  .browse-count{grid-column:auto}
+}
+.browse-controls :is(select,button):focus-visible,.player-settings-row :is(select,button,input):focus-visible{outline:2px solid var(--cyan);outline-offset:3px}

@@ -14,6 +14,7 @@
   const themeLabel = theme => ({violet:"Nebula",ocean:"Ocean",ember:"Ember",forest:"Forest"}[theme] || "Nebula");
   let collections = [];
   let activeCollectionId = null;
+  let collectionSearchQuery = "";
 
   function readCollections() {
     try {
@@ -116,6 +117,7 @@
     if (!confirm("Import " + incoming.length + " collection(s)? Matching names will merge stories; existing shelves will not be replaced.")) {
       return {ok:false,reason:"Import cancelled"};
     }
+    const snapshot=collections.map(item=>({...item,items:[...item.items]}));
     let added = 0, merged = 0;
     incoming.forEach(item => {
       const existing = collections.find(c => c.name.toLowerCase() === item.name.toLowerCase());
@@ -131,7 +133,11 @@
       added++;
     });
     if (!added && !merged) return {ok:false,reason:"All collections were skipped because your shelves are full"};
-    if (!saveCollections()) return {ok:false,reason:"Could not save imported collections"};
+    if (!saveCollections()) {
+      collections=snapshot;
+      render();
+      return {ok:false,reason:"Could not save imported collections · Your shelves were restored"};
+    }
     render();
     return {ok:true,added,merged,skipped};
   }
@@ -143,6 +149,10 @@
 
   function movieFor(id) {
     return catalog().find(movie => identify(movie) === String(id));
+  }
+
+  function renderSmartSuggestions() {
+    const host=$("smartCollectionChips");if(!host)return;host.replaceChildren();const counts=new Map();catalog().forEach(movie=>{const raw=movie.genres||movie.genre||movie.category||[];const list=Array.isArray(raw)?raw:String(raw).split(/[|,]/);list.map(x=>typeof x==="object"?x.name:x).filter(Boolean).forEach(name=>{const clean=String(name).trim();if(clean)counts.set(clean,(counts.get(clean)||0)+1)})});const genres=[...counts].filter(([,count])=>count>=2).sort((a,b)=>b[1]-a[1]).slice(0,8);if(!genres.length){host.closest("section").hidden=true;return}host.closest("section").hidden=false;genres.forEach(([genre,count])=>{const button=document.createElement("button");button.type="button";button.className="smart-collection-chip";button.textContent=genre+" · "+count;button.setAttribute("aria-label","Create collection for "+genre+", "+count+" titles");button.addEventListener("click",()=>{const matches=catalog().filter(movie=>{const raw=movie.genres||movie.genre||movie.category||[];const list=Array.isArray(raw)?raw:String(raw).split(/[|,]/);return list.some(item=>String(typeof item==="object"?item.name:item||"").trim().toLowerCase()===genre.toLowerCase())});if(!matches.length)return;let name=cleanName(genre);let suffix=2;while(collections.some(c=>c.name.toLowerCase()===name.toLowerCase()))name=cleanName(genre+" "+suffix++);const result=createCollection(name,"ocean","🎬",genre+" stories");if(result.ok){const shelf=collections.find(c=>c.id===result.id);shelf.items=matches.slice(0,MAX_ITEMS).map(identify);saveCollections();render();if(typeof showToast==="function")showToast("Created "+name+" with "+shelf.items.length+" titles")}else if(typeof showToast==="function")showToast(result.reason)});host.append(button)})
   }
 
   function renderCollectionGrid() {
@@ -213,6 +223,8 @@
     return true;
   }
 
+  const collectionBulkSelection=new Set();let collectionBulkMode=false;
+  function syncCollectionBulkToolbar(found){const toolbar=$("collectionBulkToolbar"),selected=[...collectionBulkSelection].filter(id=>found.some(m=>identify(m)===id));if(toolbar)toolbar.hidden=!collectionBulkMode;const count=$("collectionBulkCount");if(count)count.textContent=selected.length;const remove=$("collectionRemoveSelected");if(remove)remove.disabled=!selected.length;const move=$("collectionMoveSelected");if(move)move.disabled=!selected.length||!$("collectionMoveTarget")?.value;const all=$("collectionSelectAll");if(all)all.textContent=found.length&&found.every(m=>collectionBulkSelection.has(identify(m)) )?"Deselect all":"Select all";}
   function renderCollectionDetail() {
     const detail = $("collectionDetail"), grid = $("collectionsGrid");
     if (!detail || !grid) return;
@@ -233,14 +245,15 @@
     $("collectionDetailCount").textContent = collection.items.length + (collection.items.length === 1 ? " saved story" : " saved stories");
     const row = $("collectionItemsRow");
     row.replaceChildren();
-    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie)));
-    const sortMode = collection.sort || "custom";
+    const found = collection.items.map(movieFor).filter(movie => movie && (typeof kidsSafe !== "function" || kidsSafe(movie))).filter(movie => {const q=collectionSearchQuery.trim().toLowerCase();return !q||[movie.title,movie.name,movie.description,movie.genre,movie.genres,movie.year,movie.cast].flat().filter(Boolean).join(" ").toLowerCase().includes(q)});
+    const sortMode = collection.sort || "custom";const bulkToggle=$("collectionBulkToggle");if(bulkToggle){bulkToggle.setAttribute("aria-pressed",String(collectionBulkMode));bulkToggle.textContent=collectionBulkMode?"Done selecting":"Select stories"}const moveTarget=$("collectionMoveTarget");if(moveTarget){const old=moveTarget.value;moveTarget.replaceChildren(new Option("Choose destination…",""),...collections.filter(x=>x.id!==collection.id).map(x=>new Option(x.name,x.id)));moveTarget.value=collections.some(x=>x.id===old&&x.id!==collection.id)?old:"";const moveBtn=$("collectionMoveSelected");if(moveBtn)moveBtn.disabled=!moveTarget.value||!collectionBulkSelection.size}
     if (sortMode === "title") found.sort((a,b) => String(a.title||a.name||"").localeCompare(String(b.title||b.name||""),undefined,{sensitivity:"base"}));
     else if (sortMode === "recent") found.sort((a,b) => collection.items.indexOf(identify(a))-collection.items.indexOf(identify(b)));
     else if (sortMode === "rating") found.sort((a,b) => (Number(b.rating??b.voteAverage??b.vote_average??b.score)||0)-(Number(a.rating??a.voteAverage??a.vote_average??a.score)||0));
     else if (sortMode === "year") found.sort((a,b) => (Number(String(b.year||b.releaseYear||b.release_date||"").slice(0,4))||0)-(Number(String(a.year||a.releaseYear||a.release_date||"").slice(0,4))||0));
     const sortControl = $("collectionSort");
     if (sortControl) sortControl.value = sortMode;
+    syncCollectionBulkToolbar(found);
     if (!found.length) {
       const empty = document.createElement("p");
       empty.className = "collection-detail-empty";
@@ -251,7 +264,7 @@
       return;
     }
     found.forEach((movie, index) => {
-      const tile = typeof card === "function" ? card(movie) : document.createElement("article");
+      const tile = typeof card === "function" ? card(movie) : document.createElement("article");if(collectionBulkMode){tile.classList.toggle("collection-bulk-selected",collectionBulkSelection.has(identify(movie)));tile.addEventListener("click",event=>{if(event.target.closest("button[data-action],.collection-card-remove,.collection-order-controls"))return;event.preventDefault();event.stopPropagation();if(collectionBulkSelection.has(identify(movie)))collectionBulkSelection.delete(identify(movie));else collectionBulkSelection.add(identify(movie));renderCollectionDetail()})}
       tile.dataset.collectionItemId = identify(movie);
       tile.draggable = sortMode === "custom";
       if (sortMode === "custom") {
@@ -308,7 +321,7 @@
   }
 
   function openCollection(id) {
-    activeCollectionId = String(id);
+    activeCollectionId = String(id);collectionSearchQuery="";if($("collectionSearch"))$("collectionSearch").value="";collectionBulkSelection.clear();collectionBulkMode=false;
     renderCollectionGrid();
     renderCollectionDetail();
     $("collectionDetail")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
@@ -328,8 +341,9 @@
     const id = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
       : "collection-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-    collections.unshift({id, name:clean, description:cleanDescription(description), theme:themes.includes(theme)?theme:"violet", icon:validIcon(icon), sort:"custom", createdAt:Date.now(), items:[]});
-    saveCollections();
+    const created={id,name:clean,description:cleanDescription(description),theme:themes.includes(theme)?theme:"violet",icon:validIcon(icon),sort:"custom",createdAt:Date.now(),items:[]};
+    collections.unshift(created);
+    if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:"Could not save this collection on your device"}}
     render();
     return {ok:true, id};
   }
@@ -426,6 +440,75 @@
     }
   });
 
+  $("collectionBulkToggle")?.addEventListener("click", () => {
+    collectionBulkMode = !collectionBulkMode;
+    if (!collectionBulkMode) collectionBulkSelection.clear();
+    renderCollectionDetail();
+  });
+  $("collectionSearch")?.addEventListener("input", event => {
+    collectionSearchQuery = event.target.value;
+    renderCollectionDetail();
+  });
+  $("collectionMoveTarget")?.addEventListener("change", () => renderCollectionDetail());
+  $("collectionMoveSelected")?.addEventListener("click", () => {
+    const source = collections.find(item => item.id === activeCollectionId);
+    const target = collections.find(item => item.id === $("collectionMoveTarget").value);
+    if (!source || !target) return;
+    const ids = [...collectionBulkSelection].filter(id => source.items.includes(id));
+    let moved = 0;
+    ids.forEach(id => {
+      if (target.items.includes(id) || target.items.length >= MAX_ITEMS) return;
+      target.items.unshift(id);
+      source.items = source.items.filter(item => item !== id);
+      moved++;
+    });
+    collectionBulkSelection.clear();
+    saveCollections();
+    render();
+    if (typeof showToast === "function") showToast("Moved " + moved + " title" + (moved === 1 ? "" : "s") + " to " + target.name);
+  });
+  $("collectionDuplicate")?.addEventListener("click", () => {
+    const source = collections.find(item => item.id === activeCollectionId);
+    if (!source) return;
+    if (collections.length >= MAX_COLLECTIONS) {
+      showToast("You reached the collection limit");
+      return;
+    }
+    let name = cleanName(source.name + " Copy"), suffix = 2;
+    while (collections.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+      name = cleanName(source.name + " Copy " + suffix++);
+    }
+    const copy = { ...source, id: newCollectionId(), name, createdAt: Date.now(), items: [...source.items] };
+    collections.unshift(copy);
+    saveCollections();
+    activeCollectionId = copy.id;
+    render();
+    showToast("Duplicated collection");
+  });
+  $("collectionSelectAll")?.addEventListener("click", () => {
+    const found = collections.find(item => item.id === activeCollectionId)?.items.map(movieFor).filter(Boolean) || [];
+    if (found.length && found.every(item => collectionBulkSelection.has(identify(item)))) {
+      found.forEach(item => collectionBulkSelection.delete(identify(item)));
+    } else {
+      found.forEach(item => collectionBulkSelection.add(identify(item)));
+    }
+    renderCollectionDetail();
+  });
+  $("collectionClearSelection")?.addEventListener("click", () => {
+    collectionBulkSelection.clear();
+    renderCollectionDetail();
+  });
+  $("collectionRemoveSelected")?.addEventListener("click", () => {
+    const collection = collections.find(item => item.id === activeCollectionId);
+    if (!collection) return;
+    const ids = [...collectionBulkSelection].filter(id => collection.items.includes(id));
+    if (!ids.length) return;
+    collection.items = collection.items.filter(id => !ids.includes(id));
+    collectionBulkSelection.clear();
+    saveCollections();
+    render();
+    if (typeof showToast === "function") showToast("Removed " + ids.length + " from " + collection.name);
+  });
   $("collectionSort")?.addEventListener("change", event => {
     const collection = collections.find(item => item.id === activeCollectionId);
     if (!collection) return;
@@ -499,6 +582,7 @@
       if (!collection) return false;
       collection.items = collection.items.filter(id => id !== String(movieId)); saveCollections(); render(); return true;
     },
+    bulkAdd(collectionId,movieIds) { const collection=collections.find(item=>item.id===String(collectionId));if(!collection||!Array.isArray(movieIds))return {ok:false,added:0};let added=0;for(const id of movieIds.map(String)){if(collection.items.includes(id))continue;if(collection.items.length>=MAX_ITEMS)break;collection.items.unshift(id);added++;}if(added){saveCollections();render()}return {ok:true,added,remaining:MAX_ITEMS-collection.items.length}; },
     open: openCollection
   });
 })();
