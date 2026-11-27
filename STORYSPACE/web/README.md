@@ -59,3 +59,10 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - Network and ready-state labels help distinguish loading, metadata-only, frame-ready, and buffered playback states.
 - When supported by the browser, dropped-frame counters expose rendering pressure; playback-rate changes are reflected immediately.
 - Diagnostics use native media element APIs and gracefully omit unsupported frame-quality details.
+
+
+## Shareable playback diagnostics
+
+- The preview player includes a **Copy diagnostics** action below the live media status.
+- The report captures source URL, dimensions, playback position/duration, buffer ahead, ready/network state, playback rate, online status, dropped-frame support/count and browser user agent.
+- Copy uses the Clipboard API when available and a legacy selection fallback otherwise. It is user-triggered; the report is not uploaded automatically.
