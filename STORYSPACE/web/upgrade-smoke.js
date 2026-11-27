@@ -415,3 +415,9 @@ for(const token of ["const snapshot=collections.map(item=>({...item,items:[...it
 
 \n// Collection transaction changes ship in the refreshed app shell.
 if(!sw.includes("storyspace-shell-v115"))throw Error("Collection transaction shell v115 missing");
+
+\n// A stalled network fetch should not block cached assets indefinitely.
+if(!sw.includes("setTimeout(()=>resolve(null),4500)"))throw Error("Static asset network requests must have a bounded fallback delay");
+if(!sw.includes("Promise.race([")||!sw.includes("finally(()=>clearTimeout(timeoutId))"))throw Error("Asset timeout race must clean its timer");
+if(!sw.includes("const refresh = fetch(request).then(async response => {"))throw Error("Background asset refresh should still populate cache after timeout");
+if(!sw.includes("storyspace-shell-v116"))throw Error("Asset timeout shell cache v116 missing");
