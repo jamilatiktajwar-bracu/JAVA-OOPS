@@ -99,6 +99,7 @@ if(!c.includes(".modal-signals")||!c.includes(".details-save-button")||!c.includ
 if(!h.includes('id="playerUpNextPoster"')||!h.includes('id="playerUpNextProgress"'))throw Error("Up Next poster/countdown bar missing");
 if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.includes("StoryspaceQueue?.playNext"))throw Error("Queue-aware next-item playback missing");
 if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
+if(!next.includes('backdrop.addEventListener("transitionend",event=>{if(event.target===backdrop&&backdrop.hidden)clear()})'))throw Error("Up Next auto-play timer must cancel when player closes");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
 if(!h.includes('id="queueShuffle"')||!read("player-queue.js").includes("Queue shuffled")||!read("player-queue.js").includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
 if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("Shell cache v36 not bumped");
