@@ -301,29 +301,65 @@ function renderGrid(items){
   $("emptySearch").hidden=visible.length!==0;
   const count=$("browseCount");if(count)count.textContent=visible.length+" "+(visible.length===1?"story":"stories");
 }
+function normalizeSearchText(value){return String(value||"").toLowerCase().normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9+]+/g," ").trim()}
+function searchDistance(a,b,limit=2){
+  if(Math.abs(a.length-b.length)>limit)return limit+1;
+  const previous=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    let rowMin=i,current=[i];
+    for(let j=1;j<=b.length;j++){
+      current[j]=Math.min(current[j-1]+1,previous[j]+1,previous[j-1]+(a[i-1]===b[j-1]?0:1));
+      rowMin=Math.min(rowMin,current[j]);
+    }
+    if(rowMin>limit)return limit+1;
+    for(let j=0;j<=b.length;j++)previous[j]=current[j];
+  }
+  return previous[b.length];
+}
+function searchRelevance(m,query,terms){
+  const title=normalizeSearchText(m.title||m.name),fields=normalizeSearchText([m.title,m.name,m.genre,m.genres,m.moods,m.type,m.format,m.description,m.synopsis,m.language,m.year,m.releaseYear,m.cast].flat().join(" "));
+  const titleWords=title.split(" ").filter(Boolean);
+  let score=scoreTitle(m)*.18;
+  if(title===query)score+=120;
+  else if(title.startsWith(query))score+=75;
+  else if(title.includes(query))score+=48;
+  terms.forEach(term=>{
+    if(title.includes(term))score+=24;
+    else if(titleWords.some(word=>word.startsWith(term)))score+=16;
+    else if(titleWords.some(word=>term.startsWith(word)))score+=10;
+    else if(titleWords.some(word=>searchDistance(term,word,term.length>6?2:1)<= (term.length>6?2:1)))score+=7;
+    if(normalizeSearchText(m.genre||m.genres).includes(term))score+=8;
+    if(normalizeSearchText(m.moods).includes(term))score+=5;
+    if(fields.includes(term))score+=2;
+  });
+  if(m.demo)score-=35;
+  return score;
+}
 function legacySearch(q){
   state.search=String(q||"").trim();
   if(!state.search){showView(state.view==="search"?"home":state.view);return}
   state.view="search";$("hero").hidden=true;$("moodSection").hidden=true;
   ["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);
   $("welcomeLine").hidden=true;$("searchResultsSection").hidden=false;
-  const rawTokens=state.search.match(/"[^"]+"|\S+/g)||[];
+  const rawTokens=state.search.match(/"[^"]+"|\\S+/g)||[];
   const filters={genre:[],mood:[],language:[],type:[],year:[]},terms=[];
   rawTokens.forEach(token=>{
     const match=token.match(/^(genre|mood|language|type|year):(.+)$/i);
-    if(match&&filters[match[1].toLowerCase()])filters[match[1].toLowerCase()].push(match[2].replace(/^"|"$/g,"").toLowerCase());
-    else terms.push(token.replace(/^"|"$/g,"").toLowerCase());
+    if(match&&filters[match[1].toLowerCase()])filters[match[1].toLowerCase()].push(normalizeSearchText(match[2].replace(/^"|"$|^'|'$/g,"")));
+    else terms.push(normalizeSearchText(token.replace(/^"|"$|^'|'$/g,"")));
   });
-  const results=ranked(visibleCatalog(movies).filter(m=>{
-    const fields=[m.title,m.name,m.genre,m.genres,m.moods,m.type,m.format,m.description,m.synopsis,m.language,m.year,m.releaseYear].flat().join(" ").toLowerCase();
-    const matchesTerms=terms.every(term=>fields.includes(term));
-    const matchesGenre=filters.genre.every(term=>titleTokens(m.genre||m.genres).some(v=>v.includes(term)));
-    const matchesMood=filters.mood.every(term=>titleTokens(m.moods).some(v=>v.includes(term)));
-    const matchesLanguage=filters.language.every(term=>String(m.language||"").toLowerCase().includes(term));
-    const matchesType=filters.type.every(term=>String(m.type||m.format||"").toLowerCase().includes(term));
+  const normalizedQuery=normalizeSearchText(terms.join(" "));
+  const results=visibleCatalog(movies).filter(m=>{
+    const fields=normalizeSearchText([m.title,m.name,m.genre,m.genres,m.moods,m.type,m.format,m.description,m.synopsis,m.language,m.year,m.releaseYear,m.cast].flat().join(" "));
+    const titleWords=normalizeSearchText(m.title||m.name).split(" ").filter(Boolean);
+    const matchesTerms=terms.every(term=>fields.includes(term)||titleWords.some(word=>searchDistance(term,word,term.length>6?2:1)<=(term.length>6?2:1)));
+    const matchesGenre=filters.genre.every(term=>titleTokens(m.genre||m.genres).some(v=>normalizeSearchText(v).includes(term)));
+    const matchesMood=filters.mood.every(term=>titleTokens(m.moods).some(v=>normalizeSearchText(v).includes(term)));
+    const matchesLanguage=filters.language.every(term=>normalizeSearchText(m.language||"").includes(term));
+    const matchesType=filters.type.every(term=>normalizeSearchText(m.type||m.format||"").includes(term));
     const matchesYear=filters.year.every(term=>String(m.year||m.releaseYear||"").includes(term));
     return matchesTerms&&matchesGenre&&matchesMood&&matchesLanguage&&matchesType&&matchesYear;
-  }));
+  }).sort((a,b)=>searchRelevance(b,normalizedQuery,terms)-searchRelevance(a,normalizedQuery,terms));
   $("searchHeading").textContent=results.length+" stories matching “"+state.search+"”";
   renderGrid(results);
 }
