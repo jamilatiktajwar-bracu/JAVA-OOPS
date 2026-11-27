@@ -1182,6 +1182,10 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   const activeOverlay=()=>document.querySelector("#playerBackdrop:not([hidden]),#mediaHubBackdrop:not([hidden]),#profilesBackdrop:not([hidden]),#modalBackdrop:not([hidden]),#activityPanel:not([hidden])");
   const candidates=()=>{const overlay=activeOverlay();return [...(overlay||document).querySelectorAll(focusSelector)].filter(isFocusable)};
   function moveFocus(key){
+    // Use the shared TV navigator so directional wrapping and accessibility
+    // filtering stay consistent across the web shell and remote-control layer.
+    const direction={ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down"}[key];
+    if(direction&&window.StoryspaceTVNavigation?.move){window.StoryspaceTVNavigation.move(direction);return}
     const list=candidates();if(!list.length)return;const current=document.activeElement;
     if(!list.includes(current)){const first=list.find(el=>el.closest(".main-nav"))||list.find(el=>el.matches("button,a"))||list[0];first.focus();return}
     const a=current.getBoundingClientRect(),ax=a.left+a.width/2,ay=a.top+a.height/2;const vectors={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};const [dx,dy]=vectors[key];let best=null,bestScore=Infinity;
