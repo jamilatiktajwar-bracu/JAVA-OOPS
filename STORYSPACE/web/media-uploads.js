@@ -31,7 +31,13 @@
     if(!res.ok){const e=new Error(data.error||"Media server request failed ("+res.status+")");e.status=res.status;e.data=data;throw e}return data;
   }
   function fmt(bytes){if(!Number.isFinite(bytes))return "—";const units=["B","KB","MB","GB","TB"];let n=bytes,i=0;while(n>=1024&&i<units.length-1){n/=1024;i++}return n.toFixed(i?1:0)+" "+units[i]}
-  function setProgress(done,total,message){$("mediaProgress").hidden=false;$("mediaProgressFill").style.width=(total?Math.min(100,done/total*100):0)+"%";$("mediaProgressText").textContent=message}
+  function setProgress(done,total,message){
+    const fill=$("mediaProgressFill"),track=fill?.parentElement,percent=total?Math.max(0,Math.min(100,Math.round(done/total*100))):0;
+    $("mediaProgress").hidden=false;
+    if(fill)fill.style.width=percent+"%";
+    if(track){track.setAttribute("role","progressbar");track.setAttribute("aria-label","Video upload progress");track.setAttribute("aria-valuemin","0");track.setAttribute("aria-valuemax","100");track.setAttribute("aria-valuenow",String(percent));track.setAttribute("aria-valuetext",message)}
+    $("mediaProgressText").textContent=message;
+  }
   async function getFile(item){
     if(item.handle){try{let permission=await item.handle.queryPermission({mode:"read"});if(permission!=="granted")permission=await item.handle.requestPermission({mode:"read"});if(permission==="granted"){const file=await item.handle.getFile();if(file.name!==item.filename||file.size!==item.size)throw new Error("The selected file has changed since this upload was queued. Choose the original video.");return file}}catch(error){if(error.message.includes("has changed"))throw error}}
     if(selectedFile&&selectedFile.name===item.filename&&selectedFile.size===item.size)return selectedFile;
@@ -124,7 +130,7 @@
   async function resumeAll(){
     if(active||!navigator.onLine)return;
     let items=[];try{items=await getItems()}catch{return}
-    const next=items.find(x=>x.status!=="Pending owner approval"&&(x.handle||(selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size)));
+    const next=items.find(x=>!isTerminalQueueStatus(x.status)&&!String(x.status||"").startsWith("Cancelling")&&(x.handle||(selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size)));
     if(next)await resumeOne(next.id);
   }
   const communityCacheKey=root=>"storyspace.communityCatalog.v1:"+root;
