@@ -339,3 +339,5 @@ if(!pg.includes("clamp(before + delta, range.start, range.end)"))throw Error("To
 // Caption menus must exclude metadata, chapter and description text tracks while retaining native track indexes.
 if(!settings.includes('function captionTrackEntries(tracks)')||!settings.includes('["captions","subtitles",""].includes(String(track.kind||"").toLowerCase())'))throw Error("Caption selector must omit non-caption text tracks");
 if(!settings.includes("preferredTrack(captionEntries,captionLanguage,savedCaption)"))throw Error("Caption language preference must resolve against visible caption tracks");
+
+if(!settings.includes('const audioEntries=Array.from(ats||[]).map((track,index)=>({track,index}))')||!settings.includes("preferredTrack(audioEntries,audioLanguage,savedAudio)"))throw Error("Saved regional audio language preferences must resolve through indexed audio tracks");
