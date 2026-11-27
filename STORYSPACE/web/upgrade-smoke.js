@@ -347,6 +347,7 @@ if(!h.includes("0.25×–2×"))throw Error("Playback speed shortcut guide missin
 // Touch seek gestures use the latest seekable range, including live DVR windows.
 if(!pg.includes("function getSeekRange()")||!pg.includes("video.seekable.length"))throw Error("Touch gestures must discover DVR seekable ranges");
 if(!pg.includes("clamp(before + delta, range.start, range.end)"))throw Error("Touch seek must clamp to the active DVR/VOD range");
+if(!pg.includes('if (pointer && event.pointerId === pointer.id) { pointer = null; lastTap = { at: 0, zone: "" }; }'))throw Error("Cancelled touch gestures must clear double-tap state");
 if(!pgc.includes(".player-stage:not(.player-gestures-disabled)>video{touch-action:none;}"))throw Error("Enabled touch gestures must prevent browser pan cancellation");
 
 
