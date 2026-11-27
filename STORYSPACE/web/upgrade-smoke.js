@@ -302,3 +302,6 @@ for(const token of ["function bufferHealth()","Offline","Loading media","Paused"
 // Keyboard seeking must use a finite VOD window or the latest live DVR range and clamp targets.
 const shortcuts=read("player-shortcuts.js");
 for(const token of ["function seekWindow()","video.seekable","range.live","const target=clamp(video.currentTime+delta,range.start,range.end)","case \"j\":event.preventDefault();seek(-10)","case \"l\":event.preventDefault();seek(10)","seekWindow,setGuide"])if(!shortcuts.includes(token))throw Error("Player keyboard seek guard missing: "+token);
+
+// Restart shortcut must honor VOD/live seek-window start and guard assignment.
+if(!shortcuts.includes('case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;'))throw Error("Restart shortcut must use seek-window start");
