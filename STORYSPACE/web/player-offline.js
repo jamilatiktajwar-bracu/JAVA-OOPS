@@ -67,15 +67,21 @@
     const blob=await response.blob();sourceUrl=url;objectUrl=URL.createObjectURL(blob);
     const position=Number(video.currentTime)||0,wasPlaying=!video.paused;
     switching=true;video.src=objectUrl;video.load();
-    video.addEventListener("loadedmetadata",function restorePosition(){video.removeEventListener("loadedmetadata",restorePosition);switching=false;if(Number.isFinite(position)&&position<video.duration)video.currentTime=position;if(wasPlaying)video.play().catch(()=>{})});
-    announce("Connection lost · playing the saved offline copy");
+    const restorePosition=()=>{if(!switching)return;switching=false;video.removeEventListener("loadedmetadata",restorePosition);video.removeEventListener("error",failRestore);clearTimeout(restoreTimer);if(Number.isFinite(position)&&position>=0&&Number.isFinite(video.duration)&&video.duration>0)video.currentTime=Math.min(position,Math.max(0,video.duration-.1));if(wasPlaying)video.play().catch(()=>announce("Offline copy ready · press Play to continue"));};
+    const failRestore=()=>{if(!switching)return;switching=false;video.removeEventListener("loadedmetadata",restorePosition);video.removeEventListener("error",failRestore);clearTimeout(restoreTimer);if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl="";}video.src=url;video.load();announce("Saved offline video could not be opened · try again");};
+    const restoreTimer=setTimeout(failRestore,10000);
+    video.addEventListener("loadedmetadata",restorePosition,{once:true});video.addEventListener("error",failRestore,{once:true});
+    announce("Connection lost · opening saved offline copy…");
   }
   function restoreNetwork(){
     if(!objectUrl||!navigator.onLine||!sourceUrl)return;
     const url=sourceUrl,position=Number(video.currentTime)||0,wasPlaying=!video.paused,old=objectUrl;objectUrl="";
     switching=true;video.src=url;video.load();
-    video.addEventListener("loadedmetadata",function restorePosition(){video.removeEventListener("loadedmetadata",restorePosition);switching=false;if(Number.isFinite(position)&&position<video.duration)video.currentTime=position;if(wasPlaying)video.play().catch(()=>{});URL.revokeObjectURL(old)});
-    announce("Connection restored · returning to the network stream");
+    const restorePosition=()=>{if(!switching)return;switching=false;video.removeEventListener("loadedmetadata",restorePosition);video.removeEventListener("error",failRestore);clearTimeout(restoreTimer);if(Number.isFinite(position)&&position>=0&&Number.isFinite(video.duration)&&video.duration>0)video.currentTime=Math.min(position,Math.max(0,video.duration-.1));if(wasPlaying)video.play().catch(()=>announce("Network stream ready · press Play to continue"));URL.revokeObjectURL(old);};
+    const failRestore=()=>{if(!switching)return;switching=false;video.removeEventListener("loadedmetadata",restorePosition);video.removeEventListener("error",failRestore);clearTimeout(restoreTimer);video.src=old;video.load();objectUrl=old;announce("Network stream unavailable · continuing with saved offline copy");};
+    const restoreTimer=setTimeout(failRestore,10000);
+    video.addEventListener("loadedmetadata",restorePosition,{once:true});video.addEventListener("error",failRestore,{once:true});
+    announce("Connection restored · reconnecting to network stream…");
   }
   button.addEventListener("click",async()=>{
     if(busy)return;busy=true;button.disabled=true;
