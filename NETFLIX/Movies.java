@@ -1059,7 +1059,7 @@ public class Movies {
         if (viewCount == 0) {
             return 0.0;
         }
-        return completionCount * 100.0 / viewCount;
+        return Math.min(100.0, completionCount * 100.0 / viewCount);
     }
 
     public double getEngagementScore() {
