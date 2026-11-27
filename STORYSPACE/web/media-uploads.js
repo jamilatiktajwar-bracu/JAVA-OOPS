@@ -72,6 +72,14 @@
   }
   const retryableUploadError=error=>!navigator.onLine||!error.status||error.status===408||error.status===425||error.status===429||error.status>=500;
   const retryDelay=attempt=>Math.min(15000,1000*Math.pow(2,attempt-1))+Math.floor(Math.random()*350);
+  function waitBeforeRetry(ms){
+    return new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{cleanup();resolve()},ms);
+      const cancelled=()=>{cleanup();reject(Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"}))};
+      const cleanup=()=>{clearTimeout(timer);window.removeEventListener("storyspace-upload-cancel",cancelled)};
+      window.addEventListener("storyspace-upload-cancel",cancelled,{once:true});
+    });
+  }
   async function putChunkWithRetry(root,token,item,blob,end){
     let lastError;
     for(let attempt=1;attempt<=5;attempt++){
@@ -94,7 +102,7 @@
           if(!navigator.onLine)await waitForOnline(item);
         }
         setProgress(item.offset,item.size,"Connection interrupted · retry "+attempt+" of 5");
-        await new Promise(resolve=>setTimeout(resolve,retryDelay(attempt)));
+        await waitBeforeRetry(retryDelay(attempt));
       }
     }
     throw lastError||new Error("Upload retry limit reached");
