@@ -32,6 +32,9 @@
     if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
     else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
   });
-  window.addEventListener("storage",event=>{if(event.key==="storyspace.resumePoints"||event.key===null)render()});\n  window.addEventListener("focus",()=>{if(hub.hidden)render()});\n  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&hub.hidden)render()});\n  window.storyspaceResumeHub={open,close:closeHub,refresh:render};
+  window.addEventListener("storage",event=>{if(event.key==="storyspace.resumePoints"||event.key===null)render()});
+  window.addEventListener("focus",()=>{if(hub.hidden)render()});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&hub.hidden)render()});
+  window.storyspaceResumeHub={open,close:closeHub,refresh:render};
   render();
 })();
