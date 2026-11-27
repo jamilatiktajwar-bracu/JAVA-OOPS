@@ -109,7 +109,7 @@ try{
  const shortBodySocket=createConnection(port,"127.0.0.1");
  await new Promise((resolve,reject)=>{
   shortBodySocket.once("connect",()=>{
-   shortBodySocket.write("PUT /api/uploads/"+session.uploadId+"/chunk HTTP/1.1\\r\\nHost: 127.0.0.1\\r\\nConnection: close\\r\\nContent-Type: application/octet-stream\\r\\nContent-Length: 5\\r\\nX-Storyspace-Upload-Token: "+invite+"\\r\\nX-Upload-Offset: 8\\r\\n\\r\\nabc");
+   shortBodySocket.write("PUT /api/uploads/"+session.uploadId+"/chunk HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\nContent-Type: application/octet-stream\r\nContent-Length: 5\r\nX-Storyspace-Upload-Token: "+invite+"\r\nX-Upload-Offset: 8\r\n\r\nabc");
    shortBodySocket.end();
   });
   shortBodySocket.once("close",resolve);
