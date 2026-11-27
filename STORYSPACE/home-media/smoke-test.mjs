@@ -122,6 +122,16 @@ try{
  assert.equal(invalidRange.headers.get("content-range"),"bytes */16");
  const headRange=await fetch(base+catalog[0].streamUrl,{method:"HEAD",headers:{range:"bytes=0-3"}});assert.equal(headRange.status,206);assert.equal(headRange.headers.get("content-length"),"4");assert.equal(await headRange.text(),"","HEAD never streams a body");
  const etag=headRange.headers.get("etag")||(await fetch(base+catalog[0].streamUrl)).headers.get("etag");
+ const lastModified=headRange.headers.get("last-modified");
+ const matchingIfRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=2-5","if-range":etag}});
+ assert.equal(matchingIfRange.status,206,"matching strong ETag allows efficient resumed media playback");
+ assert.equal(await matchingIfRange.text(),"2345");
+ const dateIfRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=8-11","if-range":lastModified}});
+ assert.equal(dateIfRange.status,206,"matching Last-Modified validator preserves byte-range playback");
+ assert.equal(await dateIfRange.text(),"89ab");
+ const fullHead=await fetch(base+catalog[0].streamUrl,{method:"HEAD"});
+ assert.equal(fullHead.status,200);assert.equal(fullHead.headers.get("content-length"),"16","HEAD exposes the complete media length without downloading the body");
+ assert.equal(await fullHead.text(),"");
  const notModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":etag}});assert.equal(notModified.status,304,"matching ETag avoids retransmitting unchanged media");
  const ignoredRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"stale"}});assert.equal(ignoredRange.status,200,"stale If-Range falls back to a full response");assert.equal(await ignoredRange.text(),"0123456789abcdef");
  // A rejected upload must disappear from the pending queue and remain private.
