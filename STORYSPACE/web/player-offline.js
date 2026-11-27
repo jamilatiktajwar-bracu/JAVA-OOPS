@@ -17,6 +17,10 @@
     try{const {response}=await cacheFor(url);button.textContent=response?"Remove offline copy":"Save for offline";announce(response?"Saved on this device · available without a connection":"Save this video on this device for offline playback.");}
     catch{button.disabled=true;announce("Offline storage is unavailable in this browser.")}
   }
+  async function touchCached(cache,url,response){
+    const headers=new Headers(response.headers);headers.set("x-storyspace-cached-at",String(Date.now()));
+    await cache.put(url,new Response(response.clone().body,{status:response.status,statusText:response.statusText,headers}));
+  }
   async function evictForQuota(cache,requiredBytes,keepUrl){
     const estimate=await navigator.storage?.estimate?.().catch(()=>null);
     const quota=Number(estimate?.quota),usage=Number(estimate?.usage);
@@ -58,7 +62,8 @@
   async function switchToCached(){
     if(navigator.onLine||objectUrl)return;
     const url=currentUrl();if(!url)return;
-    const {response}=await cacheFor(url);if(!response)return;
+    const {cache,response}=await cacheFor(url);if(!response)return;
+    try{await touchCached(cache,url,response)}catch{/* Playback remains available even if recency metadata cannot be refreshed. */}
     const blob=await response.blob();sourceUrl=url;objectUrl=URL.createObjectURL(blob);
     const position=Number(video.currentTime)||0,wasPlaying=!video.paused;
     switching=true;video.src=objectUrl;video.load();
@@ -78,6 +83,7 @@
     catch(error){announce(error.message||"Could not update the offline copy");}
     finally{busy=false;await sync()}
   });
+  video.addEventListener("play",()=>{if(!navigator.onLine)return;const url=currentUrl();if(url)cacheFor(url).then(({cache,response})=>response?touchCached(cache,url,response):null).catch(()=>{})});
   video.addEventListener("loadedmetadata",()=>{if(!objectUrl)sourceUrl=video.currentSrc||video.src;sync()});
   video.addEventListener("emptied",()=>{if(switching)return;if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=""}sync()});
   document.getElementById("playerClose")?.addEventListener("click",()=>{if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=""}sourceUrl="";switching=false;sync()});
