@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v110";
+const SHELL_CACHE = "storyspace-shell-v111";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
@@ -69,18 +69,19 @@ self.addEventListener("fetch", event => {
   if (["script", "style", "image", "font"].includes(request.destination)) {
     const runtimePromise = caches.open(RUNTIME_CACHE);
     const shellPromise = caches.open(SHELL_CACHE);
-    const refresh = fetch(request).then(async response => {
-      try { await updateRuntimeCache(request, response); } catch { /* Cache quota must not block a network response. */ }
-      return response;
-    });
-    // Extend the service-worker lifetime before the event handler returns.
-    event.waitUntil(refresh.then(() => undefined).catch(() => {}));
-    event.respondWith((async () => {
+    const cachedAsset = async () => {
       const [runtime, shell] = await Promise.all([runtimePromise, shellPromise]);
-      const cached = await runtime.match(request) || await shell.match(request);
-      if (cached) return cached;
-      try { return await refresh; }
-      catch { return (await runtime.match(request)) || (await shell.match(request)) || Response.error(); }
-    })());
+      return (await runtime.match(request)) || (await shell.match(request)) || null;
+    };
+    const networkFirst = fetch(request).then(async response => {
+      if (response.ok) {
+        try { await updateRuntimeCache(request, response); } catch { /* Cache quota must not block a network response. */ }
+        return response;
+      }
+      return (await cachedAsset()) || response;
+    }).catch(async () => (await cachedAsset()) || Response.error());
+    // Fresh assets win online; cached copies remain the fallback when offline.
+    event.waitUntil(networkFirst.then(() => undefined).catch(() => {}));
+    event.respondWith(networkFirst);
   }
 });
