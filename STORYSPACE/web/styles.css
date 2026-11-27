@@ -373,3 +373,17 @@ html[data-profile-theme="forest"]{--bg:#07150f;--bg2:#0d2017;--surface:#142b20;-
 .universe-bulk-actions{display:flex;gap:6px;flex-wrap:wrap}.universe-bulk-actions[hidden]{display:none!important}.universe-selection-action{border-color:#8af4e5!important;color:#aaffef!important}.movie-card.universe-selected{outline:2px solid #8af4e5;outline-offset:2px;border-radius:10px}.universe-select-toggle[aria-pressed="true"]{border-color:#8af4e5;color:#aaffef}.universe-bulk-actions .danger{border-color:#ff9b9b35;color:#ffc2c2}.universe-bulk-actions button:disabled{opacity:.4;cursor:not-allowed}
 
 .resume-time-label{display:block;margin:4px 0 0;color:var(--muted,#a8bdd2);font-size:10px;font-weight:650;letter-spacing:.02em}.movie-card:has(.resume-time-label) .progress-track{margin-top:5px}\n
+
+/* Compact browse filters and predictable touch targets on narrow screens. */
+@media(max-width:640px){
+  .browse-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px}
+  .browse-controls label{display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:5px;font-size:10px}
+  .browse-controls select{width:100%;min-width:0;min-height:42px}
+  .browse-count{grid-column:1/-1;margin:0;text-align:right}
+  .filter-reset{min-height:42px}
+}
+@media(max-width:380px){
+  .browse-controls{grid-template-columns:minmax(0,1fr)}
+  .browse-count{grid-column:auto}
+}
+.browse-controls :is(select,button):focus-visible,.player-settings-row :is(select,button,input):focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
