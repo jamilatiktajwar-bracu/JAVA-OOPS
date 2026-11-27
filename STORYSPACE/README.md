@@ -38,3 +38,5 @@ No trademark clearance or patentability/freedom-to-operate determination has bee
 - Living-room focus navigation is available by launching the web app with `?tv=1` (example `http://localhost:5173/?tv=1`).
 - Desktop Electron, Capacitor mobile, tvOS SwiftUI, and Android TV integration scaffolds live in `platforms/`.
 - Platform build, signing, device testing, licensed streaming, and store approvals remain platform-specific. See [platform guide](platforms/README.md).
+
+- Player keyboard shortcuts: `←/→` seek 5 seconds, `Shift+←/→` seek 10 seconds, `J/L` seek 10 seconds, `R` restarts at the beginning of the current seekable window (VOD or live DVR), `T` toggles theater mode, and `?` opens the player shortcut guide. Successful seek actions announce the destination in player feedback.
