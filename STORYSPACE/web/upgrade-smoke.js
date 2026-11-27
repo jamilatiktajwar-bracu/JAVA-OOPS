@@ -553,6 +553,8 @@ if(!offlinePlayer.includes('const CACHE="storyspace-offline-media-v1",MAX_BYTES=
 if(!offlinePlayer.includes("cache.put(url,cachedResponse.clone())"))throw Error("Offline media save must persist the complete response");
 if(!offlinePlayer.includes("async function evictForQuota(cache,requiredBytes,keepUrl)"))throw Error("Offline cache must evict least-recent copies before exhausting device quota");
 if(!offlinePlayer.includes("async function touchCached(cache,url,response)"))throw Error("Offline cache recency must refresh when a saved video is played");
+if(!offlinePlayer.includes("await response.clone().blob()).size"))throw Error("Offline eviction must measure cached bodies when Content-Length is unavailable");
+if(!offlinePlayer.includes('(a.savedAt-b.savedAt)||a.request.url.localeCompare(b.request.url)'))throw Error("Offline eviction must use deterministic URL ordering when cache timestamps tie");
 if(!offlinePlayer.includes('x-storyspace-cached-at'))throw Error("Offline cache entries must retain recency metadata for eviction");
 if(!offlinePlayer.includes('error?.name!=="QuotaExceededError"'))throw Error("Quota errors must trigger a single safe eviction retry");
 if(!offlinePlayer.includes('Math.min(500*1024*1024,quota*.35)'))throw Error("Offline cache must enforce a bounded per-origin storage budget");
