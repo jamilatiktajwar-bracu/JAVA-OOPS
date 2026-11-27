@@ -387,8 +387,8 @@ if(!sw.includes("const refresh = fetch(request).then(async response => {")||!sw.
 if(sw.includes("if (cached) return cached;"))throw Error("Static assets must not return stale cache before network refresh");
 
 // Failed navigation HTTP responses should recover with the cached app shell.
-if(!sw.includes('return (await cache.match("./index.html")) || response;'))throw Error("Navigation must fall back to the cached shell when the server returns an error");
-if(!sw.includes('return (await shell.match("./index.html")) || Response.error();'))throw Error("Offline navigation must fall back to the cached app shell");
+if(!sw.includes('if(response?.ok)return response;')||!sw.includes('return response||Response.error();'))throw Error("Navigation should use the network response or cached shell fallback");
+if(!sw.includes('cache.match("./index.html")'))throw Error("Offline navigation must attempt cached app shell fallback");
 
 
 // Continue Watching hub acts as an accessible modal with focus restoration/trapping.
