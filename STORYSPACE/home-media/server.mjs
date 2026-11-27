@@ -294,7 +294,17 @@ async function handle(req,res) {
       if(received===0) return json(res,400,{error:"Empty chunk"});
       session.offset=current+received;writeSession(session);
       return json(res,200,{uploadId:session.id,offset:session.offset,complete:session.offset===session.size});
-    }catch(error){return json(res,error.statusCode||400,{error:error.statusCode===413?"Chunk exceeds limit":"Chunk upload failed",offset:fs.existsSync(files.part)?fs.statSync(files.part).size:0});}
+    }catch(error){
+      // A failed stream must not silently commit a partial chunk as resumable data.
+      try { if(fs.existsSync(files.part))fs.truncateSync(files.part,current); }
+      catch(rollbackError) {
+        // If rollback is impossible, discard the session rather than trust a corrupt offset.
+        fs.rmSync(files.data,{force:true});
+        fs.rmSync(files.part,{force:true});
+        return json(res,500,{error:"Chunk rollback failed; upload session was discarded"});
+      }
+      return json(res,error.statusCode||400,{error:error.statusCode===413?"Chunk exceeds limit":"Chunk upload failed",offset:current});
+    }
     });
   }
 
