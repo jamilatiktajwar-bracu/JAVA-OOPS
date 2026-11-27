@@ -127,6 +127,10 @@ try{
  const headRange=await fetch(base+catalog[0].streamUrl,{method:"HEAD",headers:{range:"bytes=0-3"}});assert.equal(headRange.status,206);assert.equal(headRange.headers.get("content-length"),"4");assert.equal(await headRange.text(),"","HEAD never streams a body");
  const etag=headRange.headers.get("etag")||(await fetch(base+catalog[0].streamUrl)).headers.get("etag");
  const notModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":etag}});assert.equal(notModified.status,304,"matching ETag avoids retransmitting unchanged media");
+ const listNotModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":'"stale", W/'+etag+'"'}});assert.equal(listNotModified.status,304,"If-None-Match accepts comma-separated weak validators");
+ const wildcardNotModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":"*"}});assert.equal(wildcardNotModified.status,304,"If-None-Match wildcard matches an existing representation");
+ const staleWeakRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"W/"+etag}});assert.equal(staleWeakRange.status,200,"weak If-Range validators cannot authorize partial responses");assert.equal(await staleWeakRange.text(),"0123456789abcdef");
+ const dateRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":new Date(Date.now()+60000).toUTCString()}});assert.equal(dateRange.status,206,"a valid If-Range modification date permits byte ranges");assert.equal(await dateRange.text(),"01");
  const ignoredRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"stale"}});assert.equal(ignoredRange.status,200,"stale If-Range falls back to a full response");assert.equal(await ignoredRange.text(),"0123456789abcdef");
  // A rejected upload must disappear from the pending queue and remain private.
  const rejectedInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Reject Me",filename:"reject.mp4",size:4})});
