@@ -49,8 +49,8 @@
       case "arrowleft":{const delta=event.shiftKey?-10:-5;const target=seek(delta);if(target!==false)announceSeek("Seek to "+formatSeekTime(target));event.preventDefault();break;}
       case "arrowright":{const delta=event.shiftKey?10:5;const target=seek(delta);if(target!==false)announceSeek("Seek to "+formatSeekTime(target));event.preventDefault();break;}
       case "j":event.preventDefault();{const target=seek(-10);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};break;case "l":event.preventDefault();{const target=seek(10);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};break;
-      case "arrowup":video.volume=clamp(video.volume+0.05,0,1);video.muted=false;event.preventDefault();break;
-      case "arrowdown":video.volume=clamp(video.volume-0.05,0,1);event.preventDefault();break;
+      case "arrowup":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume+step,0,1);video.muted=false;announceSeek("Volume "+Math.round(video.volume*100)+"%");event.preventDefault();break;}
+      case "arrowdown":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume-step,0,1);announceSeek("Volume "+Math.round(video.volume*100)+"%");event.preventDefault();break;}
       case "m":video.muted=!video.muted;break;
       case "c":{const size=document.getElementById("playerCaptionSize"),sizes=["small","medium","large","extra-large"];if(size){size.value=sizes[(sizes.indexOf(size.value)+1)%sizes.length];size.dispatchEvent(new Event("change"));event.preventDefault()}break;}
       case "f":fullscreenButton.click();break;
