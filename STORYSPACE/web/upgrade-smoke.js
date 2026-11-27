@@ -544,6 +544,9 @@ if(!profileSyncSource.includes("sequence:++libraryOpSequence"))throw Error("Rapi
 if(!profileSyncSource.includes("current.sequence!==expected?.sequence"))throw Error("Watchlist cleanup must match the exact operation sequence");
 if(!profileSyncSource.includes("sendLibraryOp(m.apiId,queuedOp)"))throw Error("Interactive watchlist writes must use the serialized operation queue");
 if(!profileSyncSource.includes("await sendLibraryOp(id,op)"))throw Error("Background watchlist reconciliation must use the serialized operation queue");
+if(!profileSyncSource.includes('api("/library/deletions")'))throw Error("Cross-device watchlist reconciliation must read server deletion tombstones");
+if(!profileSyncSource.includes("deletedAt.get(id)||0"))throw Error("A newer remote deletion must defeat a stale offline add");
+if(!profileSyncSource.includes("new Date(Number(op.updatedAt)||Date.now()).toISOString()"))throw Error("Library mutations must send their operation timestamp to the server");
 
 
 
