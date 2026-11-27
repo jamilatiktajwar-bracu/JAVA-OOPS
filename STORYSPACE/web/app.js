@@ -304,7 +304,7 @@ function renderGrid(items){
 function normalizeSearchText(value){return String(value||"").toLowerCase().normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9+]+/g," ").trim()}
 function searchDistance(a,b,limit=2){
   if(Math.abs(a.length-b.length)>limit)return limit+1;
-  const previous=Array.from({length:b.length+1},(_,i)=>i);
+  let previous=Array.from({length:b.length+1},(_,i)=>i);
   for(let i=1;i<=a.length;i++){
     let rowMin=i,current=[i];
     for(let j=1;j<=b.length;j++){
@@ -312,7 +312,7 @@ function searchDistance(a,b,limit=2){
       rowMin=Math.min(rowMin,current[j]);
     }
     if(rowMin>limit)return limit+1;
-    for(let j=0;j<=b.length;j++)previous[j]=current[j];
+    previous=current;
   }
   return previous[b.length];
 }
