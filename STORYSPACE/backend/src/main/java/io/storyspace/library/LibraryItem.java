@@ -2,7 +2,7 @@ package io.storyspace.library;
 import io.storyspace.accounts.Account;import io.storyspace.catalog.Title;import jakarta.persistence.*;import java.time.Instant;import java.util.UUID;
 @Entity @Table(name="user_library",uniqueConstraints=@UniqueConstraint(columnNames={"account_id","title_id"}))
 public class LibraryItem {
- @Id @GeneratedValue private UUID id;@ManyToOne(optional=false) private Account account;@ManyToOne(optional=false) private Title title;
+ @Id @GeneratedValue private UUID id; @Version private long version;@ManyToOne(optional=false) private Account account;@ManyToOne(optional=false) private Title title;
  @Column(nullable=false) private String state="WATCHLIST";private int progressPercent=0;private Integer userRating;private Instant updatedAt=Instant.now();
  @Column(name="resume_position_seconds",nullable=false) private double resumePositionSeconds=0;
  @Column(name="duration_seconds",nullable=false) private double durationSeconds=0;
