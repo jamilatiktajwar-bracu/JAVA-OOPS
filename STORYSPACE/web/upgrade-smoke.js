@@ -328,6 +328,9 @@ if(!shortcuts.includes('video.volume=clamp(video.volume+step,0,1);video.muted=fa
 if(!h.includes("<kbd>Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%"))throw Error("Shift+arrow volume increment guide missing");
 
 
+// Custom speed options must remain selectable and bounded, including intermediate rates.
+if(!settings.includes('speed.addEventListener("change",()=>{const raw=Number(speed.value),next=Number.isFinite(raw)?Math.min(2,Math.max(0.25,raw)):1,v=String(next);speed.value=v;video.playbackRate=next;save("storyspace.playerSpeed",v)})'))throw Error("Custom playback speed options must remain selectable and bounded");
+
 // Custom keyboard rates must be restored on reload, not reset to the preset list.
 if(!settings.includes('initialRate=Number.isFinite(savedRate)?Math.min(2,Math.max(0.25,savedRate)):1')||!settings.includes('if(!rates.includes(initialRateValue))speed.add(new Option(initialRateValue+"×",initialRateValue))'))throw Error("Saved intermediate playback rates must be restored");
 
