@@ -313,3 +313,8 @@ if(!shortcuts.includes("video.currentTime=target;return target")||!shortcuts.inc
 // Percentage seeking maps digits to a clamped fraction of the current VOD/DVR window.
 if(!shortcuts.includes("const seekPercent=percent=>")||!shortcuts.includes("range.start+(range.end-range.start)*clamp(percent,0,100)/100")||!shortcuts.includes('case "0":case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":'))throw Error("Percentage seeking must clamp numeric shortcuts to the seek window");
 if(!h.includes("<kbd>0</kbd>–<kbd>9</kbd> seek to 0–90%"))throw Error("Percentage seek shortcuts missing from keyboard guide");
+
+// Home/End jump within valid VOD/DVR boundaries with accessible status.
+if(!shortcuts.includes('case "home":{const range=seekWindow();if(range){try{video.currentTime=range.start;announceSeek(range.live?"DVR window start":"Beginning"'))throw Error("Home must jump to the beginning or DVR window start");
+if(!shortcuts.includes('case "end":{const range=seekWindow();if(range){try{video.currentTime=range.end;announceSeek(range.live?"Jumped to live":"End"'))throw Error("End must jump to the VOD end or DVR live edge");
+if(!h.includes("<kbd>Home</kbd> beginning · <kbd>End</kbd> end/live edge"))throw Error("Home/End shortcuts missing from guide");
