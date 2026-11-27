@@ -301,11 +301,11 @@ for(const token of ["function bufferHealth()","Offline","Loading media","Paused"
 
 // Keyboard seeking must use a finite VOD window or the latest live DVR range and clamp targets.
 const shortcuts=read("player-shortcuts.js");
-for(const token of ["const seekWindow=()=>","video.seekable","return {start,end,live:true}","const target=clamp(video.currentTime+delta,range.start,range.end)","case \"j\":event.preventDefault();{const target=seek(-10);if(target!==false)announceSeek(\"Seek to \"+formatSeekTime(target))};break","case \"l\":event.preventDefault();{const target=seek(10);if(target!==false)announceSeek(\"Seek to \"+formatSeekTime(target))};break","seekWindow,setGuide"])if(!shortcuts.includes(token))throw Error("Player keyboard seek guard missing: "+token);
+for(const token of ["const seekWindow=()=>","video.seekable","return {start,end,live:true}","const target=clamp(video.currentTime+delta,range.start,range.end)","case \"j\":event.preventDefault();{const target=seek(-10);if(target!==false)announceSeek(\"Seek to \"+formatSeekTime(target))};break","case \"l\":event.preventDefault();{const target=seek(10);if(target!==false)announceSeek(\"Seek to \"+formatSeekTime(target))};break","seekWindow,goLive,setGuide","case \\"g\\":{const target=goLive();if(target!==false)event.preventDefault();break;}","Jumped to live"])if(!shortcuts.includes(token))throw Error("Player keyboard seek guard missing: "+token);
 
 // Restart shortcut must honor VOD/live seek-window start and guard assignment.
 if(!shortcuts.includes('case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;'))throw Error("Restart shortcut must use seek-window start");
 // Seek shortcuts give screen-reader/visual feedback after successful seeking.
 for(const token of ["const feedback=document.getElementById(\"playerGestureFeedback\")","announceSeek(\"Seek to \"+formatSeekTime(video.currentTime))","aria-live","Restarted at DVR window start"])if(!shortcuts.includes(token))throw Error("Accessible keyboard seek feedback missing: "+token);
 // Seek feedback should announce the clamped target (not a stale currentTime).
-if(!shortcuts.includes("video.currentTime=target;return target")||!shortcuts.includes("formatSeekTime(target)"))throw Error("Seek feedback must announce the seek target");
+if(!shortcuts.includes("video.currentTime=target;return target")||!shortcuts.includes("formatSeekTime(target)"))throw Error("Seek feedback must announce the seek target");\nif(!shortcuts.includes("const goLive=()=>{const range=seekWindow();if(!range||!range.live)return false;")||!shortcuts.includes("video.currentTime=range.end;video.play().catch(()=>{});announceSeek(\\\"Jumped to live\\\""))throw Error("Go-live shortcut must jump to the DVR seekable edge");
