@@ -1,7 +1,7 @@
 (() => {
   "use strict";
-  const video=document.getElementById("previewVideo"),panel=document.getElementById("playerUpNext"),titleNode=document.getElementById("playerUpNextTitle"),posterNode=document.getElementById("playerUpNextPoster"),progressNode=document.getElementById("playerUpNextProgress"),meta=document.getElementById("playerUpNextMeta"),countdown=document.getElementById("playerUpNextCountdown"),playButton=document.getElementById("playerUpNextPlay"),dismiss=document.getElementById("playerUpNextDismiss"),auto=document.getElementById("playerAutoNext");
-  if(!video||!panel||!titleNode||!meta||!countdown||!playButton||!dismiss||!auto)return;
+  const video=document.getElementById("previewVideo"),backdrop=document.getElementById("playerBackdrop"),panel=document.getElementById("playerUpNext"),titleNode=document.getElementById("playerUpNextTitle"),posterNode=document.getElementById("playerUpNextPoster"),progressNode=document.getElementById("playerUpNextProgress"),meta=document.getElementById("playerUpNextMeta"),countdown=document.getElementById("playerUpNextCountdown"),playButton=document.getElementById("playerUpNextPlay"),dismiss=document.getElementById("playerUpNextDismiss"),auto=document.getElementById("playerAutoNext");
+  if(!video||!backdrop||!panel||!titleNode||!meta||!countdown||!playButton||!dismiss||!auto)return;
   const KEY="storyspace.autoNext";let current=null,catalog=[],launch=null,timer=null,remaining=12,nextTitle=null,queuedNext=false;
   const read=()=>{try{return localStorage.getItem(KEY)==="1"}catch{return false}},save=v=>{try{localStorage.setItem(KEY,v?"1":"0")}catch{}};
   auto.checked=read();
@@ -13,7 +13,7 @@
   function tick(){remaining=Math.max(0,remaining-1);if(progressNode)progressNode.style.width=((12-remaining)/12*100)+"%";if(remaining<=0){startNext();return}countdown.textContent="Auto-play in "+remaining+" seconds"}
   function startTimer(){stopTimer();remaining=12;if(progressNode)progressNode.style.width="0%";countdown.textContent="Auto-play in 12 seconds";timer=setInterval(tick,1000)}
   function show(){if(window.StoryspaceQueue?.autoPlay?.())return;nextTitle=choose();if(!nextTitle){clear();return}panel.hidden=false;titleNode.textContent=nextTitle.title||nextTitle.name||"Recommended story";if(posterNode){posterNode.src=nextTitle.poster||"";posterNode.hidden=!nextTitle.poster;posterNode.alt=""}const detail=[nextTitle.year,nextTitle.genre,nextTitle.duration,nextTitle.score?("★ "+nextTitle.score):""].filter(Boolean).join(" · ");meta.textContent=queuedNext?"From Smart Queue · "+detail:detail;remaining=12;if(progressNode)progressNode.style.width="0%";countdown.textContent=auto.checked?"Auto-play in 12 seconds":"Auto-play is off · choose Play next to continue";if(auto.checked)startTimer()}
-  video.addEventListener("ended",show);
+  video.addEventListener("ended",show);backdrop.addEventListener("transitionend",event=>{if(event.target===backdrop&&backdrop.hidden)clear()});
   playButton.addEventListener("click",startNext);dismiss.addEventListener("click",clear);
   auto.addEventListener("change",()=>{save(auto.checked);if(!panel.hidden){stopTimer();if(auto.checked)startTimer();else countdown.textContent="Auto-play is off · choose Play next to continue"}});
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!panel.hidden){clear();event.stopPropagation()}});
