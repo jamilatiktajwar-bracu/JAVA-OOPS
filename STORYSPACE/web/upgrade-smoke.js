@@ -420,7 +420,7 @@ if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. 
 
 
 // Player resilience cancels deferred work and pending recovery on pagehide.
-const resilience=read("player-resilience.js");
-if(!resilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
-if(!resilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
+const playerLifecycleResilience=read("player-resilience.js");
+if(!playerLifecycleResilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
+if(!playerLifecycleResilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
 if(!sw.includes("storyspace-shell-v118"))throw Error("Player lifecycle shell cache v118 missing");
