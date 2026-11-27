@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v124"))throw Error("Media API deadline shell v123 missing");
+if(!navigationSW.includes("storyspace-shell-v125"))throw Error("Media API deadline shell v123 missing");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -471,3 +471,8 @@ if(!uploads.includes('Math.round(deadlineMs/1000)'))throw Error("Deadline errors
 if(!uploads.includes('const catalog=await request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"})'))throw Error("Admin catalog refresh must use bounded request helper");
 if(!uploads.includes('request(root,"/api/catalog",readConfig().uploadToken||"",{cache:"no-store"})'))throw Error("Community catalog refresh must use bounded request helper");
 if(!uploads.includes('const healthData=await request(root,"/health","",{cache:"no-store",timeoutMs:8000})'))throw Error("Media connection validation must be bounded");
+
+
+// Community library retains the last public catalog for offline display without blocking server refresh.
+const communityUploads=read("media-uploads.js");
+for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array.isArray(cached.items)","saveCommunityCatalogCache(root,items)","items=readCommunityCatalogCache(root)||[]","Offline · showing saved catalog","role=\"status\""])if(!communityUploads.includes(token))throw Error("Offline community catalog cache behavior missing: "+token);
