@@ -21,10 +21,11 @@
     // Never send the owner-only admin secret in the uploader-token header.
     if(token&&!requestHeaders["x-storyspace-admin-token"]&&!requestHeaders["x-storyspace-upload-token"]){requestHeaders["x-storyspace-upload-token"]=token}
     const controller=!options.signal&&typeof AbortController!=="undefined"?new AbortController():null;
-    const requestOptions={...options,credentials:"omit",headers:requestHeaders,...(controller?{signal:controller.signal}:{})};
+    const {timeoutMs:deadlineMs=25000,...fetchOptions}=options;
+    const requestOptions={...fetchOptions,credentials:"omit",headers:requestHeaders,...(controller?{signal:controller.signal}:{})};
     let timeout=0;
     const fetchPromise=fetch(root+path,requestOptions);
-    const deadline=new Promise((_,reject)=>{timeout=setTimeout(()=>{controller?.abort();reject(new Error("Media server request timed out after 25 seconds."))},25000)});
+    const deadline=new Promise((_,reject)=>{timeout=setTimeout(()=>{controller?.abort();reject(new Error("Media server request timed out after "+Math.round(deadlineMs/1000)+" seconds."))},deadlineMs)});
     let res;try{res=await Promise.race([fetchPromise,deadline])}finally{clearTimeout(timeout)}
     let data={};try{data=await res.json()}catch{}
     if(!res.ok){const e=new Error(data.error||"Media server request failed ("+res.status+")");e.status=res.status;e.data=data;throw e}return data;
@@ -56,7 +57,7 @@
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),120000);
       let response;
       try{
-        response=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob,signal:controller.signal});
+        response=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob,signal:controller.signal,timeoutMs:120000});
       }catch(error){
         if(error.name==="AbortError")throw new Error("Upload chunk timed out after 2 minutes. Resume to continue from the server-confirmed position.");
         throw error;
@@ -75,7 +76,7 @@
   async function syncOwnerQueueStatuses(pendingItems){
     const cfg=readConfig(),root=cleanRoot(cfg.root),token=$("mediaAdminToken")?.value.trim()||sessionStorage.getItem("storyspace.mediaAdmin")||"";
     if(!validRoot(root)||token.length<32)return;
-    const catalogResponse=await fetch(root+"/api/catalog",{cache:"no-store"});
+    const catalogResponse=await request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"});
     if(!catalogResponse.ok)throw new Error("Could not refresh the published media catalog");
     const catalog=await catalogResponse.json();if(!Array.isArray(catalog))throw new Error("Media server returned an invalid catalog");
     const pendingIds=new Set((Array.isArray(pendingItems)?pendingItems:[]).map(item=>String(item.id)));
@@ -128,7 +129,7 @@
   async function refreshCommunityCatalog(){
     const cfg=readConfig(),root=cleanRoot(cfg.root);if(!validRoot(root))return;
     try{
-      const res=await fetch(root+"/api/catalog");if(!res.ok)return;const items=await res.json();if(!Array.isArray(items))return;
+      const items=await request(root,"/api/catalog",readConfig().uploadToken||"",{cache:"no-store"});if(!Array.isArray(items))return;
       const existing=new Set(movies.map(m=>String(m.mediaId||"")));
       items.forEach(item=>{if(!item||!item.id||existing.has(String(item.id)))return;const stream=new URL(item.streamUrl||("/media/"+item.id),root).href;movies.push({id:"media-"+item.id,mediaId:item.id,title:String(item.title||"Untitled upload"),type:"movie",year:new Date(item.addedAt||Date.now()).getFullYear(),rating:"NR",duration:"Community upload",genre:"Community",score:0,original:true,description:"Owner-approved community upload.",cast:"Community media",poster:"",progress:0,streamUrl:stream});});
       let section=$("communitySection");if(!section){section=document.createElement("section");section.className="movie-section";section.id="communitySection";section.innerHTML="<div class=\"section-heading\"><div><span class=\"section-kicker\">COMMUNITY LIBRARY</span><h2>Movies shared with Storyspace</h2></div></div><div class=\"movie-row\" id=\"communityRow\"></div>";document.querySelector(".content-area")?.append(section)}
@@ -200,7 +201,7 @@
     if(saveButton)saveButton.disabled=true;
     const started=performance.now();
     try{
-      const health=await fetch(root+"/health",{credentials:"omit",cache:"no-store"});
+      const health=await request(root,"/health","",{cache:"no-store",timeoutMs:8000});
       if(!health.ok)throw new Error("Media server health check failed ("+health.status+")");
       const healthData=await health.json();
       if(healthData.ok!==true||healthData.service!=="storyspace-home-media")throw new Error("This URL is not a Storyspace Home Media server");
