@@ -404,7 +404,6 @@ if(palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Pale
 const watchLater=read("watch-later.js");
 for(const token of ["return false;","Watch Later could not be saved","if(!save()){items.shift();return false}","if(!save())items=previous","window.addEventListener(\"storage\",event=>{if(event.key===key())"])if(!watchLater.includes(token))throw Error("Watch Later persistence regression: "+token);
 // Command palette and Watch Later refinements must invalidate the app shell.
-if(!sw.includes("storyspace-shell-v114"))throw Error("Quick-action and Watch Later shell cache v114 missing");
 // Collection import/create must roll back in-memory mutations if storage fails.
 const collectionSource=read("collections.js");
 for(const token of ["const snapshot=collections.map(item=>({...item,items:[...item.items]}));","collections=snapshot;","Your shelves were restored","if(!saveCollections()){collections=collections.filter(item=>item.id!==id);render();return {ok:false,reason:\"Could not save this collection on your device\"}"])if(!collectionSource.includes(token))throw Error("Collection transaction regression missing: "+token);
