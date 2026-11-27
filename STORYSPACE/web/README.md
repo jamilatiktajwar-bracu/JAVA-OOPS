@@ -66,3 +66,9 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - The preview player includes a **Copy diagnostics** action below the live media status.
 - The report captures source origin only (not the URL path, query or fragment), playback state, dimensions, playback position/duration, buffer ahead, ready/network state, playback rate, online status, dropped-frame support/count and browser user agent.\n- Avoid sharing the browser user-agent string if you prefer not to disclose device/browser details.
 - Copy uses the Clipboard API when available and a legacy selection fallback otherwise. It is user-triggered; the report is not uploaded automatically.
+
+
+## Buffer health hints
+
+- Player diagnostics classify buffering as offline, loading media, waiting for data, low buffer (<2 seconds), building buffer (2–8 seconds), or healthy buffer (8 seconds or more). Paused/ended playback is not misclassified as a low buffer.
+- The hint is descriptive only; it does not change bitrate, seek position, or playback automatically.
