@@ -143,6 +143,7 @@
         showFeedback("Brightness "+Math.round(brightness*100)+"%");
       }else if(start.zone==="right"){
         video.volume=clamp(video.volume-dy/start.rect.height*0.75,0,1);
+        if(dy<0)video.muted=false;
         showFeedback("Volume "+Math.round(video.volume*100)+"%");
       }else return;
       lastTap={at:0,zone:""};
