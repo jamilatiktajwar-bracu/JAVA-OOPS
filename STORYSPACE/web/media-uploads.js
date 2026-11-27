@@ -76,9 +76,8 @@
   async function syncOwnerQueueStatuses(pendingItems){
     const cfg=readConfig(),root=cleanRoot(cfg.root),token=$("mediaAdminToken")?.value.trim()||sessionStorage.getItem("storyspace.mediaAdmin")||"";
     if(!validRoot(root)||token.length<32)return;
-    const catalogResponse=await request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"});
-    if(!catalogResponse.ok)throw new Error("Could not refresh the published media catalog");
-    const catalog=await catalogResponse.json();if(!Array.isArray(catalog))throw new Error("Media server returned an invalid catalog");
+    const catalog=await request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"});
+    if(!Array.isArray(catalog))throw new Error("Media server returned an invalid catalog");
     const pendingIds=new Set((Array.isArray(pendingItems)?pendingItems:[]).map(item=>String(item.id)));
     const publishedIds=new Set(catalog.map(item=>String(item.id)));
     const queued=await getItems();let changed=false;
@@ -201,9 +200,7 @@
     if(saveButton)saveButton.disabled=true;
     const started=performance.now();
     try{
-      const health=await request(root,"/health","",{cache:"no-store",timeoutMs:8000});
-      if(!health.ok)throw new Error("Media server health check failed ("+health.status+")");
-      const healthData=await health.json();
+      const healthData=await request(root,"/health","",{cache:"no-store",timeoutMs:8000});
       if(healthData.ok!==true||healthData.service!=="storyspace-home-media")throw new Error("This URL is not a Storyspace Home Media server");
       await request(root,"/api/auth/verify/uploader",uploadToken,{method:"POST",headers:headers(uploadToken)});
       saveConfig({root,uploadToken});showHealth("online","Connected","Host online · uploader key accepted",Math.round(performance.now()-started));showToast("Connection verified · uploader key accepted");refreshCommunityCatalog();resumeAll();
