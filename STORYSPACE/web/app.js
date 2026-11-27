@@ -281,8 +281,8 @@ function legacyShowView(view){state.view=view;document.querySelectorAll(".nav-li
 let browseSourceItems=[];
 function renderGrid(items){
   browseSourceItems=visibleCatalog(items);
-  const genreControl=$("browseGenre"),sortControl=$("browseSort"),typeControl=$("browseType"),ratingControl=$("browseRating"),yearControl=$("browseYear");
-  const previousGenre=genreControl?.value||"all",previousYear=yearControl?.value||"all";
+  const genreControl=$("browseGenre"),sortControl=$("browseSort"),typeControl=$("browseType"),ratingControl=$("browseRating"),yearControl=$("browseYear"),languageControl=$("browseLanguage");
+  const previousGenre=genreControl?.value||"all",previousYear=yearControl?.value||"all",previousLanguage=languageControl?.value||"all";
   if(genreControl){
     const available=[...new Set(browseSourceItems.flatMap(m=>titleTokens(m.genre||m.genres)))].filter(Boolean).sort();
     const options=[["all","All genres"],...available.map(g=>[g,g.replace(/\b\w/g,c=>c.toUpperCase())])];
@@ -290,7 +290,8 @@ function renderGrid(items){
     genreControl.value=options.some(([v])=>v===previousGenre)?previousGenre:"all";
   }
   if(yearControl){const years=[...new Set(browseSourceItems.map(m=>Number(m.year||m.releaseYear)).filter(y=>y>0))].sort((a,b)=>b-a);const options=[["all","Any year"],...years.map(y=>[String(y),String(y)])];yearControl.replaceChildren(...options.map(([value,label])=>{const o=document.createElement("option");o.value=value;o.textContent=label;return o}));yearControl.value=options.some(([v])=>v===previousYear)?previousYear:"all"}
-  let visible=browseSourceItems.filter(m=>(!genreControl||genreControl.value==="all"||titleTokens(m.genre||m.genres).includes(genreControl.value))&&(!typeControl||typeControl.value==="all"||String(m.type||m.format||"").toLowerCase().includes(typeControl.value))&&(!ratingControl||ratingControl.value==="all"||String(m.rating||m.ageRating||"").toLowerCase()===ratingControl.value.toLowerCase())&&(!yearControl||yearControl.value==="all"||String(m.year||m.releaseYear||"")===yearControl.value));
+  if(languageControl){const languages=[...new Set(browseSourceItems.map(m=>String(m.language||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));const options=[["all","All languages"],...languages.map(language=>[language,language])];languageControl.replaceChildren(...options.map(([value,label])=>{const o=document.createElement("option");o.value=value;o.textContent=label;return o}));languageControl.value=options.some(([v])=>v===previousLanguage)?previousLanguage:"all"}
+  let visible=browseSourceItems.filter(m=>(!genreControl||genreControl.value==="all"||titleTokens(m.genre||m.genres).includes(genreControl.value))&&(!typeControl||typeControl.value==="all"||String(m.type||m.format||"").toLowerCase().includes(typeControl.value))&&(!ratingControl||ratingControl.value==="all"||String(m.rating||m.ageRating||"").toLowerCase()===ratingControl.value.toLowerCase())&&(!yearControl||yearControl.value==="all"||String(m.year||m.releaseYear||"")===yearControl.value)&&(!languageControl||languageControl.value==="all"||String(m.language||"").toLowerCase()===languageControl.value.toLowerCase()));
   const sort=sortControl?.value||"recommended";
   if(sort==="rating")visible.sort((a,b)=>Number(b.score||b.communityScore||0)-Number(a.score||a.communityScore||0));
   else if(sort==="newest")visible.sort((a,b)=>Number(b.year||b.releaseYear||0)-Number(a.year||a.releaseYear||0));
@@ -546,7 +547,37 @@ initializeLocalProfiles();
 function savePrefs(){storage.set("storyspace.preferences",JSON.stringify(personalized.preferences));persistLocalProfiles()}
 function titleTokens(s){return String(s||"").split(/[,|]/).map(x=>x.trim().toLowerCase()).filter(Boolean)}
 function currentDaypart(){const hour=new Date().getHours();if(hour>=5&&hour<11)return{label:"morning",moods:["Hopeful","Curious","Feel-good"]};if(hour>=11&&hour<17)return{label:"daytime",moods:["Adventure","Bold","Curious"]};if(hour>=17&&hour<22)return{label:"evening",moods:["Comforting","Emotional","Soft"]};return{label:"late-night",moods:["Tense","Mystery","Sci-Fi"]}}
-function scoreTitle(m){const p=personalized.preferences;let score=(m.score||7)*.45;const gs=titleTokens(m.genre||m.genres),ms=titleTokens(m.moods);p.genres.forEach(g=>{if(gs.includes(g.toLowerCase()))score+=4});p.moods.forEach(x=>{if(ms.includes(x.toLowerCase()))score+=3.2});p.languages.forEach(l=>{if(String(m.language||"English").toLowerCase().includes(l.toLowerCase()))score+=1.5});currentDaypart().moods.forEach(x=>{if(ms.includes(x.toLowerCase()))score+=.65});const h=personalized.history.find(x=>String(x.id)===String(m.id));if(h)score+=Math.min(2.8,h.count*.35);if(m.original)score+=.35;if(p.balance==="comfort"&&h)score+=2;if(p.balance==="explore"&&!h)score+=2.3;const day=Math.floor(Date.now()/86400000);score+=((Number(m.id)||String(m.id).split("").reduce((a,c)=>a+c.charCodeAt(0),0)+day)%11)/50;return score}
+function scoreTitle(m){
+  const p=personalized.preferences||{},history=Array.isArray(personalized.history)?personalized.history:[];
+  let score=(Number(m.score||m.communityScore)||7)*.45;
+  const gs=titleTokens(m.genre||m.genres),ms=titleTokens(m.moods);
+  p.genres.forEach(g=>{if(gs.includes(String(g).toLowerCase()))score+=4});
+  p.moods.forEach(x=>{if(ms.includes(String(x).toLowerCase()))score+=3.2});
+  p.languages.forEach(l=>{if(String(m.language||"English").toLowerCase().includes(String(l).toLowerCase()))score+=1.5});
+  currentDaypart().moods.forEach(x=>{if(ms.includes(x.toLowerCase()))score+=.65});
+  const h=history.find(x=>String(x.id)===String(m.id)||String(x.id)===String(m.apiId||""));
+  if(h)score+=Math.min(2.8,Math.max(1,Number(h.count)||1)*.35);
+  let genreAffinity=0;
+  history.slice(0,500).forEach(entry=>{
+    const watched=movies.find(item=>String(item.id)===String(entry.id)||String(item.apiId||"")===String(entry.id));
+    if(!watched)return;
+    const overlap=gs.filter(g=>titleTokens(watched.genre||watched.genres).includes(g)).length;
+    if(!overlap)return;
+    const ageDays=Math.max(0,(Date.now()-(Number(entry.at||entry.updatedAt)||Date.now()))/86400000);
+    const recency=Math.max(.25,1-ageDays/120);
+    const completion=Math.max(0,Math.min(100,Number(watched.progress)||0))>=95?.35:1;
+    genreAffinity+=Math.min(1.8,overlap*.55)*recency*completion*Math.min(2,Math.max(1,Number(entry.count)||1)*.5);
+  });
+  score+=Math.min(3.6,genreAffinity);
+  const progress=Math.max(0,Math.min(100,Number(m.progress)||0));
+  if(progress>=95)score-=2.2;else if(progress>0)score+=Math.min(1.4,progress/60);
+  if(m.original)score+=.35;
+  if(p.balance==="comfort"&&h)score+=2;
+  if(p.balance==="explore"&&!h)score+=2.3;
+  const day=Math.floor(Date.now()/86400000);
+  score+=((Number(m.id)||String(m.id).split("").reduce((a,c)=>a+c.charCodeAt(0),0)+day)%11)/50;
+  return score;
+}
 function ranked(items=movies.filter(m=>!m.demo)){return [...items].sort((a,b)=>scoreTitle(b)-scoreTitle(a))}
 function recordInterest(m,kind){let entry=personalized.history.find(x=>String(x.id)===String(m.id));if(entry){entry.count++;entry.kind=kind;entry.at=Date.now()}else personalized.history.unshift({id:m.id,count:1,kind,at:Date.now()});personalized.history=personalized.history.slice(0,100);storage.set("storyspace.history",JSON.stringify(personalized.history));persistLocalProfiles();refreshProfileWelcome()}
 const baseRenderHome=renderHome;
@@ -1071,9 +1102,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("playerBackdr
   $el("importDataAction")?.addEventListener("click",()=>{$el("profileMenu")?.classList.remove("open");$el("importDataFile")?.click()});
   $el("importDataFile")?.addEventListener("change",event=>{importData(event.target.files?.[0]);event.target.value=""});
 
-  const genre=$el("browseGenre"),sort=$el("browseSort"),type=$el("browseType"),rating=$el("browseRating"),year=$el("browseYear");
-  [genre,sort,type,rating,year].forEach(control=>control?.addEventListener("change",()=>renderGrid(browseSourceItems)));
-  $el("resetBrowseFilters")?.addEventListener("click",()=>{[genre,type,rating,year].forEach(control=>{if(control)control.value="all"});if(sort)sort.value="recommended";renderGrid(browseSourceItems)});
+  const genre=$el("browseGenre"),sort=$el("browseSort"),type=$el("browseType"),rating=$el("browseRating"),year=$el("browseYear"),language=$el("browseLanguage");
+  [genre,sort,type,rating,year,language].forEach(control=>control?.addEventListener("change",()=>renderGrid(browseSourceItems)));
+  $el("resetBrowseFilters")?.addEventListener("click",()=>{[genre,type,rating,year,language].forEach(control=>{if(control)control.value="all"});if(sort)sort.value="recommended";renderGrid(browseSourceItems)});
 
   // Keyboard-first desktop navigation; never steal keystrokes from forms or dialogs.
   const isEditing=target=>target instanceof HTMLElement&&(
