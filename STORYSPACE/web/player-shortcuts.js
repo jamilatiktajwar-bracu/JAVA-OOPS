@@ -29,7 +29,8 @@
     if(ranges&&ranges.length){try{const i=ranges.length-1,start=ranges.start(i),end=ranges.end(i);if(Number.isFinite(start)&&Number.isFinite(end)&&end>start)return {start,end,live:true}}catch{}}
     return null;
   };
-  const seekPercent=percent=>{const range=seekWindow();if(!range||!Number.isFinite(percent))return false;const target=clamp(range.start+(range.end-range.start)*clamp(percent,0,100)/100,range.start,range.end);try{video.currentTime=target;return target}catch{return false}};\n  const seek=delta=>{
+  const seekPercent=percent=>{const range=seekWindow();if(!range||!Number.isFinite(percent))return false;const target=clamp(range.start+(range.end-range.start)*clamp(percent,0,100)/100,range.start,range.end);try{video.currentTime=target;return target}catch{return false}};
+  const seek=delta=>{
     if(video.readyState<1)return false;
     const range=seekWindow();if(!range)return false;
     const target=clamp(video.currentTime+delta,range.start,range.end);
@@ -55,7 +56,8 @@
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!backdrop.classList.contains("player-theater-mode"));event.preventDefault();break;
       case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;video.play().catch(()=>{});announceSeek(range.live?"Restarted at DVR window start":"Restarted from beginning");event.preventDefault()}catch{}}break;}
-      case "g":{const target=goLive();if(target!==false)event.preventDefault();break;}\n      case "0":case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":{const percent=Number(key)*10,target=seekPercent(percent);if(target!==false){announceSeek("Seek to "+percent+"% · "+formatSeekTime(target));event.preventDefault()}break;}
+      case "g":{const target=goLive();if(target!==false)event.preventDefault();break;}
+      case "0":case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":{const percent=Number(key)*10,target=seekPercent(percent);if(target!==false){announceSeek("Seek to "+percent+"% · "+formatSeekTime(target));event.preventDefault()}break;}
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
       default:handled=false;
