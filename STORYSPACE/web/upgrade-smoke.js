@@ -355,6 +355,8 @@ if(!settings.includes('function captionTrackEntries(tracks)')||!settings.include
 if(!settings.includes("preferredTrack(captionEntries,captionLanguage,savedCaption)"))throw Error("Caption language preference must resolve against visible caption tracks");
 
 if(!settings.includes('const audioEntries=Array.from(ats||[]).map((track,index)=>({track,index}))')||!settings.includes("preferredTrack(audioEntries,audioLanguage,savedAudio)"))throw Error("Saved regional audio language preferences must resolve through indexed audio tracks");
+if(!settings.includes("nativeDefaultAudioIndex=enabledIndex>=0?enabledIndex:0")||!settings.includes('audio.value==="-1"?i===nativeDefaultAudioIndex:i===Number(audio.value)'))throw Error("Default audio selection must respect the browser-provided native track rather than blindly choosing the first track");
+if(!settings.includes('video.addEventListener("emptied",()=>{nativeDefaultAudioIndex=-1;refreshTracks()})'))throw Error("Native audio default must be recalculated when the media source changes");
 
 
 // Caption/audio selector status is specific and announces user selections through the polite status region.
