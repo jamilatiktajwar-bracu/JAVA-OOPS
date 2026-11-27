@@ -694,6 +694,7 @@ public class NETFLIX_SMOKE_TEST {
         require(!party.syncGuestPosition(45) && party.getPlaybackPosition() == 20,
                 "out-of-sync guest must not move the host timeline");
         require(party.syncGuestPosition(21), "guest within sync tolerance should be accepted");
+        require(party.muteGuest(secondGuest), "active guest should be muted before party ends");
         party.endParty();
         require(!party.invite(outsider), "ended party should not accept invitations");
         require(!party.sendChat(host, "after end"), "ended party should reject chat");
@@ -705,6 +706,8 @@ public class NETFLIX_SMOKE_TEST {
         party.restartParty();
         require(party.isPartyActive() && !party.isPlaying() && party.getStartedAt() == 0,
                 "restart should reset party playback state and start timestamp");
+        require(!party.isMuted(secondGuest),
+                "restarting a party should clear stale guest mute state");
     }
 
     private static void require(boolean condition, String message) {

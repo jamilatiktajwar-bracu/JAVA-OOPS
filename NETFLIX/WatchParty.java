@@ -337,6 +337,10 @@ public class WatchParty {
         startedAt = 0;
         playbackPosition = 0;
         lastSyncPosition = 0;
+        for (int i = 0; i < mutedGuestCount; i++) {
+            mutedGuests[i] = null;
+        }
+        mutedGuestCount = 0;
     }
 
     public boolean isPartyActive() {
