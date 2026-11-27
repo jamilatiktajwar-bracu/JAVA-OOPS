@@ -37,8 +37,10 @@ public class PaymentMethod {
     }
 
     public boolean isExpired(int currentYear, int currentMonth) {
-        if (currentMonth < 1 || currentMonth > 12) {
-            return false;
+        if (currentYear < 1900 || currentYear > 2200
+                || currentMonth < 1 || currentMonth > 12) {
+            // Invalid dates must not make a payment method appear usable.
+            return true;
         }
         return expiryYear < currentYear
                 || (expiryYear == currentYear && expiryMonth < currentMonth);
