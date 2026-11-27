@@ -48,7 +48,7 @@
     const cache=await caches.open(CACHE);await evictForQuota(cache,size,url);
     const headers=new Headers(response.headers);headers.set("x-storyspace-cached-at",String(Date.now()));
     const cachedResponse=new Response(response.clone().body,{status:response.status,statusText:response.statusText,headers});
-    try{await cache.put(url,cachedResponse)}catch(error){
+    try{await cache.put(url,cachedResponse.clone())}catch(error){
       if(error?.name!=="QuotaExceededError")throw error;
       await evictForQuota(cache,size,url);await cache.put(url,cachedResponse.clone());
     }
