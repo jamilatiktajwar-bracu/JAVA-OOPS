@@ -17,14 +17,42 @@
     try{const {response}=await cacheFor(url);button.textContent=response?"Remove offline copy":"Save for offline";announce(response?"Saved on this device · available without a connection":"Save this video on this device for offline playback.");}
     catch{button.disabled=true;announce("Offline storage is unavailable in this browser.")}
   }
+  async function evictForQuota(cache,requiredBytes,keepUrl){
+    const estimate=await navigator.storage?.estimate?.().catch(()=>null);
+    const quota=Number(estimate?.quota),usage=Number(estimate?.usage);
+    const budget=Number.isFinite(quota)&&quota>0?Math.min(500*1024*1024,quota*.35):500*1024*1024;
+    const entries=[];
+    for(const request of await cache.keys()){
+      if(request.url===keepUrl)continue;
+      const response=await cache.match(request);if(!response)continue;
+      const bytes=Math.max(0,Number(response.headers.get("content-length"))||0);
+      const savedAt=Math.max(0,Number(response.headers.get("x-storyspace-cached-at"))||0);
+      entries.push({request,bytes,savedAt});
+    }
+    let total=entries.reduce((sum,item)=>sum+item.bytes,0);
+    entries.sort((a,b)=>a.savedAt-b.savedAt);
+    let free=Number.isFinite(quota)&&Number.isFinite(usage)?quota-usage:Infinity;
+    while(entries.length&&(total+requiredBytes>budget||free<requiredBytes*1.15)){
+      const oldest=entries.shift();await cache.delete(oldest.request);total=Math.max(0,total-oldest.bytes);
+      const next=await navigator.storage?.estimate?.().catch(()=>null);
+      if(Number.isFinite(Number(next?.quota))&&Number.isFinite(Number(next?.usage)))free=Number(next.quota)-Number(next.usage);
+    }
+    if(total+requiredBytes>budget||free<requiredBytes*1.15)throw new Error("Device storage is full. Remove another offline video or free device space.");
+  }
   async function saveOffline(){
     const url=currentUrl();if(!url)throw new Error("This media URL cannot be saved for offline playback.");
     const response=await fetch(url,{method:"GET",credentials:"omit",cache:"no-store"});
     if(!response.ok||response.status!==200||!["basic","cors"].includes(response.type))throw new Error("The media server did not provide a complete, cacheable video response.");
     const size=Number(response.headers.get("content-length"));
     if(!Number.isSafeInteger(size)||size<1||size>MAX_BYTES)throw new Error("Offline copies are limited to videos up to 250 MB with a known file size.");
-    if(navigator.storage?.estimate){const estimate=await navigator.storage.estimate();if(Number.isFinite(estimate.quota)&&Number.isFinite(estimate.usage)&&estimate.quota-estimate.usage<size*1.15)throw new Error("Not enough device storage is available for this offline copy.");}
-    const cache=await caches.open(CACHE);await cache.put(url,response.clone());sourceUrl=url;
+    const cache=await caches.open(CACHE);await evictForQuota(cache,size,url);
+    const headers=new Headers(response.headers);headers.set("x-storyspace-cached-at",String(Date.now()));
+    const cachedResponse=new Response(response.clone().body,{status:response.status,statusText:response.statusText,headers});
+    try{await cache.put(url,cachedResponse)}catch(error){
+      if(error?.name!=="QuotaExceededError")throw error;
+      await evictForQuota(cache,size,url);await cache.put(url,cachedResponse.clone());
+    }
+    sourceUrl=url;
     announce("Offline copy saved · "+Math.round(size/1024/1024)+" MB");
   }
   async function switchToCached(){
