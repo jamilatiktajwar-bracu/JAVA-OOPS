@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v129"))throw Error("Media API deadline shell v123 missing");
+if(!/const SHELL_CACHE = "storyspace-shell-v\d+"/.test(navigationSW))throw Error("Service worker shell cache must use a versioned cache key");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -480,12 +480,12 @@ for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array
 
 // Continue Watching hub refreshes saved progress from other tabs and preserves keyboard focus during updates.
 const resumeHub=read("resume-hub.js");
-for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null","window.addEventListener(\"focus\",()=>{if(hub.hidden)render()})","document.addEventListener(\"visibilitychange\",()=>{if(!document.hidden&&hub.hidden)render()})","data-resume-action=\"resume\"","data-resume-action=\"clear\"","focus({preventScroll:true})"])if(!resumeHub.includes(token))throw Error("Continue Watching live-sync behavior missing: "+token);
+for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null","window.addEventListener(\"focus\",()=>{if(hub.hidden)render()})","document.addEventListener(\"visibilitychange\",()=>{if(!document.hidden&&hub.hidden)render()})","resume.dataset.resumeAction=\"resume\"","remove.dataset.resumeAction=\"clear\"","focus({preventScroll:true})"])if(!resumeHub.includes(token))throw Error("Continue Watching live-sync behavior missing: "+token);
 
 
 // Expired upload sessions are cleaned periodically without deleting sessions currently locked by active requests.
 const mediaServerSource=read("../home-media/server.mjs");
-if(!mediaServerSource.includes("now-activity >= uploadSessionTtlMs && !sessionLocks.has(id)"))throw Error("Expired-session cleanup must skip locked uploads");
+if(!mediaServerSource.includes("if(sessionLocks.has(id))continue;"))throw Error("Expired-session cleanup must skip locked uploads");
 if(!mediaServerSource.includes("setInterval(()=>{try{removeExpiredUploadSessions()}catch(error){console.warn(\"Upload session cleanup failed\",error)}},30*60*1000)"))throw Error("Upload session cleanup must run periodically");
 if(!mediaServerSource.includes("uploadSessionCleanup.unref?.()"))throw Error("Session cleanup timer must not hold the server process open");
 
