@@ -4,7 +4,7 @@ if(!a.includes("image.loading=\"lazy\"")||!a.includes("image.decoding=\"async\""
 if(!a.includes("universe.sort((a,b)=>String(a.title||a.name).localeCompare"))throw Error("My Universe title sort missing");
 if(!a.includes("universeCount"))throw Error("My Universe count indicator missing");
 if(!c.includes("movie-poster-image")||!c.includes("prefers-reduced-motion:reduce"))throw Error("performance/transition styles missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Player UX batch v1 guards
 const pux=read("player-ux.js");
@@ -29,7 +29,7 @@ if(!demoApp.includes('video.src=m.demo?'))throw Error("Demo video player source 
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Demo Cinema row render wiring missing");if(!a.includes("function ranked(items=movies.filter(m=>!m.demo))"))throw Error("Curated ranking must exclude demo streams by default");if(!a.includes("const ordered=ranked(movies.filter(m=>!m.demo));"))throw Error("Home curated rows must use the non-demo catalog");if(!a.includes("function chooseHero(){const available=visibleCatalog(movies.filter(m=>!m.demo))"))throw Error("Featured hero must exclude demo streams");if(!a.includes("pool=movies.filter(m=>!m.demo&&kidsSafe(m)&&m.id!==current?.id)"))throw Error("Surprise hero must respect demo and Kids Mode filters");if(!a.includes('if(view==="movies")filtered=movies.filter(m=>m.type==="movie"&&!m.demo);'))throw Error("Films browse must keep sample streams in Demo Cinema");if(!a.includes('if(view==="top")filtered=ranked(movies.filter(m=>!m.demo));'))throw Error("Top picks browse must exclude demo streams");
 if(!h.includes('id="demoCinemaSection"')||!h.includes('id="demoCinemaRow"'))throw Error("Demo Cinema section markup missing");
 if(!h.includes("13 sample streams")||!h.includes("Not a commercial film catalog"))throw Error("Demo Cinema sample-content disclaimer/count missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Visible demo tag on sample video cards.
 if(!a.includes('demoBadge.textContent="DEMO"')||!c.includes(".card-demo-badge"))throw Error("Demo card badge styling/markup missing");
@@ -43,7 +43,7 @@ if(!a.includes('Sample video stream · Demo footage, not a licensed film.'))thro
 // Demo-stream error messaging and cache-version regression checks
 if(!a.includes('video.dataset.demoStream=m.demo?"1":"0"'))throw Error("Demo stream marker not set on player");
 if(!resilience.includes('video.dataset.demoStream==="1"?"Sample stream unavailable · ":""'))throw Error("Demo stream error guidance missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Player media metadata readout
 if(!h.includes('id="playerMediaInfo"'))throw Error("Player media info element missing");
@@ -77,7 +77,7 @@ if(!mediaInfo.includes('video.duration===Infinity')||!mediaInfo.includes('parts.
 // Preserve responsive polish already merged to main.
 if(!h.includes("interaction-polish.css")||!sw.includes("./interaction-polish.css"))throw Error("Responsive polish asset missing from consolidated shell");
 if(!read("player-queue.js").includes("StoryspaceQueue")||!sw.includes("./player-queue.js"))throw Error("Smart Queue module missing from consolidated shell");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Discovery shortcuts and year search from merged PR #118
 if(!h.includes("data-discovery=\"genre:Sci-Fi\"")||!h.includes("data-discovery=\"year:2026\""))throw Error("Quick discovery markup missing");
@@ -100,7 +100,7 @@ if(!next.includes("queuedItem()")||!next.includes("From Smart Queue")||!next.inc
 if(!next.includes('event.key==="Escape"&&!panel.hidden'))throw Error("Up Next Escape dismiss missing");
 if(!c.includes(".player-up-next-poster")||!c.includes(".player-up-next-progress-track")||!c.includes(".queue-footer button:disabled"))throw Error("Player/queue polish styles missing");
 if(!h.includes('id="queueShuffle"')||!read("player-queue.js").includes("Queue shuffled")||!read("player-queue.js").includes("aria-label"))throw Error("Shuffle/accessibility queue controls missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Full Smart Queue controls: auto-advance, repeat, playlist import/export, direct actions and demo bulk-add.
 const queue=read("player-queue.js");
@@ -108,24 +108,24 @@ for(const id of ["queueExport","queueImport","queueImportFile","queueRepeat","qu
 for(const token of ["storyspace-playlist","version:1","queue.length>=100","queuePlay","autoPlayQueue","repeatAll","queueExport","queueImportFile","queue-play-item","queue-play-next","aria-label","Queue limit reached","demoQueueAll"])if(!queue.includes(token))throw Error("Smart Queue behavior missing: "+token);
 if(!next.includes("StoryspaceQueue?.autoPlay?.()"))throw Error("Up Next must not conflict with active queue autoplay");
 if(!css.includes(".queue-import-export")||!css.includes(".queue-play-next")||!css.includes(".demo-queue-all"))throw Error("Queue extended styles missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Expanded 13-item sample catalog is included in the existing Demo Cinema row.
 for(const title of ["For Bigger Fun · Demo","For Bigger Blazes · Demo","Tears of Steel · Open Film","Subaru Outback · Sample","Volkswagen GTI Review · Sample","Bullrun Road Rally · Sample","What Car for $1,000? · Sample"])if(!demoApp.includes(title))throw Error("Expanded sample catalog missing: "+title);
 if(!a.includes('renderRow("demoCinemaRow",movies.filter(m=>m.demo))'))throw Error("Expanded Demo Cinema row render missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Local profile identity and theme persistence guards
 for(const id of ["renameProfile","profileAvatarChoice","profileThemeChoice"])if(!h.includes('id="'+id+'"'))throw Error("Missing profile personalization control: "+id);
 for(const token of ["PROFILE_AVATARS","PROFILE_THEMES","profileCleanName(raw)","Profile renamed","activeLocalProfile.theme","activeLocalProfile.avatar","dataset.profileTheme"])if(!a.includes(token))throw Error("Profile identity/theme behavior missing: "+token);
 for(const theme of ["data-profile-theme=\"ocean\"","data-profile-theme=\"ember\"","data-profile-theme=\"forest\""])if(!c.includes(theme))throw Error("Missing theme palette: "+theme);
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Discovery taste balance and Not-for-me controls
 for(const token of ["taste-panel","taste-mode","tasteInsight","storyspace:interest-updated","storyspace:profile-updated","comfort","balanced","explore"])if(!e.includes(token))throw Error("Taste balance feature missing: "+token);
 for(const token of ["storyspace.discoveryDismissed","dismissed.add(String(movie.apiId||movie.id))","restore.hidden=dismissed.size===0","dismissed.clear()"])if(!e.includes(token))throw Error("Not-for-me persistence/restore missing: "+token);
 for(const token of [".taste-panel",".taste-mode[aria-pressed=\"true\"]",".discovery-restore",".discovery-dismiss"])if(!ec.includes(token))throw Error("Discovery personalization styles missing: "+token);
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Watch Later and Resume Hub controls, modules and offline assets
 for(const id of ["watchLaterOpen","watchLaterCount","storyspaceWatchLater","watchLaterClose","watchLaterList","resumeHub","resumeHubClose","resumeHubList"])if(!h.includes('id="'+id+'"'))throw Error("Missing personal list/hub interface: "+id);
@@ -134,7 +134,7 @@ for(const token of ["storyspace.watchLater.v1.","profileKey()","MAX","watchLater
 for(const token of ["storyspace.resumePoints","resumeHubList","resumeHubClose","Clear progress","refreshContinueRow","storyspaceResumeHub"])if(!read("resume-hub.js").includes(token))throw Error("Resume Hub behavior missing: "+token);
 if(!e.includes("watch-later")||!e.includes("storyspaceWatchLater.toggle"))throw Error("Discovery Studio Watch Later actions missing");
 if(!c.includes(".watch-later-panel")||!c.includes(".resume-hub-card"))throw Error("Watch Later/Resume Hub responsive styles missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Command palette and saved My Universe layout
 for(const id of ["commandPaletteOpen","universeLayoutToggle"])if(!h.includes('id="'+id+'"'))throw Error("Missing quick navigation/layout control: "+id);
@@ -144,12 +144,12 @@ for(const token of ["StoryspaceCommands","ArrowDown","ArrowUp","No matching acti
 if(!read("resume-hub.js").includes("resumeHub"))throw Error("Continue Watching hub asset missing");
 for(const sel of [".command-palette",".command-palette-item",".command-palette-input","prefers-reduced-motion"])if(!read("command-palette.css").includes(sel))throw Error("Command palette styles missing: "+sel);
 if(!c.includes(".movie-row.universe-grid"))throw Error("My Universe grid styles missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Profile-aware welcome context
 for(const token of ["refreshProfileWelcome","Good morning, ","Good afternoon, ","Good evening, ","stories","My Universe","resume","kidsMode"])if(!a.includes(token))throw Error("Profile-aware welcome behavior missing: "+token);
 if(!c.includes(".welcome-line span")||!c.includes(".welcome-line small"))throw Error("Welcome context styles missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Quick Discovery collections, dynamic genre shortcuts and platform asset guard
 if(!h.includes('quick-discovery.js')||!h.includes('quick-discovery.css'))throw Error('Quick Discovery assets missing from page');
@@ -198,7 +198,7 @@ if(!read("player-shortcuts.css").includes(".player-segment-button")||!sw.include
 // Theater-mode keyboard/button control must have a defined handler and synchronized state.
 if(!read("player-shortcuts.js").includes("function setTheater(open)")||!read("player-shortcuts.js").includes("playerTheater"))throw Error("Theater mode control handler missing");
 if(!h.includes("playerTheater")||!h.includes("<kbd>T</kbd> theater mode"))throw Error("Theater mode button/shortcut help missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
 if(!settings.includes("toggleCaptionsShortcut")||!settings.includes("event.altKey")||!settings.includes("storyspace.captionLastEnabled"))throw Error("Caption on/off shortcut missing");
@@ -208,9 +208,9 @@ for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","pre
 // Mobile theater mode viewport and safe-area regression guards.
 const theaterCss=read("player-gestures.css");
 for(const token of ["100dvh","72dvh","55dvh","env(safe-area-inset-top)","env(safe-area-inset-bottom)","overscroll-behavior:contain"])if(!theaterCss.includes(token))throw Error("Mobile theater viewport/safe-area polish missing: "+token);
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 if(!theaterCss.includes("orientation:landscape")||!theaterCss.includes("100dvh - 150px"))throw Error("Short landscape theater layout missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 
 // Profile-aware My Collections studio
@@ -225,7 +225,7 @@ if(!a.includes('if(collections)collections.hidden=view!=="home"')||!a.includes('
  for(const id of ["collectionRename","collectionSort"])if(!h.includes('id="'+id+'"'))throw Error("Collection management control missing: "+id);
  for(const token of ["collection.sort","collectionRename","collectionSort","sortMode === \"title\"","sortMode === \"recent\"","sortMode === \"rating\"","sortMode === \"year\"","A collection with that name already exists","sort:item.sort"])if(!collections.includes(token))throw Error("Collection rename/sort persistence missing: "+token);
  for(const token of [".collection-sort-label","collection-sort-label select:focus-visible"])if(!collectionsCss.includes(token))throw Error("Collection sort styling missing: "+token);
- if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+ if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Custom Collection ordering: accessible move buttons and drag/drop, while preserving filtered slots.
 for(const token of ["reorderVisibleItems","collection-order-controls","Move ","dragstart","dragend","dragover","tile.dataset.collectionItemId",'collection.sort = "custom"'])if(!collections.includes(token))throw Error("Collection reorder implementation missing: "+token);
@@ -235,7 +235,7 @@ for(const token of [".collection-order-controls",".collection-order-button",".co
 for(const token of ["coverIcons","validIcon(item.icon)","icon: validIcon(item.icon)","validIcon(collection.icon)","collectionIcon"])if(!collections.includes(token))throw Error("Collection cover personalization missing: "+token);
 if(!h.includes('id="collectionIcon"')||!h.includes('id="collectionDetailIcon"'))throw Error("Collection icon controls missing");
 for(const token of [".collection-cover-icon","#collectionDetailIcon"])if(!collectionsCss.includes(token))throw Error("Collection icon styles missing: "+token);
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Per-profile storage schema retains sort and cover personalization across reloads.
 if(!collections.includes("icon: validIcon(item.icon)")||!collections.includes('sort: ["custom","title","recent","rating","year"].includes(item.sort) ? item.sort : "custom"'))throw Error("Collection cover/sort profile persistence missing");
@@ -244,12 +244,12 @@ if(!collections.includes("icon: validIcon(item.icon)")||!collections.includes('s
 for(const token of ["cleanDescription(item.description)","description: cleanDescription(item.description)","collection.description","collectionDescription"])if(!collections.includes(token))throw Error("Collection descriptions missing: "+token);
 if(!h.includes('id="collectionDescription"')||!h.includes('id="collectionDetailDescription"'))throw Error("Collection description controls missing");
 if(!collectionsCss.includes(".collection-tile-description"))throw Error("Collection description styles missing");
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // Collection hub manual shelf ordering: drag/drop + accessible move controls.
 for(const token of ["reorderCollections","collection-shelf-card","collection-shelf-controls","collection-shelf-move","dragstart","dragover","dragend"])if(!collections.includes(token))throw Error("Collection hub reorder feature missing: "+token);
 for(const token of [".collection-shelf-card",".collection-shelf-controls",".collection-shelf-move",".collection-shelf-dragging"])if(!collectionsCss.includes(token))throw Error("Collection hub reorder styles missing: "+token);
-if(!/storyspace-shell-v\\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
+if(!/storyspace-shell-v\d+/.test(sw))throw Error("Offline shell cache version must be numeric and present");
 
 // My Universe search/empty-state behavior regression checks.
 for(const id of ["universeSearch","universeSearchClear","universeEmptyState"])if(!h.includes('id="'+id+'"'))throw Error("My Universe search/empty-state interface missing: "+id);
