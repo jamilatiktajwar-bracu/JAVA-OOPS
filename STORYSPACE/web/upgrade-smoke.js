@@ -540,7 +540,7 @@ if(!profileSyncSource.includes("Saved locally · will sync when you reconnect:")
 // Explicit offline media saves are bounded, removable, and restore playback after a network loss.
 const offlinePlayer=read("player-offline.js");
 if(!offlinePlayer.includes('const CACHE="storyspace-offline-media-v1",MAX_BYTES=250*1024*1024'))throw Error("Offline media cache must use a dedicated cache and bounded size");
-if(!offlinePlayer.includes("cache.put(url,response.clone())"))throw Error("Offline media save must persist the complete response");
+if(!offlinePlayer.includes("cache.put(url,cachedResponse.clone())"))throw Error("Offline media save must persist the complete response");
 if(!offlinePlayer.includes("async function evictForQuota(cache,requiredBytes,keepUrl)"))throw Error("Offline cache must evict least-recent copies before exhausting device quota");
 if(!offlinePlayer.includes('x-storyspace-cached-at'))throw Error("Offline cache entries must retain recency metadata for eviction");
 if(!offlinePlayer.includes('error?.name!=="QuotaExceededError"'))throw Error("Quota errors must trigger a single safe eviction retry");
