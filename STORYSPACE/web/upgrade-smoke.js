@@ -341,3 +341,7 @@ if(!settings.includes('function captionTrackEntries(tracks)')||!settings.include
 if(!settings.includes("preferredTrack(captionEntries,captionLanguage,savedCaption)"))throw Error("Caption language preference must resolve against visible caption tracks");
 
 if(!settings.includes('const audioEntries=Array.from(ats||[]).map((track,index)=>({track,index}))')||!settings.includes("preferredTrack(audioEntries,audioLanguage,savedAudio)"))throw Error("Saved regional audio language preferences must resolve through indexed audio tracks");
+
+
+// Caption/audio selector status is specific and announces user selections through the polite status region.
+for(const token of ["captionSummary","audioSummary","Captions off","Captions: ","Audio: Default","Audio: "])if(!settings.includes(token))throw Error("Accessible caption/audio selection feedback missing: "+token);
