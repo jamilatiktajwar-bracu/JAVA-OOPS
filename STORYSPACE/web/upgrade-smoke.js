@@ -398,7 +398,7 @@ for(const token of ["let returnFocus=null;","close.focus({preventScroll:true})",
 // Quick-action palette preserves the opener focus, safely navigates empty result sets and exposes selected options.
 const palette=read("command-palette.js");
 for(const token of ["let panel,input,list,trigger,openState=false,returnFocus=null,activeIndex=-1;","if(!rows.length)return;","returnFocus.focus({preventScroll:true})","button.setAttribute(\"aria-selected\",\"false\")","button.onfocus=()=>{activeIndex=index;button.setAttribute(\"aria-selected\",\"true\")","empty.setAttribute(\"role\",\"status\")"])if(!palette.includes(token))throw Error("Command palette focus/navigation regression: "+token);
-if(palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Palette arrow navigation must not modulo an empty list");
+if(!palette.includes("if(!rows.length)return;")||!palette.includes("(current+delta+rows.length)%rows.length"))throw Error("Palette arrow navigation must guard empty lists before modulo");
 // Watch Later changes roll back failed persistence and synchronize other same-origin tabs.
 const watchLater=read("watch-later.js");
 for(const token of ["return false;","Watch Later could not be saved","if(!save()){items.shift();return false}","if(!save())items=previous","window.addEventListener(\"storage\",event=>{if(event.key===key())"])if(!watchLater.includes(token))throw Error("Watch Later persistence regression: "+token);
