@@ -421,3 +421,9 @@ if(!sw.includes("setTimeout(()=>resolve(null),4500)"))throw Error("Static asset 
 if(!sw.includes("Promise.race([")||!sw.includes("finally(()=>clearTimeout(timeoutId))"))throw Error("Asset timeout race must clean its timer");
 if(!sw.includes("const refresh = fetch(request).then(async response => {"))throw Error("Background asset refresh should still populate cache after timeout");
 if(!sw.includes("storyspace-shell-v116"))throw Error("Asset timeout shell cache v116 missing");
+
+
+// API requests must enforce a deadline even when AbortController is unavailable.
+const apiSource=read("app.js");
+if(!apiSource.includes('Promise.race([request,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error("Request timed out. Check your connection and try again.")),15000)})])'))throw Error("API requests need a timeout fallback when AbortController is unavailable");
+if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. Check your connection and try again."))'))throw Error("AbortController API timeout should reject promptly with a clear message");
