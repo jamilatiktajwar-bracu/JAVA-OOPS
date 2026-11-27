@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v133";
+const SHELL_CACHE = "storyspace-shell-v134";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
@@ -11,7 +11,14 @@ const MAX_RUNTIME_ENTRIES = 80;
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then(cache => cache.addAll(SHELL))
+      .then(async cache => {
+        // Cache assets individually: one missing optional file must not abort the entire PWA install.
+        const results = await Promise.allSettled(SHELL.map(asset => cache.add(asset)));
+        const failed = results.flatMap((result, index) => result.status === "rejected" ? [SHELL[index]] : []);
+        if (failed.length) console.warn("[Storyspace SW] Optional shell assets unavailable:", failed);
+        // The offline entry point is the minimum install requirement.
+        if (!await cache.match("./index.html")) throw new Error("Offline shell entry point could not be cached.");
+      })
       .then(() => self.skipWaiting())
   );
 });
