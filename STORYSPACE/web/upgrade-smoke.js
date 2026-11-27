@@ -435,4 +435,11 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v119"))throw Error("Navigation timeout shell cache v119 missing");
+if(!navigationSW.includes("storyspace-shell-v120"))throw Error("Navigation timeout cache-failure guard shell v120 missing");
+
+ 
+// Navigation cache failures must never convert a valid network response into an error.
+if(!navigationSW.includes('const shellPromise=caches.open(SHELL_CACHE).catch(()=>null)'))throw Error("Navigation cache open failures must be tolerated");
+if(!navigationSW.includes('if(cache)try{await cache.put("./index.html",response.clone())}catch{/* Cache quota must not block navigation. */}'))throw Error("Shell cache writes must be guarded when Cache Storage is unavailable");
+if(!navigationSW.includes('if(cache)try{const fallback=await cache.match("./index.html");if(fallback)return fallback}catch{/* Cache access failure should not block the network response. */}'))throw Error("Shell cache reads must not block navigation fallback");
+if(!navigationSW.includes('return response||Response.error();'))throw Error("Network response must remain fallback when cache lookup fails");
