@@ -391,7 +391,8 @@ if(sw.includes("if (cached) return cached;"))throw Error("Static assets must not
 if(!sw.includes('return (await cache.match("./index.html")) || response;'))throw Error("Navigation must fall back to the cached shell when the server returns an error");
 if(!sw.includes('return (await shell.match("./index.html")) || Response.error();'))throw Error("Offline navigation must fall back to the cached app shell");
 
-\n// Continue Watching hub acts as an accessible modal with focus restoration/trapping.
+
+// Continue Watching hub acts as an accessible modal with focus restoration/trapping.
 if(!h.includes('id="resumeHub" hidden role="dialog" aria-modal="true" aria-labelledby="resumeHubTitle"'))throw Error("Resume Hub must expose dialog semantics");
 if(!h.includes('id="resumeHubTitle" tabindex="-1"'))throw Error("Resume Hub needs a focusable labelled heading");
 for(const token of ["let returnFocus=null;","close.focus({preventScroll:true})","returnFocus.focus({preventScroll:true})","event.key===\"Escape\"","event.key!==\"Tab\"","first.focus()","last.focus()","closeHub();if(typeof playMovie==="])if(!read("resume-hub.js").includes(token))throw Error("Resume Hub keyboard/focus behavior missing: "+token);
