@@ -505,3 +505,5 @@ const initSource=read("../home-media/server.mjs");
 if(!initSource.includes("Session creation is atomic from the client's perspective"))throw Error("Upload initialization must document transactional cleanup");
 if(!initSource.includes('fs.rmSync(files.data+".tmp",{force:true});'))throw Error("Upload initialization must remove a failed metadata temp file");
 if(!initSource.includes('fs.rmSync(files.part,{force:true});\n      throw error;'))throw Error("Upload initialization must remove its orphaned partial file");
+const chunkRollbackSource=read("../home-media/server.mjs");
+for(const token of ["fs.truncateSync(files.part,current)","Chunk rollback failed; upload session was discarded","offset:current"])if(!chunkRollbackSource.includes(token))throw Error("Failed upload chunks must roll back to the last committed offset: "+token);
