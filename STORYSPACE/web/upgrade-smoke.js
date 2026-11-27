@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!/const SHELL_CACHE = "storyspace-shell-v\\d+"/.test(navigationSW))throw Error("Service worker shell cache must use a versioned cache key");
+if(!/const SHELL_CACHE = "storyspace-shell-v\d+"/.test(navigationSW))throw Error("Service worker shell cache must use a versioned cache key");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
