@@ -109,3 +109,8 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 - Press `<` to decrease playback speed by 0.25×, down to 0.25×.
 - Press `>` to increase playback speed by 0.25×, up to 2×.
 - The player announces the active speed accessibly.
+
+
+## Touch seeking on live streams
+
+Touch horizontal swipes and double-tap skip now use the active seekable range, so DVR streams stay inside their available rewind window instead of incorrectly clamping against an infinite live duration.
