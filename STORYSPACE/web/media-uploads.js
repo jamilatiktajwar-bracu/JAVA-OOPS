@@ -39,9 +39,59 @@
     $("mediaProgressText").textContent=message;
   }
   async function getFile(item){
-    if(item.handle){try{let permission=await item.handle.queryPermission({mode:"read"});if(permission!=="granted")permission=await item.handle.requestPermission({mode:"read"});if(permission==="granted"){const file=await item.handle.getFile();if(file.name!==item.filename||file.size!==item.size)throw new Error("The selected file has changed since this upload was queued. Choose the original video.");return file}}catch(error){if(error.message.includes("has changed"))throw error}}
-    if(selectedFile&&selectedFile.name===item.filename&&selectedFile.size===item.size)return selectedFile;
-    throw new Error("Select the original file again to resume this upload.");
+    if(item.handle){
+      try{
+        let permission=await item.handle.queryPermission({mode:"read"});
+        if(permission!=="granted")permission=await item.handle.requestPermission({mode:"read"});
+        if(permission==="granted"){
+          const file=await item.handle.getFile();
+          if(file.name!==item.filename||file.size!==item.size||(item.lastModified&&file.lastModified!==item.lastModified))throw new Error("The selected file has changed since this upload was queued. Choose the original video again.");
+          return file;
+        }
+        item.status="Paused · file permission required";
+        await storeItem(item);
+        throw new Error("Browser permission to read this video is not granted. Tap Resume and reselect the original file, then allow file access.");
+      }catch(error){
+        if(/has changed|permission to read/.test(error.message))throw error;
+        // File System Access handles can become stale after a browser restart or file move.
+      }
+    }
+    if(selectedFile&&selectedFile.name===item.filename&&selectedFile.size===item.size&&(!item.lastModified||selectedFile.lastModified===item.lastModified))return selectedFile;
+    throw new Error("This browser needs you to reselect the original video before resuming. Your server-side upload progress is preserved.");
+  }
+  function waitForOnline(){
+    if(navigator.onLine)return Promise.resolve();
+    setProgress(0,1,"Offline · upload paused; waiting for connection");
+    return new Promise(resolve=>window.addEventListener("online",resolve,{once:true}));
+  }
+  const retryableUploadError=error=>!navigator.onLine||!error.status||error.status===408||error.status===425||error.status===429||error.status>=500;
+  const retryDelay=attempt=>Math.min(15000,1000*Math.pow(2,attempt-1))+Math.floor(Math.random()*350);
+  async function putChunkWithRetry(root,token,item,blob,end){
+    let lastError;
+    for(let attempt=1;attempt<=5;attempt++){
+      if(cancelRequested)throw Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"});
+      await waitForOnline();
+      try{
+        return await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob,timeoutMs:120000});
+      }catch(error){
+        lastError=error;
+        if(!retryableUploadError(error)||attempt===5)throw error;
+        // A timeout or lost response may occur after the server committed the chunk.
+        // Reconcile before retrying so the same bytes are never appended twice.
+        if(error.status===409)throw error;
+        try{
+          const status=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token,{timeoutMs:15000});
+          if(Number.isSafeInteger(status.offset)&&status.offset>item.offset&&status.offset<=end)return {offset:status.offset};
+          if(!Number.isSafeInteger(status.offset)||status.offset!==item.offset)throw new Error("Server upload position changed unexpectedly; refresh the queue before retrying.");
+        }catch(reconcileError){
+          if(reconcileError.status===401||reconcileError.status===404)throw reconcileError;
+          if(!navigator.onLine)await waitForOnline();
+        }
+        setProgress(item.offset,item.size,"Connection interrupted · retry "+attempt+" of 5");
+        await new Promise(resolve=>setTimeout(resolve,retryDelay(attempt)));
+      }
+    }
+    throw lastError||new Error("Upload retry limit reached");
   }
   async function runUpload(item,file){
     const cfg=readConfig(),root=cleanRoot(cfg.root),token=cfg.uploadToken;
@@ -55,19 +105,15 @@
       if(!status||!Number.isSafeInteger(status.offset)||status.offset<0||status.offset>item.size)throw new Error("Media server returned an invalid saved upload position. Your local queue was left unchanged.");
       item.offset=status.offset;item.updatedAt=Date.now();await storeItem(item);
     }
-    const chunkSize=8*1024*1024;
-    setProgress(item.offset,item.size,"Resuming upload · "+fmt(item.offset)+" / "+fmt(item.size));
+    const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    const mobile=matchMedia("(max-width: 700px), (pointer: coarse)").matches||/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const constrained=mobile||connection?.saveData||["slow-2g","2g","3g"].includes(connection?.effectiveType)||((navigator.deviceMemory||8)<=4);
+    const chunkSize=constrained?4*1024*1024:8*1024*1024;
+    setProgress(item.offset,item.size,"Ready to upload · "+fmt(item.offset)+" / "+fmt(item.size)+(constrained?" · mobile-friendly chunks":""));
     while(item.offset<item.size){
       if(cancelRequested)throw Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"});
       const end=Math.min(item.size,item.offset+chunkSize),blob=file.slice(item.offset,end);
-      const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),120000);
-      let response;
-      try{
-        response=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob,signal:controller.signal,timeoutMs:120000});
-      }catch(error){
-        if(error.name==="AbortError")throw new Error("Upload chunk timed out after 2 minutes. Resume to continue from the server-confirmed position.");
-        throw error;
-      }finally{clearTimeout(timeout)}
+      const response=await putChunkWithRetry(root,token,item,blob,end);
       if(!Number.isSafeInteger(response.offset)||response.offset<=item.offset||response.offset>end)throw new Error("Media server returned an invalid or non-advancing upload position. Refresh the queue before retrying.");
       item.offset=response.offset;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
       setProgress(item.offset,item.size,"Uploading "+fmt(item.offset)+" / "+fmt(item.size)+" · "+Math.floor(item.offset/item.size*100)+"%");
@@ -237,7 +283,7 @@
     if(!Number.isFinite(file.size)||file.size<=0){showToast("The selected video file is empty or unreadable");return}
     if(file.size>15*1024*1024*1024){showToast("This video exceeds the 15 GB media server limit");return}
     const ext=file.name.split(".").pop().toLowerCase();if(!["mp4","m4v","webm","mov"].includes(ext)){showToast("Supported formats: MP4, M4V, WebM, MOV");return}
-    const item={id:crypto.randomUUID(),title,filename:file.name,size:file.size,offset:0,status:"Queued",createdAt:Date.now(),updatedAt:Date.now(),handle};
+    const item={id:crypto.randomUUID(),title,filename:file.name,size:file.size,lastModified:file.lastModified||0,offset:0,status:"Queued",createdAt:Date.now(),updatedAt:Date.now(),handle};
     try{await storeItem(item)}catch(error){showToast("Could not save queue metadata: "+error.message);return}
     $("mediaUploadStart").disabled=true;active=true;activeItemId=item.id;cancelRequested=false;await renderQueue();
     try{await runUpload(item,file);$("mediaMovieTitle").value="";showToast("Upload complete · awaiting approval")}
