@@ -292,5 +292,8 @@ for(const token of ["function bufferedAhead()","video.buffered","networkState","
 // Copyable diagnostics should be user-triggered and provide clipboard fallback.
 for(const token of ['diagnosticReport()','navigator.clipboard.writeText(report)','execCommand("copy")','player-diagnostics-copy','Dropped frames:','User agent:'])if(!mediaInfo.includes(token))throw Error('Playback diagnostics export missing: '+token);
 if(!resilienceCss.includes('.player-diagnostics-copy')||!resilienceCss.includes('focus-visible'))throw Error('Playback diagnostics copy button styling missing');
-\n// Exported diagnostics should not reveal full URLs or query/fragment secrets.\nfor(const token of ["function safeSource()","Source origin:","Privacy: URL query, fragment and path omitted","video.ended?","video.paused?"])if(!mediaInfo.includes(token))throw Error("Privacy-safe playback diagnostics missing: "+token);\n
+
+// Exported diagnostics should not reveal full URLs or query/fragment secrets.
+for(const token of ["function safeSource()","Source origin:","Privacy: URL query, fragment and path omitted","video.ended?","video.paused?"])if(!mediaInfo.includes(token))throw Error("Privacy-safe playback diagnostics missing: "+token);
+
 // Buffer health classifier guards: offline/loading/paused/waiting/low/building/healthy.\nfor(const token of ["function bufferHealth()","Offline","Loading media","Paused","Waiting for data","Buffer low","Buffer building","Buffer healthy","bufferHealth()","window.StoryspaceMediaInfo=Object.freeze({refresh:update,formatTime,bufferedAhead,bufferHealth})"])if(!mediaInfo.includes(token))throw Error("Player buffer health classification missing: "+token);\n
