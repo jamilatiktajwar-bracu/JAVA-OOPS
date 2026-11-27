@@ -595,6 +595,7 @@ if(!(rankingContext.__scoreTitle(rankTitles[1])>rankingContext.__scoreTitle(rank
 
 // TV directional navigation wraps at shelf boundaries and preserves reduced-motion support.
 const tvNavigation=read("tv-navigation.js");
+if(!a.includes('window.StoryspaceTVNavigation?.move(direction)'))throw Error("TV mode must delegate to the shared accessible navigator instead of using a conflicting second focus algorithm");
 if(!tvNavigation.includes("const wrap=list.filter(e=>e!==cur)"))throw Error("TV remote navigation must wrap when no directional neighbor exists");
 if(!tvNavigation.includes("editable(e.target)"))throw Error("TV remote navigation must not steal arrow keys from text inputs");
 if(!tvNavigation.includes('matchMedia("(prefers-reduced-motion: reduce)")'))throw Error("TV focus scrolling must honor reduced-motion preferences");
