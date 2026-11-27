@@ -603,5 +603,5 @@ if(!tvNavigation.includes("!e.isConnected"))throw Error("TV navigation must igno
 const interactionPolish=read("interaction-polish.css");
 if(!interactionPolish.includes(".main-nav{overflow-x:auto"))throw Error("Mobile navigation must scroll horizontally rather than clip links");
 if(!interactionPolish.includes("scroll-snap-type:x proximity"))throw Error("Mobile navigation should gently snap to link targets");
-if(!interactionPolish.includes("min-width:40px,min-height:40px"))throw Error("Top action controls need accessible touch targets");
+if(!interactionPolish.includes("min-width:40px")||!interactionPolish.includes("min-height:40px"))throw Error("Top action controls need accessible touch targets");
 if(!interactionPolish.includes("@media(prefers-reduced-motion:reduce){.main-nav"))throw Error("Navigation snapping must respect reduced motion");
