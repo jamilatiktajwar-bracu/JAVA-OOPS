@@ -184,7 +184,7 @@
   }
 
   function cancelGesture(event) {
-    if (pointer && event.pointerId === pointer.id) pointer = null;
+    if (pointer && event.pointerId === pointer.id) { pointer = null; lastTap = { at: 0, zone: "" }; }
   }
 
   stage.addEventListener("pointerdown", startGesture, { passive: true });
@@ -199,8 +199,8 @@
     }
   });
 
-  window.addEventListener("blur", () => { pointer = null; });
-  document.addEventListener("visibilitychange", () => { if (document.hidden) pointer = null; });
+  window.addEventListener("blur", () => { pointer = null; lastTap = { at: 0, zone: "" }; });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) { pointer = null; lastTap = { at: 0, zone: "" }; } });
 
   updateToggle();
   window.StoryspacePlayerGestures = Object.freeze({
