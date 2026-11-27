@@ -521,3 +521,11 @@ const playerSettings=read("player-settings.js");
 if(!playerSettings.includes("function trackLabel(track,index,kind)"))throw Error("Player track labels should include descriptive metadata");
 if(!playerSettings.includes("trackLabel(track,entry.index,\"caption\")"))throw Error("Caption picker must use descriptive track labels");
 if(!playerSettings.includes("trackLabel(ats[i],i,\"audio\")"))throw Error("Audio picker must use descriptive track labels");
+
+
+// Profile and watchlist changes sync across tabs without switching the active profile.
+const profileSyncSource=read("app.js");
+if(!profileSyncSource.includes('window.addEventListener("storage",event=>'))throw Error("Cross-tab profile sync must listen for storage updates");
+if(!profileSyncSource.includes('event.key!==PROFILE_STORE||!event.newValue'))throw Error("Cross-tab sync must only consume profile-store changes");
+if(!profileSyncSource.includes('remote.updatedAt<=(Number(current?.updatedAt)||0)'))throw Error("Cross-tab profile sync must reject stale profile snapshots");
+if(!profileSyncSource.includes('showToast("Profile and watchlist synced from another tab")'))throw Error("Cross-tab profile sync should announce applied changes");
