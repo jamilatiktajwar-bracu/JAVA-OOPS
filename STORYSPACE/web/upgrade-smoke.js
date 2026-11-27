@@ -469,7 +469,7 @@ if(!uploads.includes('const {timeoutMs:deadlineMs=25000,...fetchOptions}=options
 if(!uploads.includes('body:blob,signal:controller.signal,timeoutMs:120000'))throw Error("Chunk uploads must retain their 120-second deadline");
 if(!uploads.includes('Math.round(deadlineMs/1000)'))throw Error("Deadline errors should report their configured duration");
 if(!uploads.includes('const catalog=await request(root,"/api/catalog",token,{headers:{"x-storyspace-admin-token":token},cache:"no-store"})'))throw Error("Admin catalog refresh must use bounded request helper");
-if(!uploads.includes('request(root,"/api/catalog",readConfig().uploadToken||"",{cache:"no-store"})'))throw Error("Community catalog refresh must use bounded request helper");
+if(!uploads.includes('request(root,"/api/catalog",cfg.uploadToken||"",{cache:"no-store"})'))throw Error("Community catalog refresh must use bounded request helper");
 if(!uploads.includes('const healthData=await request(root,"/health","",{cache:"no-store",timeoutMs:8000})'))throw Error("Media connection validation must be bounded");
 
 
