@@ -74,6 +74,22 @@
     return "center";
   }
 
+  function getSeekRange() {
+    try {
+      if (video.seekable && video.seekable.length) {
+        const last = video.seekable.length - 1;
+        const start = video.seekable.start(last);
+        const end = video.seekable.end(last);
+        if (Number.isFinite(start) && Number.isFinite(end) && end >= start) return { start, end };
+      }
+    } catch {
+      // Fall back to the finite VOD duration when seekable ranges are unavailable.
+    }
+    return Number.isFinite(video.duration) && video.duration > 0
+      ? { start: 0, end: video.duration }
+      : null;
+  }
+
   function startGesture(event) {
     if (!enabled || !isOpen() || !["touch", "pen"].includes(event.pointerType)) return;
     if (event.target !== video) return;
@@ -94,10 +110,10 @@
   function previewGesture(event) {
     if (!pointer || event.pointerId !== pointer.id || !enabled || !isOpen()) return;
     const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;
-    if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.15&&Number.isFinite(video.duration)&&video.duration>0&&video.readyState>=1){
-      const maxSwipeSeconds=Math.max(20,Math.min(120,video.duration*0.28));
+    if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.15&&getSeekRange()&&video.readyState>=1){
+      const range=getSeekRange(),maxSwipeSeconds=Math.max(20,Math.min(120,(range.end-range.start)*0.28));
       const delta=clamp((dx/pointer.rect.width)*maxSwipeSeconds,-90,90);
-      const target=clamp(video.currentTime+delta,0,video.duration);
+      const target=clamp(video.currentTime+delta,range.start,range.end);
       showFeedback("Seek preview · "+formatGestureTime(target)+" ("+(target>=video.currentTime?"+":"−")+Math.round(Math.abs(target-video.currentTime))+"s)", false);
       return;
     }
@@ -134,11 +150,12 @@
       return;
     }
     if (Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-      if (!Number.isFinite(video.duration) || video.duration <= 0 || video.readyState < 1) return;
-      const maxSwipeSeconds = Math.max(20, Math.min(120, video.duration * 0.28));
+      const range = getSeekRange();
+      if (!range || video.readyState < 1) return;
+      const maxSwipeSeconds = Math.max(20, Math.min(120, (range.end - range.start) * 0.28));
       const delta = clamp((dx / start.rect.width) * maxSwipeSeconds, -90, 90);
       const before = video.currentTime;
-      const next = clamp(before + delta, 0, video.duration);
+      const next = clamp(before + delta, range.start, range.end);
       video.currentTime = next;
       lastTap = { at: 0, zone: "" };
       showFeedback((next >= before ? "Forward " : "Back ") +
@@ -151,10 +168,11 @@
     const now = performance.now();
     const zone = getZone(event.clientX, start.rect);
     if (zone !== "center" && zone === lastTap.zone && now - lastTap.at <= 320) {
-      if (!Number.isFinite(video.duration) || video.duration <= 0 || video.readyState < 1) return;
+      const range = getSeekRange();
+      if (!range || video.readyState < 1) return;
       const delta = zone === "left" ? -10 : 10;
       const before = video.currentTime;
-      const next = clamp(before + delta, 0, video.duration);
+      const next = clamp(before + delta, range.start, range.end);
       video.currentTime = next;
       lastTap = { at: 0, zone: "" };
       showFeedback((next >= before ? "Forward " : "Back ") +
