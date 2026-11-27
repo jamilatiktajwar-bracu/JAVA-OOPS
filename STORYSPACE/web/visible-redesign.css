@@ -1,0 +1,46 @@
+/* Storyspace Cinematic Refresh — deliberately visible, desktop + mobile */
+:root{--ss-ink:#070911;--ss-panel:#101521;--ss-line:rgba(255,255,255,.11);--ss-accent:#b7ff45;--ss-lilac:#a99aff}
+body{background:#070911!important;color:#f6f7fb!important;font-family:Inter,"DM Sans",system-ui,sans-serif!important}
+.app-shell{background:radial-gradient(ellipse at 78% 2%,rgba(93,75,172,.2),transparent 38%),linear-gradient(#070911,#0a0d15 48%,#070911)!important}
+.topbar{height:76px!important;padding:0 clamp(20px,4vw,68px)!important;gap:clamp(20px,3vw,50px)!important;background:rgba(7,9,17,.78)!important;border-bottom:1px solid rgba(255,255,255,.07)!important;backdrop-filter:blur(22px)!important}
+.topbar.scrolled{background:rgba(7,9,17,.94)!important}
+.brand-mark{filter:drop-shadow(0 0 9px #b7ff4570)!important}.brand-mark i{background:linear-gradient(180deg,#b7ff45,#7af3dc)!important}
+.brand-word{font-weight:800!important;letter-spacing:.12em!important}.brand-tag{display:none!important}
+.main-nav{gap:5px!important}.nav-link{padding:10px 14px!important;border-radius:999px!important;color:#aab0c0!important;font-weight:600!important;transition:.22s!important}
+.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.09)!important;color:#fff!important}.nav-link.active{box-shadow:inset 0 0 0 1px rgba(183,255,69,.25)!important}
+.top-actions{gap:12px!important}.icon-button,.command-palette-trigger,.profile-button{border:1px solid var(--ss-line)!important;background:#151a28!important;border-radius:14px!important;transition:.2s!important}.icon-button:hover,.command-palette-trigger:hover,.profile-button:hover{border-color:#b7ff45!important;transform:translateY(-1px)!important}
+.hero{height:min(80vh,780px)!important;min-height:620px!important;margin-bottom:30px!important;overflow:hidden!important;border-radius:0 0 32px 32px!important;background:#090d17!important}
+.hero-art{inset:0!important;transform:scale(1.02)!important;filter:saturate(1.14)!important}
+.hero-vignette{background:linear-gradient(90deg,#070911 0%,rgba(7,9,17,.91) 18%,rgba(7,9,17,.6) 46%,transparent 78%),linear-gradient(0deg,#070911 0%,transparent 45%,rgba(7,9,17,.12))!important}
+.hero-content{left:clamp(26px,7vw,110px)!important;bottom:clamp(95px,12vh,155px)!important;max-width:650px!important}
+.eyebrow{letter-spacing:.24em!important;font-size:11px!important;color:#c5ff78!important}
+.hero-title{font-size:clamp(54px,8vw,112px)!important;line-height:.88!important;letter-spacing:-.065em!important;text-shadow:0 8px 50px #0008!important}
+.hero-description{font-size:clamp(15px,1.5vw,19px)!important;line-height:1.65!important;color:#d2d6e0!important;max-width:500px!important}
+.hero-meta{gap:12px!important}.hero-meta>*{padding:6px 10px!important;border-radius:7px!important;background:#ffffff12!important;backdrop-filter:blur(8px)!important}
+.top10{background:#b7ff45!important;color:#111!important;font-weight:800!important}
+.primary-button{background:#b7ff45!important;color:#080b10!important;border-radius:12px!important;font-weight:800!important;padding:15px 24px!important;box-shadow:0 8px 30px #b7ff4525!important}.primary-button:hover{transform:translateY(-2px)!important;box-shadow:0 12px 34px #b7ff4540!important}
+.secondary-button{background:rgba(255,255,255,.12)!important;border:1px solid rgba(255,255,255,.2)!important;backdrop-filter:blur(10px)!important;border-radius:12px!important;padding:15px 22px!important}
+.hero-surprise{border:1px solid #ffffff28!important;background:#ffffff0b!important;border-radius:999px!important;padding:12px 16px!important}
+.hero-rating{right:clamp(25px,6vw,80px)!important;bottom:120px!important;border:1px solid #ffffff25!important;background:#0a0c16a8!important;backdrop-filter:blur(18px)!important;border-radius:18px!important;padding:18px 22px!important}
+.hero-rating b{color:#b7ff45!important;font-size:32px!important}
+.hero-controls{right:clamp(25px,5vw,75px)!important;bottom:44px!important}
+.hero-progress span{background:linear-gradient(90deg,#b7ff45,#a99aff)!important}
+.content-area{padding:0 clamp(18px,4.5vw,76px) 90px!important;max-width:1720px!important;margin:0 auto!important}
+.welcome-line{padding:12px 0 32px!important}.welcome-line span{font-size:clamp(24px,3vw,36px)!important;font-weight:750!important;letter-spacing:-.045em!important}.welcome-line small{color:#9da6b8!important;font-size:14px!important}
+.movie-section{margin:30px 0 42px!important}.section-heading{margin-bottom:17px!important}.section-heading h2{font-size:clamp(21px,2.2vw,28px)!important;letter-spacing:-.04em!important}.section-kicker{color:#b7ff45!important;letter-spacing:.18em!important;font-size:10px!important;font-weight:800!important}
+.movie-row{gap:16px!important;padding:5px 2px 22px!important}
+.movie-card{border-radius:14px!important;overflow:visible!important;transition:transform .28s,filter .28s!important;transform-origin:center bottom!important}
+.movie-card:hover,.movie-card:focus-visible{transform:translateY(-8px) scale(1.025)!important;z-index:3!important}
+.movie-poster{border-radius:14px!important;overflow:hidden!important;box-shadow:0 10px 28px #0007!important;border:1px solid #ffffff12!important}
+.movie-poster-image{transition:transform .45s,filter .35s!important}.movie-card:hover .movie-poster-image{transform:scale(1.07)!important;filter:saturate(1.15)!important}
+.card-shade{border-radius:14px!important}.card-badge{background:#b7ff45!important;color:#10140b!important;font-weight:900!important;border-radius:5px!important}.card-rating{background:#0a0d16c9!important;border:1px solid #ffffff1a!important;border-radius:8px!important;backdrop-filter:blur(8px)!important}
+.card-info,.movie-card-info{padding-top:10px!important}.movie-card h3,.card-title{font-weight:700!important;letter-spacing:-.02em!important}
+.watch-later-open{border:1px solid #ffffff18!important;background:#141a27!important;border-radius:12px!important;padding:12px 16px!important}
+input,textarea,select{background:#141a27!important;border:1px solid #ffffff1c!important;border-radius:12px!important;color:#fff!important}
+.search-box{border-radius:14px!important;background:#111724!important;border:1px solid #ffffff18!important}
+button:focus-visible,a:focus-visible,.movie-card:focus-visible{outline:2px solid #b7ff45!important;outline-offset:3px!important}
+.activity-panel,.profile-menu,.modal,.dialog,.story-modal{background:#111725!important;border:1px solid #ffffff1a!important;box-shadow:0 30px 90px #0009!important;border-radius:20px!important}
+@media(min-width:1200px){.movie-row{gap:20px!important}.movie-card{min-width:190px!important}.hero-content{bottom:145px!important}}
+@media(max-width:900px){.topbar{height:66px!important;padding:0 18px!important;gap:12px!important}.brand-tag{display:none!important}.main-nav{gap:1px!important}.nav-link{padding:8px 10px!important;font-size:12px!important}.hero{min-height:570px!important;height:72vh!important;border-radius:0 0 22px 22px!important}.hero-vignette{background:linear-gradient(90deg,#070911ed,rgba(7,9,17,.65) 55%,transparent),linear-gradient(0deg,#070911 0%,transparent 55%)!important}.hero-content{left:24px!important;right:24px!important;bottom:92px!important}.hero-title{font-size:clamp(52px,12vw,86px)!important}.hero-rating{display:none!important}.content-area{padding-left:18px!important;padding-right:18px!important}.movie-row{gap:12px!important}}
+@media(max-width:620px){.topbar{justify-content:space-between!important}.brand-word{font-size:13px!important}.main-nav{overflow:auto!important;max-width:45vw!important}.nav-link{font-size:11px!important;padding:7px 9px!important}.top-actions{gap:6px!important}.hero{min-height:520px!important;height:74vh!important}.hero-content{bottom:84px!important}.hero-title{font-size:clamp(46px,14vw,72px)!important}.hero-description{font-size:14px!important;max-width:340px!important}.hero-actions{gap:8px!important;flex-wrap:wrap!important}.primary-button,.secondary-button{padding:12px 15px!important}.hero-surprise{display:none!important}.hero-controls{bottom:30px!important}.welcome-line{padding:8px 0 24px!important}.welcome-line small{display:block!important;margin-top:5px!important}.movie-section{margin:24px 0 34px!important}.movie-row{gap:10px!important}.movie-card{min-width:140px!important}.section-heading h2{font-size:20px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
