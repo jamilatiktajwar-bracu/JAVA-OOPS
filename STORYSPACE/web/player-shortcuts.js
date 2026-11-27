@@ -51,6 +51,8 @@
       case "j":event.preventDefault();{const target=seek(-10);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};break;case "l":event.preventDefault();{const target=seek(10);if(target!==false)announceSeek("Seek to "+formatSeekTime(target))};break;
       case "arrowup":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume+step,0,1);video.muted=false;announceSeek("Volume "+Math.round(video.volume*100)+"%");event.preventDefault();break;}
       case "arrowdown":{const step=event.shiftKey?0.1:0.05;video.volume=clamp(video.volume-step,0,1);announceSeek("Volume "+Math.round(video.volume*100)+"%");event.preventDefault();break;}
+      case "<":{video.playbackRate=Math.max(0.25,Math.round((video.playbackRate-0.25)*100)/100);announceSeek("Playback speed "+video.playbackRate+"×");event.preventDefault();break;}
+      case ">":{video.playbackRate=Math.min(2,Math.round((video.playbackRate+0.25)*100)/100);announceSeek("Playback speed "+video.playbackRate+"×");event.preventDefault();break;}
       case "m":video.muted=!video.muted;break;
       case "c":{const size=document.getElementById("playerCaptionSize"),sizes=["small","medium","large","extra-large"];if(size){size.value=sizes[(sizes.indexOf(size.value)+1)%sizes.length];size.dispatchEvent(new Event("change"));event.preventDefault()}break;}
       case "f":fullscreenButton.click();break;
