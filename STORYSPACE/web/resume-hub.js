@@ -28,7 +28,7 @@
     if(event.key!=="Tab")return;
     const focusable=Array.from(hub.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(el=>!el.hidden);
     if(!focusable.length){event.preventDefault();close.focus();return}
-    const first=focusable[0],last=focusable[focusable.length-1;
+    const first=focusable[0],last=focusable[focusable.length-1];
     if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
     else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
   });
