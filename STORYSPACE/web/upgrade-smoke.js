@@ -297,4 +297,4 @@ if(!resilienceCss.includes('.player-diagnostics-copy')||!resilienceCss.includes(
 for(const token of ["function safeSource()","Source origin:","Privacy: URL query, fragment and path omitted","video.ended?","video.paused?"])if(!mediaInfo.includes(token))throw Error("Privacy-safe playback diagnostics missing: "+token);
 
 // Buffer health classifier guards: offline/loading/paused/waiting/low/building/healthy.
-for(const token of ["function bufferHealth()","Offline","Loading media","Paused","Waiting for data","Buffer low","Buffer building","Buffer healthy","bufferHealth()","window.StoryspaceMediaInfo=Object.freeze({refresh:update,formatTime,bufferedAhead,bufferHealth})"])if(!mediaInfo.includes(token))throw Error("Player buffer health classification missing: "+token);\n
+for(const token of ["function bufferHealth()","Offline","Loading media","Paused","Waiting for data","Buffer low","Buffer building","Buffer healthy","bufferHealth()","window.StoryspaceMediaInfo=Object.freeze({refresh:update,formatTime,bufferedAhead,bufferHealth})"])if(!mediaInfo.includes(token))throw Error("Player buffer health classification missing: "+token);
