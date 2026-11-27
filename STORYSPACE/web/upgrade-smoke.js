@@ -327,7 +327,7 @@ if(!h.includes("<kbd>Shift</kbd> + arrows volume 10%"))throw Error("Volume incre
 // Playback speed shortcuts are bounded and announce the active rate.
 if(!shortcuts.includes('case "<":{video.playbackRate=Math.max(0.25'))throw Error("Slow playback shortcut missing");
 if(!shortcuts.includes('case ">":{video.playbackRate=Math.min(2'))throw Error("Fast playback shortcut missing");
-if(!html.includes("0.25×–2×"))throw Error("Playback speed shortcut guide missing");
+if(!h.includes("0.25×–2×"))throw Error("Playback speed shortcut guide missing");
 
 
 // Touch seek gestures use the latest seekable range, including live DVR windows.
