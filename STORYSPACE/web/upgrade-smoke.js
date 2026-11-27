@@ -539,3 +539,11 @@ if(!offlinePlayer.includes("window.addEventListener(\\"offline\\",()=>switchToCa
 if(!offlinePlayer.includes("window.addEventListener(\\"online\\",restoreNetwork)"))throw Error("Player must restore the network stream after connectivity returns");
 if(!h.includes('id="playerOfflineToggle"')||!h.includes('src="player-offline.js"'))throw Error("Player offline controls must be available in the player UI");
 if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module must be included in the service worker shell");
+
+
+// Responsive browse and player settings retain usable controls at mobile widths.
+const responsiveStyles=read("styles.css"),responsivePlayer=read("player-settings.css");
+if(!responsiveStyles.includes("@media(max-width:640px)"))throw Error("Browse filters need a compact mobile layout");
+if(!responsiveStyles.includes("grid-template-columns:repeat(2,minmax(0,1fr))"))throw Error("Browse controls must use a two-column mobile grid");
+if(!responsivePlayer.includes("@media(max-width:620px)"))throw Error("Player settings need a mobile layout");
+if(!responsivePlayer.includes(".player-offline-status{grid-column:1/-1}"))throw Error("Offline status must span the mobile player controls");
