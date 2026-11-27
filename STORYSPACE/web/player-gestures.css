@@ -93,3 +93,6 @@
 .player-timeline.is-previewing .player-seek-preview{opacity:1;visibility:visible}
 .player-timeline:focus-within .player-seek-preview{border-color:#8af4e58a}
 @media(prefers-reduced-motion:reduce){.player-seek-preview{transition:none}}
+
+/* Keyboard seeking shares the gesture overlay, with live-region announcement. */
+.player-gesture-feedback[aria-live="polite"]{contain:paint}
