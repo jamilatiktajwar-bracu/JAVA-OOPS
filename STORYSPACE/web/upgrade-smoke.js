@@ -541,6 +541,11 @@ if(!profileSyncSource.includes("Saved locally · will sync when you reconnect:")
 const offlinePlayer=read("player-offline.js");
 if(!offlinePlayer.includes('const CACHE="storyspace-offline-media-v1",MAX_BYTES=250*1024*1024'))throw Error("Offline media cache must use a dedicated cache and bounded size");
 if(!offlinePlayer.includes("cache.put(url,response.clone())"))throw Error("Offline media save must persist the complete response");
+if(!offlinePlayer.includes("async function evictForQuota(cache,requiredBytes,keepUrl)"))throw Error("Offline cache must evict least-recent copies before exhausting device quota");
+if(!offlinePlayer.includes('x-storyspace-cached-at'))throw Error("Offline cache entries must retain recency metadata for eviction");
+if(!offlinePlayer.includes('error?.name!=="QuotaExceededError"'))throw Error("Quota errors must trigger a single safe eviction retry");
+if(!offlinePlayer.includes('Math.min(500*1024*1024,quota*.35)'))throw Error("Offline cache must enforce a bounded per-origin storage budget");
+
 if(!offlinePlayer.includes("await cache.delete(url)"))throw Error("Offline copies must be removable from device storage");
 if(!offlinePlayer.includes('window.addEventListener("offline",()=>switchToCached()'))throw Error("Player must recover from a network loss using a saved copy");
 if(!offlinePlayer.includes('window.addEventListener("online",restoreNetwork)'))throw Error("Player must restore the network stream after connectivity returns");
