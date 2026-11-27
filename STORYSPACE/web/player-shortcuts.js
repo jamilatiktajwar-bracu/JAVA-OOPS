@@ -7,6 +7,10 @@
   const fullscreenButton=document.getElementById("playerFullscreen");
   const closeButton=document.getElementById("playerClose");
   const theaterButton=document.getElementById("playerTheater");
+  const feedback=document.getElementById("playerGestureFeedback");
+  let feedbackTimer=0;
+  const formatSeekTime=value=>{if(!Number.isFinite(value)||value<0)return "Live";const sec=Math.floor(value),h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?h+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"):m+":"+String(s).padStart(2,"0")};
+  const announceSeek=message=>{if(!feedback)return;feedback.setAttribute("aria-live","polite");feedback.textContent=message;feedback.classList.add("is-visible");clearTimeout(feedbackTimer);feedbackTimer=setTimeout(()=>feedback.classList.remove("is-visible"),1200)};
   if(!video||!backdrop||!helpButton||!guide||!fullscreenButton||!closeButton)return;
   const visible=()=>!backdrop.hidden;
   const isEditable=target=>{
@@ -40,16 +44,16 @@
     const key=event.key.toLowerCase();let handled=true;
     switch(key){
       case " ":case "k":event.preventDefault();if(video.paused)video.play().catch(()=>{});else video.pause();break;
-      case "arrowleft":seek(event.shiftKey?-10:-5);event.preventDefault();break;
-      case "arrowright":seek(event.shiftKey?10:5);event.preventDefault();break;
-      case "j":event.preventDefault();seek(-10);break;case "l":event.preventDefault();seek(10);break;
+      case "arrowleft":{const delta=event.shiftKey?-10:-5;if(seek(delta))announceSeek("Seek to "+formatSeekTime(video.currentTime));event.preventDefault();break;}
+      case "arrowright":{const delta=event.shiftKey?10:5;if(seek(delta))announceSeek("Seek to "+formatSeekTime(video.currentTime));event.preventDefault();break;}
+      case "j":event.preventDefault();if(seek(-10))announceSeek("Seek to "+formatSeekTime(video.currentTime));break;case "l":event.preventDefault();if(seek(10))announceSeek("Seek to "+formatSeekTime(video.currentTime));break;
       case "arrowup":video.volume=clamp(video.volume+0.05,0,1);video.muted=false;event.preventDefault();break;
       case "arrowdown":video.volume=clamp(video.volume-0.05,0,1);event.preventDefault();break;
       case "m":video.muted=!video.muted;break;
       case "c":{const size=document.getElementById("playerCaptionSize"),sizes=["small","medium","large","extra-large"];if(size){size.value=sizes[(sizes.indexOf(size.value)+1)%sizes.length];size.dispatchEvent(new Event("change"));event.preventDefault()}break;}
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!backdrop.classList.contains("player-theater-mode"));event.preventDefault();break;
-      case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;video.play().catch(()=>{});event.preventDefault()}catch{}}break;}
+      case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;video.play().catch(()=>{});announceSeek(range.live?"Restarted at DVR window start":"Restarted from beginning");event.preventDefault()}catch{}}break;}
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
       default:handled=false;
