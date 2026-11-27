@@ -538,6 +538,10 @@ if(!profileSyncSource.includes("function clearLibraryOp(titleId,expected)"))thro
 if(!profileSyncSource.includes("const queuedOp=queueLibraryOp(m.apiId,present)"))throw Error("Each watchlist request must retain its own operation version");
 if(!profileSyncSource.includes("clearLibraryOp(m.apiId,queuedOp)"))throw Error("Watchlist completion must clear only its matching queued operation");
 if(!profileSyncSource.includes("ops[id]?.updatedAt===op.updatedAt&&ops[id]?.present===op.present"))throw Error("Background reconciliation must preserve newer in-flight watchlist changes");
+if(!profileSyncSource.includes("const libraryWriteQueues=new Map()"))throw Error("Watchlist writes must be serialized per title to avoid out-of-order server state");
+if(!profileSyncSource.includes("function sendLibraryOp(titleId,op)"))throw Error("Watchlist writes must share a per-title operation queue");
+if(!profileSyncSource.includes("sendLibraryOp(m.apiId,queuedOp)"))throw Error("Interactive watchlist writes must use the serialized operation queue");
+if(!profileSyncSource.includes("await sendLibraryOp(id,op)"))throw Error("Background watchlist reconciliation must use the serialized operation queue");
 
 
 
