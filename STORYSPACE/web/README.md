@@ -102,3 +102,10 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 
 - Up/down arrows adjust volume in 5% increments and show accessible volume feedback.
 - Shift + up/down adjusts volume in 10% increments. Volume remains clamped from 0 to 100%.
+
+
+## Playback speed shortcuts
+
+- Press `<` to decrease playback speed by 0.25×, down to 0.25×.
+- Press `>` to increase playback speed by 0.25×, up to 2×.
+- The player announces the active speed accessibly.
