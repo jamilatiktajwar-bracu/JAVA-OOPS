@@ -301,7 +301,7 @@ function renderGrid(items){
   $("emptySearch").hidden=visible.length!==0;
   const count=$("browseCount");if(count)count.textContent=visible.length+" "+(visible.length===1?"story":"stories");
 }
-function normalizeSearchText(value){return String(value||"").toLowerCase().normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9+]+/g," ").trim()}
+function normalizeSearchText(value){return String(value||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9+]+/g," ").trim()}
 function searchDistance(a,b,limit=2){
   if(Math.abs(a.length-b.length)>limit)return limit+1;
   let previous=Array.from({length:b.length+1},(_,i)=>i);
@@ -341,7 +341,7 @@ function legacySearch(q){
   state.view="search";$("hero").hidden=true;$("moodSection").hidden=true;
   ["continueSection","trendingSection","originalsSection","topSection","mylistSection"].forEach(id=>$(id).hidden=true);
   $("welcomeLine").hidden=true;$("searchResultsSection").hidden=false;
-  const rawTokens=state.search.match(/"[^"]+"|\\S+/g)||[];
+  const rawTokens=state.search.match(/"[^"]+"|\S+/g)||[];
   const filters={genre:[],mood:[],language:[],type:[],year:[]},terms=[];
   rawTokens.forEach(token=>{
     const match=token.match(/^(genre|mood|language|type|year):(.+)$/i);
