@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v121"))throw Error("Static asset cache-read guard shell v121 missing");
+if(!navigationSW.includes("storyspace-shell-v122"))throw Error("Up-next hidden-tab timer shell v122 missing");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -445,3 +445,11 @@ if(!navigationSW.includes('const runtimePromise = caches.open(RUNTIME_CACHE).cat
 if(!navigationSW.includes('const shellPromise = caches.open(SHELL_CACHE).catch(() => null)'))throw Error("Shell cache open failures must be tolerated during asset requests");
 if(!navigationSW.includes('return (runtime && await runtime.match(request)) || (shell && await shell.match(request)) || null;'))throw Error("Asset cache reads must guard unavailable cache handles");
 if(!navigationSW.includes('Cache read failures should not reject the fetch event.'))throw Error("Asset cache read failure must be contained");
+
+ 
+// Up-next countdown pauses in hidden tabs and releases timers on pagehide.
+if(!next.includes("function startTimer(reset=true)"))throw Error("Up-next timer must preserve remaining time when resumed");
+if(!next.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){stopTimer();'))throw Error("Up-next countdown must pause when tab is hidden");
+if(!next.includes('else if(!panel.hidden&&auto.checked&&remaining>0)startTimer(false)'))throw Error("Up-next countdown must resume with preserved remaining time");
+if(!next.includes('window.addEventListener("pagehide",clear)'))throw Error("Up-next timers must be cleaned up on pagehide");
+if(!next.includes("timer=setTimeout(tick,1000)"))throw Error("Up-next countdown must use cancellable timeout");
