@@ -84,7 +84,7 @@
     let lastError;
     for(let attempt=1;attempt<=5;attempt++){
       if(cancelRequested)throw Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"});
-      await waitForOnline();
+      await waitForOnline(item);
       try{
         return await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId)+"/chunk",token,{method:"PUT",headers:headers(token,{"x-upload-offset":String(item.offset)}),body:blob,timeoutMs:120000});
       }catch(error){
@@ -115,9 +115,10 @@
       if(!init||typeof init.uploadId!=="string"||!init.uploadId.trim()||init.uploadId.length>200)throw new Error("Media server did not return a valid upload session. Retry after checking the server.");
       item.uploadId=init.uploadId;item.offset=0;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);await renderQueue();
     }else{
-      const status=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token);
-      if(!status||!Number.isSafeInteger(status.offset)||status.offset<0||status.offset>item.size)throw new Error("Media server returned an invalid saved upload position. Your local queue was left unchanged.");
-      item.offset=status.offset;item.updatedAt=Date.now();await storeItem(item);
+      const status=await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token,{cache:"no-store"});
+      if(!status||status.uploadId!==item.uploadId||status.size!==item.size||!Number.isSafeInteger(status.offset)||status.offset<0||status.offset>item.size)throw new Error("Media server returned upload metadata that does not match this queue item. Your local queue was left unchanged.");
+      const previousOffset=item.offset||0;item.offset=status.offset;item.status="uploading";item.updatedAt=Date.now();await storeItem(item);
+      if(previousOffset!==item.offset)setProgress(item.offset,item.size,"Recovered server progress · "+fmt(item.offset)+" / "+fmt(item.size));
     }
     const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
     const mobile=matchMedia("(max-width: 700px), (pointer: coarse)").matches||/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -157,9 +158,21 @@
     }
     if(changed)await renderQueue();
   }
+  async function recoverStuckQueueStates(items){
+    if(active)return false;
+    let changed=false;const now=Date.now();
+    for(const item of items){
+      const status=String(item.status||"");
+      if(status==="uploading"||status==="Cancelling upload"||(status.startsWith("Uploading")&&now-(item.updatedAt||0)>120000)){
+        item.status=status.startsWith("Cancelling")?"Paused · cancellation interrupted; verify server on Resume":"Paused · recovered after browser restart";
+        item.updatedAt=now;await storeItem(item);changed=true;
+      }
+    }
+    return changed;
+  }
   async function renderQueue(){
     const target=$("mediaQueueList");if(!target)return;
-    try{const items=await getItems();target.replaceChildren();if(!items.length){target.textContent="No queued uploads yet.";target.className="media-muted";return}
+    try{const items=await getItems();await recoverStuckQueueStates(items);target.replaceChildren();if(!items.length){target.textContent="No queued uploads yet.";target.className="media-muted";return}
       items.sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).forEach(item=>{
         const row=document.createElement("div");row.className="media-queue-item";const info=document.createElement("div");const title=document.createElement("b");title.textContent=item.title;const meta=document.createElement("small");meta.textContent=(item.status||"Queued")+" · "+fmt(item.offset||0)+" / "+fmt(item.size);info.append(title,meta);row.append(info);
         if(active&&activeItemId===item.id){
@@ -189,7 +202,7 @@
   }
   async function resumeAll(){
     if(active||!navigator.onLine)return;
-    let items=[];try{items=await getItems()}catch{return}
+    let items=[];try{items=await getItems();await recoverStuckQueueStates(items)}catch{return}
     const next=items.find(x=>!isTerminalQueueStatus(x.status)&&!String(x.status||"").startsWith("Cancelling")&&(x.handle||(selectedFile&&selectedFile.name===x.filename&&selectedFile.size===x.size)));
     if(next)await resumeOne(next.id);
   }
