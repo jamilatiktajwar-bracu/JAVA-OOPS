@@ -541,4 +541,4 @@ if(!h.includes('id="playerOfflineToggle"')||!h.includes('src="player-offline.js"
 if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module must be included in the service worker shell");
 
 if(!offlinePlayer.includes('video.querySelector("source")?.src'))throw Error("Offline recovery must resolve the declared video source when initial loading fails");
-if(!offlinePlayer.includes("if(!navigator.onLine)switchToCached()"))throw Error("Offline playback must recover on an initially offline launch");
+if(!offlinePlayer.includes('if(!navigator.onLine)switchToCached()'))throw Error("Offline playback must recover on an initially offline launch");
