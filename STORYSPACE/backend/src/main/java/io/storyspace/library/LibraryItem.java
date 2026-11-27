@@ -9,7 +9,7 @@ public class LibraryItem {
  @Column(name="last_played_at") private Instant lastPlayedAt;
  protected LibraryItem(){}
  public LibraryItem(Account account,Title title){this.account=account;this.title=title;}
- public UUID getId(){return id;}public Account getAccount(){return account;}public Title getTitle(){return title;}public String getState(){return state;}public int getProgressPercent(){return progressPercent;}public Integer getUserRating(){return userRating;}public Instant getUpdatedAt(){return updatedAt;}
+ public UUID getId(){return id;}public Account getAccount(){return account;}public Title getTitle(){return title;}public String getState(){return state;}public int getProgressPercent(){return progressPercent;}public Integer getUserRating(){return userRating;}public Instant getUpdatedAt(){return updatedAt;}public void setUpdatedAt(Instant value){if(value!=null)this.updatedAt=value;}
  public double getResumePositionSeconds(){return resumePositionSeconds;}public double getDurationSeconds(){return durationSeconds;}public Instant getLastPlayedAt(){return lastPlayedAt;}
  public void setState(String state){this.state=state;this.updatedAt=Instant.now();}
  public void setProgressPercent(int p){this.progressPercent=Math.max(0,Math.min(100,p));this.state=p>=100?"COMPLETED":p>0?"IN_PROGRESS":"WATCHLIST";this.updatedAt=Instant.now();}

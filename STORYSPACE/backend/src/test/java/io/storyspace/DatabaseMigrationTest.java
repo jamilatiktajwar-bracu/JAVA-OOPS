@@ -15,8 +15,8 @@ class DatabaseMigrationTest {
 
     @Test
     void migrationsCreateCoreTablesAndPlaybackResumeColumns() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("2");
-        for (String table : new String[]{"accounts", "catalog_titles", "user_library", "subscriptions"}) {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3");
+        for (String table : new String[]{"accounts", "catalog_titles", "user_library", "subscriptions", "user_library_deletions"}) {
             assertThat(jdbc.queryForObject(
                 "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE LOWER(TABLE_NAME) = LOWER(?)",
                 Integer.class, table)).isEqualTo(1);
