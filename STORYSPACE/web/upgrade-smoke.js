@@ -605,3 +605,8 @@ if(!interactionPolish.includes(".main-nav{overflow-x:auto"))throw Error("Mobile 
 if(!interactionPolish.includes("scroll-snap-type:x proximity"))throw Error("Mobile navigation should gently snap to link targets");
 if(!interactionPolish.includes("min-width:40px")||!interactionPolish.includes("min-height:40px"))throw Error("Top action controls need accessible touch targets");
 if(!interactionPolish.includes("@media(prefers-reduced-motion:reduce){.main-nav"))throw Error("Navigation snapping must respect reduced motion");
+
+// System high-contrast preferences strengthen visible keyboard focus and nav affordances.
+if(!interactionPolish.includes("@media(prefers-contrast:more)"))throw Error("High-contrast mode must strengthen focus visibility");
+if(!interactionPolish.includes("outline-width:3px"))throw Error("High-contrast keyboard focus needs a stronger outline");
+if(!interactionPolish.includes(".nav-link:focus-visible,.nav-link[aria-current=\"page\"]"))throw Error("High-contrast navigation needs a distinct focus and current-page state");
