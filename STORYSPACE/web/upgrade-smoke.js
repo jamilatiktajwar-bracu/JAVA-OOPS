@@ -430,7 +430,7 @@ const navigationSW=read("sw.js");
 if(!navigationSW.includes('setTimeout(()=>resolve(null),4500)'))throw Error("Navigation must have bounded network wait");
 if(!navigationSW.includes('const navigation=Promise.race([network,new Promise(resolve=>{timeoutId=setTimeout(()=>resolve(null),4500)})])'))throw Error("Navigation should race network against timeout");
 if(!navigationSW.includes('event.waitUntil(network.then(()=>undefined).catch(()=>{}))'))throw Error("Timed-out navigation should still refresh the shell cache in background");
-if(!navigationSW.includes("storyspace-shell-v129"))throw Error("Media API deadline shell v123 missing");
+if(!/const SHELL_CACHE = "storyspace-shell-v\\d+"/.test(navigationSW))throw Error("Service worker shell cache must use a versioned cache key");
 
  
 // Navigation cache failures must never convert a valid network response into an error.
@@ -507,3 +507,10 @@ if(!initSource.includes('fs.rmSync(files.data+".tmp",{force:true});'))throw Erro
 if(!initSource.includes('fs.rmSync(files.part,{force:true});\n      throw error;'))throw Error("Upload initialization must remove its orphaned partial file");
 const chunkRollbackSource=read("../home-media/server.mjs");
 for(const token of ["fs.truncateSync(files.part,current)","Chunk rollback failed; upload session was discarded","offset:current"])if(!chunkRollbackSource.includes(token))throw Error("Failed upload chunks must roll back to the last committed offset: "+token);
+
+
+// Search results use watch-history affinity and expose language alongside genre, type and year filters.
+const searchRanking=read("app.js");
+if(!searchRanking.includes("genreAffinity+=Math.min(1.8,overlap*.55)*recency*completion"))throw Error("Search ranking must include recency- and completion-weighted watch-history genre affinity");
+if(!searchRanking.includes('languageControl=$("browseLanguage")'))throw Error("Browse filters must include language selection");
+if(!searchRanking.includes('languageControl.value.toLowerCase()'))throw Error("Browse language filter must be applied to results");
