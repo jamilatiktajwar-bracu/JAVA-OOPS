@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "storyspace-";
-const SHELL_CACHE = "storyspace-shell-v111";
+const SHELL_CACHE = "storyspace-shell-v112";
 const RUNTIME_CACHE = "storyspace-runtime-v3";
 const SHELL = [
   "./", "./index.html", "./styles.css", "./app.js", "./enhancements.css", "./enhancements.js", "./cinematic.css", "./cinematic.js",
@@ -53,11 +53,12 @@ self.addEventListener("fetch", event => {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
+        const cache = await caches.open(SHELL_CACHE);
         if (response.ok) {
-          const cache = await caches.open(SHELL_CACHE);
           await cache.put("./index.html", response.clone());
+          return response;
         }
-        return response;
+        return (await cache.match("./index.html")) || response;
       } catch {
         const shell = await caches.open(SHELL_CACHE);
         return (await shell.match("./index.html")) || Response.error();
