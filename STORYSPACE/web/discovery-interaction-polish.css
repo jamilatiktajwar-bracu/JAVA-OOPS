@@ -1,0 +1,31 @@
+/* Discovery interaction polish — a tactile, clearer browsing layer. */
+.quick-discovery{margin:28px 0 8px!important;padding:22px 0 18px!important;border-top:1px solid #ffffff12!important}
+.quick-discovery-head h3{font:700 clamp(20px,2vw,27px)/1.15 'Space Grotesk',sans-serif!important;letter-spacing:-.035em!important;margin:0 0 7px!important}
+.quick-discovery-head p{color:#aab6ca!important;font-size:13px!important;line-height:1.55!important;max-width:520px!important}
+.quick-discovery-buttons{display:flex!important;gap:9px!important;flex-wrap:wrap!important;margin-top:16px!important}
+.quick-discovery-chip{border:1px solid #ffffff1c!important;border-radius:999px!important;background:linear-gradient(145deg,#17243b,#111a2d)!important;padding:10px 15px!important;color:#dce7f7!important;font-size:12px!important;font-weight:650!important;letter-spacing:.01em!important;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s!important}
+.quick-discovery-chip:hover,.quick-discovery-chip:focus-visible{transform:translateY(-2px)!important;border-color:#b7ff4580!important;background:#1c2b42!important;box-shadow:0 8px 24px #0004,0 0 0 2px #b7ff4510!important}
+.search-box{border-color:#ffffff28!important;background:#121c30!important;box-shadow:inset 0 1px #ffffff08!important}
+.search-box:focus-within{border-color:#b7ff45b0!important;box-shadow:0 0 0 3px #b7ff4515,0 10px 32px #0004!important}
+.search-box input{color:#f5f7ff!important}
+.search-box input::placeholder{color:#94a2b9!important}
+.clear-search{border-radius:50%!important;transition:background .15s,color .15s!important}
+.clear-search:hover{background:#ffffff15!important;color:#b7ff45!important}
+.movie-section{scroll-margin-top:92px!important}
+.section-heading{display:flex!important;align-items:end!important;gap:12px!important}
+.section-heading h2{letter-spacing:-.035em!important}
+.movie-card{isolation:isolate!important;overflow:hidden!important;background:#111b2d!important;box-shadow:0 8px 24px #0003!important}
+.movie-card:focus-within{outline:2px solid #b7ff45!important;outline-offset:3px!important}
+.card-shade{transition:opacity .2s ease!important}
+.card-overlay{backdrop-filter:blur(3px)!important}
+.card-title,.movie-card-title{ text-wrap:balance!important}
+.card-badge,.card-demo-badge{border:1px solid #ffffff22!important;box-shadow:0 4px 14px #0005!important;backdrop-filter:blur(10px)!important}
+.details-modal{overflow:hidden!important}
+.modal-close{border:1px solid #ffffff25!important;background:#0a1020c9!important;backdrop-filter:blur(12px)!important}
+.modal-meta{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+.modal-meta>*{border:1px solid #ffffff15!important;border-radius:999px!important;padding:5px 9px!important;background:#ffffff08!important}
+.universe-search-label{color:#b7ff45!important;letter-spacing:.12em!important}
+.universe-search-clear{border-radius:999px!important}
+:where(button,a,input,[tabindex]):focus-visible{outline:2px solid #b7ff45!important;outline-offset:3px!important}
+@media(max-width:620px){.quick-discovery{margin:18px 0 6px!important;padding:18px 0 12px!important}.quick-discovery-buttons{gap:7px!important}.quick-discovery-chip{padding:9px 12px!important;font-size:11px!important}.section-heading{align-items:center!important}.movie-card{box-shadow:0 5px 15px #0004!important}}
+@media(prefers-reduced-motion:reduce){.quick-discovery-chip,.clear-search,.card-shade{transition:none!important}}
