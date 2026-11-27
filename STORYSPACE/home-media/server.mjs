@@ -397,7 +397,7 @@ async function handle(req,res) {
     try{stat=fs.statSync(file);}catch{return json(res,404,{error:"Media file is offline"});}
     if(!stat.isFile()||path.basename(file)!==item.fileName)return json(res,404,{error:"Media not found"});
     if(stat.size!==item.size)return json(res,503,{error:"Media file failed its catalog size integrity check"});
-    if(item.sha256){const fingerprint=stat.size+":"+stat.mtimeMs;if(verifiedMedia.get(item.id)!==fingerprint){const actual=await sha256File(file);if(actual!==item.sha256)return json(res,503,{error:"Media file failed its SHA-256 integrity check"});verifiedMedia.set(item.id,fingerprint)}}
+    if(item.sha256){const fingerprint=stat.size+":"+stat.mtimeMs+":"+stat.ctimeMs+":"+stat.ino;if(verifiedMedia.get(item.id)!==fingerprint){const actual=await sha256File(file);if(actual!==item.sha256)return json(res,503,{error:"Media file failed its SHA-256 integrity check"});verifiedMedia.set(item.id,fingerprint)}}
     const etag=item.sha256?'"'+item.sha256+'"':'"'+stat.size.toString(16)+'-'+Math.trunc(stat.mtimeMs).toString(16)+'"';
     const headers={"content-type":item.contentType,"accept-ranges":"bytes","cache-control":"public, max-age=60","etag":etag,"last-modified":stat.mtime.toUTCString(),"content-disposition":"inline; filename=\""+item.fileName+"\"","x-content-type-options":"nosniff"};
     // If-None-Match uses weak comparison for GET/HEAD and accepts lists or "*".
