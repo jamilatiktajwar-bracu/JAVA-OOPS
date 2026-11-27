@@ -46,3 +46,5 @@ No trademark clearance or patentability/freedom-to-operate determination has bee
 - Saved regional audio-language preferences continue to resolve against indexed audio tracks independently of caption-track filtering.
 
 - Player caption and audio settings announce the available track counts and the currently selected track through a polite status message.
+
+- Native/browser caption and audio track changes synchronize the visible player selectors, saved language preferences, and accessible status feedback.
