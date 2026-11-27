@@ -80,14 +80,14 @@
     const blob=await response.blob();sourceUrl=url;objectUrl=URL.createObjectURL(blob);
     const position=Number(video.currentTime)||0,wasPlaying=!video.paused;
     switching=true;video.src=objectUrl;video.load();
-    video.addEventListener("loadedmetadata",function restorePosition(){video.removeEventListener("loadedmetadata",restorePosition);switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{})});
+    video.addEventListener("loadedmetadata",function onOfflineMetadata(){video.removeEventListener("loadedmetadata",onOfflineMetadata);switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{})});
     announce("Connection lost · playing the saved offline copy");
   }
   function restoreNetwork(){
     if(!objectUrl||!navigator.onLine||!sourceUrl)return;
     const url=sourceUrl,position=Number(video.currentTime)||0,wasPlaying=!video.paused,old=objectUrl;objectUrl="";
     switching=true;video.src=url;video.load();
-    video.addEventListener("loadedmetadata",function restorePosition(){video.removeEventListener("loadedmetadata",restorePosition);switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{});URL.revokeObjectURL(old)});
+    video.addEventListener("loadedmetadata",function onOfflineMetadata(){video.removeEventListener("loadedmetadata",onOfflineMetadata);switching=false;if(Number.isFinite(position))restorePosition(position);if(wasPlaying)video.play().catch(()=>{});URL.revokeObjectURL(old)});
     announce("Connection restored · returning to the network stream");
   }
   button.addEventListener("click",async()=>{
