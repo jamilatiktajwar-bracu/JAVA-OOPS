@@ -566,10 +566,11 @@ function savePreferences(){savePrefs();refreshProfileWelcome();document.dispatch
 async function api(path,options={}){
   if(nativeApiMisconfigured)throw new Error("Sign-in is not enabled in this app build yet. Configure the Storyspace HTTPS API endpoint and rebuild the app.");
   const controller=typeof AbortController==="function"?new AbortController():null;
-  const timeout=controller?setTimeout(()=>controller.abort(),15000):null;
+  let timeout=0;
   const headers={"Content-Type":"application/json",...(personalized.token?{Authorization:"Bearer "+personalized.token}:{})};
   try{
-    const res=await fetch(API_ROOT+path,{...options,headers,...(options.body?{body:JSON.stringify(options.body)}:{}),...(controller?{signal:controller.signal}:{})});
+    const request=fetch(API_ROOT+path,{...options,headers,...(options.body?{body:JSON.stringify(options.body)}:{}),...(controller?{signal:controller.signal}:{})});
+    const res=controller?await new Promise((resolve,reject)=>{timeout=setTimeout(()=>{controller.abort();reject(new Error("Request timed out. Check your connection and try again."))},15000);request.then(resolve,reject)}):await Promise.race([request,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error("Request timed out. Check your connection and try again.")),15000)})]);
     if(res.status===204)return null;
     const raw=await res.text();let data=null;
     if(raw){try{data=JSON.parse(raw)}catch{data=raw}}
