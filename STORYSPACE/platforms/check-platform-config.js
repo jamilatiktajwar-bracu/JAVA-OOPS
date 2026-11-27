@@ -52,6 +52,11 @@ if (!webClient.includes("storyspace.resumePoints") || !webClient.includes('playe
 if (!webClient.includes("remoteProgressPercent") || !webClient.includes('api("/library/"+encodeURIComponent(title.apiId)+"/progress"')) throw new Error("Cross-device watch progress sync missing");
 if (!webClient.includes('$("playerRestart").addEventListener("click"')) throw new Error("Player restart control missing");
 if (!webClient.includes("activityPanel")) throw new Error("Recent activity panel missing");
+const offlinePlayer = read("web/player-offline.js");
+execFileSync(process.execPath, ["--check", path.join(root, "web", "player-offline.js")], { stdio: "pipe" });
+if (!offlinePlayer.includes("if(!navigator.onLine)switchToCached()")) throw new Error("Offline playback must recover a cached video on an already-offline app launch");
+if (!offlinePlayer.includes('window.addEventListener("offline",()=>switchToCached()')) throw new Error("Offline playback must recover when connectivity is lost during a session");
+if (!offlinePlayer.includes('window.addEventListener("online",restoreNetwork)')) throw new Error("Offline playback must restore the network stream after reconnecting");
 const mediaClient = read("web/media-uploads.js");
 if (!html.includes("mediaServerHealth") || !mediaClient.includes("async function checkServerHealth") || !mediaClient.includes("credentials:") || !mediaClient.includes("omit") || !mediaClient.includes("mediaHealthCheck")) throw new Error("Media-host health status and credential-free connection check missing");
 const webHtml = read("web/index.html");
