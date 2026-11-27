@@ -320,6 +320,9 @@ if(!shortcuts.includes('case "home":{const range=seekWindow();if(range){try{vide
 if(!shortcuts.includes('case "end":{const range=seekWindow();if(range){try{video.currentTime=range.end;announceSeek(range.live?"Jumped to live":"End"'))throw Error("End must jump to the VOD end or DVR live edge");
 if(!h.includes("<kbd>Home</kbd> beginning · <kbd>End</kbd> end/live edge"))throw Error("Home/End shortcuts missing from guide");
 
+// Keyboard volume and mute changes must persist just like slider/toggle changes.
+if(!settings.includes('const persistVolume=()=>{save("storyspace.playerVolume",String(video.volume));save("storyspace.playerMuted",String(video.muted));syncVolume()}')||!settings.includes('video.addEventListener("volumechange",persistVolume)'))throw Error("Keyboard volume/mute preferences must persist");
+
 // Keyboard volume adjustments support 5% and Shift+10% increments with spoken feedback.
 if(!shortcuts.includes('video.volume=clamp(video.volume+step,0,1);video.muted=false;announceSeek("Volume "+Math.round(video.volume*100)+"%")')||!shortcuts.includes('video.volume=clamp(video.volume-step,0,1);announceSeek("Volume "+Math.round(video.volume*100)+"%")'))throw Error("Volume shortcuts must provide 5/10% steps and feedback");
 if(!h.includes("<kbd>Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%"))throw Error("Shift+arrow volume increment guide missing");
