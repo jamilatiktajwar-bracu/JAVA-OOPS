@@ -8,6 +8,6 @@ public class LibraryDeletion {
  @Column(nullable=false) private Instant updatedAt=Instant.now();
  protected LibraryDeletion(){}
  public LibraryDeletion(Account account,Title title,Instant updatedAt){this.account=account;this.title=title;this.updatedAt=updatedAt==null?Instant.now():updatedAt;}
- public UUID getTitleId(){return title.getId();}public Instant getUpdatedAt(){return updatedAt;}
+ public Title getTitle(){return title;}public Instant getUpdatedAt(){return updatedAt;}
  public void setUpdatedAt(Instant value){updatedAt=value;}
 }
