@@ -78,3 +78,8 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 
 - Keyboard seek shortcuts (Left/Right, J/L) use the latest seekable DVR window when the source is live and does not expose a finite duration.
 - Seeking is clamped to the available DVR window or VOD duration; unavailable seek windows are ignored safely.
+
+
+## Live-edge shortcut
+
+- Press `G` in the player to jump to the current live edge of a seekable DVR stream. It is a safe no-op for VOD or when a valid live seek range is unavailable.
