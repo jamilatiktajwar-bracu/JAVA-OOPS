@@ -561,3 +561,25 @@ if(!responsiveStyles.includes("@media(max-width:640px)"))throw Error("Browse fil
 if(!responsiveStyles.includes("grid-template-columns:repeat(2,minmax(0,1fr))"))throw Error("Browse controls must use a two-column mobile grid");
 if(!responsivePlayer.includes("@media(max-width:620px)"))throw Error("Player settings need a mobile layout");
 if(!responsivePlayer.includes(".player-offline-status{grid-column:1/-1}"))throw Error("Offline status must span the mobile player controls");
+
+// Personalized search ranking is deterministic and responds to history, recency and completion.
+const vm=require("node:vm"),rankingStart=a.indexOf("function scoreTitle(m){"),rankingEnd=a.indexOf("function recordInterest(",rankingStart);
+if(rankingStart<0||rankingEnd<=rankingStart)throw Error("Search ranking functions must remain independently testable");
+const rankingContext={personalized:{preferences:{genres:[],moods:[],languages:[],balance:"explore"},history:[{id:1,count:4,at:Date.now()}]},movies:[{id:1,genre:"Sci-Fi",progress:60}],titleTokens:s=>String(s||"").split(/[,|]/).map(x=>x.trim().toLowerCase()).filter(Boolean)};
+vm.runInNewContext(a.slice(rankingStart,rankingEnd)+";globalThis.__ranked=ranked;globalThis.__scoreTitle=scoreTitle;",rankingContext);
+const rankTitles=[{id:2,genre:"Sci-Fi",score:7},{id:3,genre:"Drama",score:7}];
+if(rankingContext.__ranked(rankTitles)[0].id!==2)throw Error("Recent Sci-Fi watch history should improve related search ranking");
+const incomplete={id:4,genre:"Drama",score:8,progress:0},completed={id:4,genre:"Drama",score:8,progress:96};
+if(!(rankingContext.__scoreTitle(incomplete)>rankingContext.__scoreTitle(completed)))throw Error("Nearly completed titles should receive a relevance penalty");
+const firstOrder=rankingContext.__ranked(rankTitles).map(item=>item.id).join(",");
+const secondOrder=rankingContext.__ranked(rankTitles).map(item=>item.id).join(",");
+if(firstOrder!==secondOrder)throw Error("Personalized search ranking must be deterministic for a fixed session state");
+rankingContext.personalized.preferences.genres=["Drama"];
+if(!(rankingContext.__scoreTitle(rankTitles[1])>rankingContext.__scoreTitle(rankTitles[0])))throw Error("Explicit genre preferences should affect personalized relevance");
+
+// TV directional navigation wraps at shelf boundaries and preserves reduced-motion support.
+const tvNavigation=read("tv-navigation.js");
+if(!tvNavigation.includes("const wrap=list.filter(e=>e!==cur)"))throw Error("TV remote navigation must wrap when no directional neighbor exists");
+if(!tvNavigation.includes("editable(e.target)"))throw Error("TV remote navigation must not steal arrow keys from text inputs");
+if(!tvNavigation.includes('matchMedia("(prefers-reduced-motion: reduce)")'))throw Error("TV focus scrolling must honor reduced-motion preferences");
+
