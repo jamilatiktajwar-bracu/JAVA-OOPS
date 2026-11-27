@@ -133,7 +133,7 @@ function cors(res) {
   if (allowedOrigin === "*") res.setHeader("access-control-allow-origin", "*");
   else res.setHeader("access-control-allow-origin", allowedOrigin);
   res.setHeader("vary", "Origin");
-  res.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, OPTIONS");
+  res.setHeader("access-control-allow-methods", "GET, HEAD, POST, PUT, DELETE, OPTIONS");
   res.setHeader("access-control-allow-headers", "content-type, x-storyspace-admin-token, x-storyspace-upload-token, x-upload-offset, range");
   res.setHeader("access-control-expose-headers", "content-length, content-range, accept-ranges, content-type, upload-offset");
 }
