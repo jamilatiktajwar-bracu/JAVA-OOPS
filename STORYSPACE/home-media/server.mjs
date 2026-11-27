@@ -58,7 +58,7 @@ function removeExpiredUploadSessions(now=Date.now()) {
   }
   const ids=new Set();
   for (const entry of entries) {
-    const match=entry.isFile() && entry.name.match(/^([a-f0-9-]{36})\\.(?:json|part)$/i);
+    const match=entry.isFile() && entry.name.match(/^([a-f0-9-]{36})\.(?:json|part)$/i);
     if (match) ids.add(match[1]);
   }
   for (const id of ids) {
