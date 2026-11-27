@@ -328,6 +328,9 @@ if(!shortcuts.includes('video.volume=clamp(video.volume+step,0,1);video.muted=fa
 if(!h.includes("<kbd>Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> volume 10%"))throw Error("Shift+arrow volume increment guide missing");
 
 
+// Keyboard playback-rate changes must persist and stay reflected in the speed selector.
+if(!settings.includes('video.addEventListener("ratechange",syncPlaybackRate)')||!settings.includes('save("storyspace.playerSpeed",value)')||!settings.includes('speed.value=value'))throw Error("Keyboard playback speed must sync the selector and saved preference");
+
 // Playback speed shortcuts are bounded and announce the active rate.
 if(!shortcuts.includes('case "<":{video.playbackRate=Math.max(0.25'))throw Error("Slow playback shortcut missing");
 if(!shortcuts.includes('case ">":{video.playbackRate=Math.min(2'))throw Error("Fast playback shortcut missing");
