@@ -181,7 +181,7 @@ try{
   let restartedReady=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){restartedReady=true;break}}catch{}await new Promise(resolve=>setTimeout(resolve,100))}
   assert.equal(restartedReady,true,"media server restarts with the interrupted upload session"+(restartedError?": "+restartedError:""));
   const resumedAfterRestart=await fetch(base+"/api/uploads/"+restartSession.uploadId,{headers});assert.equal(resumedAfterRestart.status,200);
-  assert.equal((await resumedAfterRestart.json()).offset,8,"restart recovery exposes the committed upload offset");
+  const recoveredStatus=await resumedAfterRestart.json();assert.equal(recoveredStatus.offset,8,"restart recovery exposes the committed upload offset");assert.equal(recoveredStatus.size,16,"restart recovery preserves the original upload size");
   const secondHalf=await fetch(base+"/api/uploads/"+restartSession.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.from("resumed!")});
   assert.equal(secondHalf.status,200);assert.equal((await secondHalf.json()).offset,16);
   const restartComplete=await fetch(base+"/api/uploads/"+restartSession.uploadId+"/complete",{method:"POST",headers});assert.equal(restartComplete.status,201);
