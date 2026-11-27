@@ -16,6 +16,8 @@
   let pointer = null;
   let lastTap = { at: 0, zone: "" };
   let feedbackTimer = 0;
+  let previewFrame = 0;
+  let previewPoint = null;
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -107,9 +109,9 @@
     };
   }
 
-  function previewGesture(event) {
-    if (!pointer || event.pointerId !== pointer.id || !enabled || !isOpen()) return;
-    const dx=event.clientX-pointer.x,dy=event.clientY-pointer.y;
+  function renderGesturePreview(point) {
+    if (!pointer || point.pointerId !== pointer.id || !enabled || !isOpen()) return;
+    const dx=point.clientX-pointer.x,dy=point.clientY-pointer.y;
     if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.15&&getSeekRange()&&video.readyState>=1){
       const range=getSeekRange(),maxSwipeSeconds=Math.max(20,Math.min(120,(range.end-range.start)*0.28));
       const delta=clamp((dx/pointer.rect.width)*maxSwipeSeconds,-90,90);
@@ -128,7 +130,22 @@
     }
   }
 
+  function previewGesture(event) {
+    // Coalesce high-frequency touchmove events to one calculation per frame.
+    previewPoint = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY };
+    if (previewFrame) return;
+    previewFrame = requestAnimationFrame(() => {
+      previewFrame = 0;
+      const point = previewPoint;
+      previewPoint = null;
+      if (point) renderGesturePreview(point);
+    });
+  }
+
   function finishGesture(event) {
+    if (previewFrame) cancelAnimationFrame(previewFrame);
+    previewFrame = 0;
+    previewPoint = null;
     if (!pointer || event.pointerId !== pointer.id) return;
     const start = pointer;
     pointer = null;
@@ -184,7 +201,14 @@
   }
 
   function cancelGesture(event) {
-    if (pointer && event.pointerId === pointer.id) { pointer = null; lastTap = { at: 0, zone: "" }; }
+    if (pointer && event.pointerId === pointer.id) {
+      if (previewFrame) cancelAnimationFrame(previewFrame);
+      previewFrame = 0;
+      previewPoint = null;
+      pointer = null;
+      lastTap = { at: 0, zone: "" };
+      feedback.classList.remove("is-visible");
+    }
   }
 
   stage.addEventListener("pointerdown", startGesture, { passive: true });
