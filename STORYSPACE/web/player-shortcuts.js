@@ -56,7 +56,9 @@
       case "f":fullscreenButton.click();break;
       case "t":setTheater(!backdrop.classList.contains("player-theater-mode"));event.preventDefault();break;
       case "r":{const range=seekWindow();if(range){try{video.currentTime=range.start;video.play().catch(()=>{});announceSeek(range.live?"Restarted at DVR window start":"Restarted from beginning");event.preventDefault()}catch{}}break;}
-      case "g":{const target=goLive();if(target!==false)event.preventDefault();break;}\n      case "home":{const range=seekWindow();if(range){try{video.currentTime=range.start;announceSeek(range.live?"DVR window start":"Beginning");event.preventDefault()}catch{}}break;}\n      case "end":{const range=seekWindow();if(range){try{video.currentTime=range.end;announceSeek(range.live?"Jumped to live":"End");event.preventDefault()}catch{}}break;}
+      case "g":{const target=goLive();if(target!==false)event.preventDefault();break;}
+      case "home":{const range=seekWindow();if(range){try{video.currentTime=range.start;announceSeek(range.live?"DVR window start":"Beginning");event.preventDefault()}catch{}}break;}
+      case "end":{const range=seekWindow();if(range){try{video.currentTime=range.end;announceSeek(range.live?"Jumped to live":"End");event.preventDefault()}catch{}}break;}
       case "0":case "1":case "2":case "3":case "4":case "5":case "6":case "7":case "8":case "9":{const percent=Number(key)*10,target=seekPercent(percent);if(target!==false){announceSeek("Seek to "+percent+"% · "+formatSeekTime(target));event.preventDefault()}break;}
       case "?":setGuide(guide.hidden);break;
       case "escape":closeButton.click();setGuide(false);break;
