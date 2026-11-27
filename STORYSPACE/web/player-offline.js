@@ -6,7 +6,7 @@
   if(!video||!button||!status||!("caches" in window))return;
   const CACHE="storyspace-offline-media-v1",MAX_BYTES=250*1024*1024;
   let sourceUrl="",objectUrl="",busy=false;
-  const currentUrl=()=>{try{const value=sourceUrl||video.currentSrc||video.src;const url=new URL(value,location.href);return /^https:$/.test(url.protocol)||url.origin===location.origin?url.href:""}catch{return ""}};
+  const currentUrl=()=>{try{const value=sourceUrl||video.currentSrc||video.src||video.querySelector("source")?.src;const url=new URL(value,location.href);return /^https:$/.test(url.protocol)||url.origin===location.origin?url.href:""}catch{return ""}};
   const announce=value=>{status.textContent=value};
   async function cacheFor(url){const cache=await caches.open(CACHE);return{cache,response:await cache.match(url)}}
   async function sync(){
@@ -55,5 +55,6 @@
   window.addEventListener("offline",()=>switchToCached().catch(error=>announce(error.message||"Offline recovery failed")));
   window.addEventListener("online",restoreNetwork);
   sync();
+  if(!navigator.onLine)switchToCached().catch(error=>announce(error.message||"Offline recovery failed"));
   window.StoryspaceOfflinePlayback=Object.freeze({sync,switchToCached,restoreNetwork});
 })();
