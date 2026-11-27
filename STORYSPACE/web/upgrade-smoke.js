@@ -360,6 +360,7 @@ if(!settings.includes("nativeDefaultAudioIndex=enabledIndex>=0?enabledIndex:0")|
 if(!settings.includes('video.addEventListener("emptied",()=>{nativeDefaultAudioIndex=-1;refreshTracks()})'))throw Error("Native audio default must be recalculated when the media source changes");
 const recovery=read("player-resilience.js");if(!recovery.includes('const onError=()=>{if(id!==recoveryId)return;clearTimeout(recoveryTimer);video.removeEventListener("loadedmetadata",restore);video.removeEventListener("error",onError);stopRecovery();show("Source unavailable · Check the video URL or try another stream",true)}'))throw Error("Recovery source errors must cancel the timeout and clean up listeners to avoid stale timeout messages");
 if(!recovery.includes('try{video.load()}catch{clearTimeout(recoveryTimer);video.removeEventListener("loadedmetadata",restore);video.removeEventListener("error",onError);stopRecovery();show("Could not restart this source · Check the video URL",true)}'))throw Error("Thrown video.load errors must clean up pending recovery listeners and timeout");
+if(!recovery.includes('stopRecovery();if(autoplay&&!backdrop.hidden)video.play().catch(()=>show("Video is ready · Press Play to continue"));else hide()}'))throw Error("Recovery must not autoplay after player is closed");
 
 
 // Caption/audio selector status is specific and announces user selections through the polite status region.
