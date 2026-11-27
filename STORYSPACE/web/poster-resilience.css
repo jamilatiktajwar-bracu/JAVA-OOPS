@@ -1,0 +1,7 @@
+/* Artwork fallback when a poster URL fails or is unavailable */
+.movie-poster.poster-unavailable{background:radial-gradient(ellipse at 22% 18%,#8af4e51d,transparent 44%),radial-gradient(ellipse at 78% 85%,#9b83ff1d,transparent 45%),linear-gradient(145deg,#17243a,#09111e 72%)!important}
+.movie-poster.poster-unavailable:before{content:"✧";position:absolute;inset:0;display:grid;place-items:center;color:#8af4e5a0;font-size:clamp(30px,5vw,56px);font-weight:300;text-shadow:0 8px 28px #0008}
+.movie-poster-image{background:#101b2c;contain:paint;}
+.movie-poster-image:not([src]){visibility:hidden}
+.movie-poster-image:focus{outline:none}
+@media(prefers-reduced-motion:reduce){.movie-poster-image{transition:none!important}}
