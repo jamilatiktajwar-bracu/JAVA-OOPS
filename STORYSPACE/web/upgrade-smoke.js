@@ -204,7 +204,7 @@ if(!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("T
 // Caption quick-toggle shortcut (Alt+C) must preserve the regular C size-cycle shortcut.
 if(!settings.includes("toggleCaptionsShortcut")||!settings.includes("event.altKey")||!settings.includes("storyspace.captionLastEnabled"))throw Error("Caption on/off shortcut missing");
 if(!h.includes("Alt+C</kbd> captions on/off"))throw Error("Caption shortcut help text missing");
-for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","preferredTrack(tracks,language,fallback)","trackKey(track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
+for(const token of ["storyspace.captionLanguage","storyspace.audioLanguage","function preferredTrack(entries,language,fallback)","trackKey(entry.track)","if(fallback===\"-1\")return fallback"])if(!settings.includes(token))throw Error("Preferred track language persistence missing: "+token);
 
 // Mobile theater mode viewport and safe-area regression guards.
 const theaterCss=read("player-gestures.css");
