@@ -168,5 +168,25 @@ try{
  await new Promise(resolve=>setTimeout(resolve,15));await writeFile(path.join(mediaDir,catalog[0].fileName),"xxxxxxxxxxxxxxxx");
  const sameSizeCorruption=await fetch(base+catalog[0].streamUrl);assert.equal(sameSizeCorruption.status,503,"same-size media corruption is rejected by the SHA-256 integrity check");
  assert.match((await sameSizeCorruption.json()).error,/SHA-256 integrity check/);
+ // A partially uploaded file must survive a server restart and continue from its committed offset.
+ const restartInit=await fetch(base+"/api/uploads/init",{method:"POST",headers:{...headers,"content-type":"application/json"},body:JSON.stringify({title:"Restart Resume",filename:"restart-resume.mp4",size:16})});
+ assert.equal(restartInit.status,201);const restartSession=await restartInit.json();
+ const firstHalf=await fetch(base+"/api/uploads/"+restartSession.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"0"},body:Buffer.from("restart-")});
+ assert.equal(firstHalf.status,200);assert.equal((await firstHalf.json()).offset,8);
+ server.kill("SIGTERM");await serverExit;
+ const restartedServer=spawn(process.execPath,[path.join(root,"server.mjs")],{env:{...process.env,STORYSPACE_MEDIA_ADMIN_TOKEN:admin,STORYSPACE_MEDIA_UPLOAD_TOKEN:invite,STORYSPACE_MEDIA_DIR:path.join(temp,"media"),STORYSPACE_MEDIA_STAGING_DIR:staging,STORYSPACE_MEDIA_CATALOG_FILE:path.join(temp,"catalog.json"),STORYSPACE_MEDIA_HOST:"127.0.0.1",STORYSPACE_MEDIA_PORT:String(port),STORYSPACE_MEDIA_MAX_UPLOAD_BYTES:"2048",STORYSPACE_MEDIA_MAX_CHUNK_BYTES:"8"},stdio:["ignore","ignore","pipe"]});
+ let restartedError="";restartedServer.stderr.setEncoding("utf8");restartedServer.stderr.on("data",chunk=>{restartedError+=chunk});
+ const restartedExit=new Promise(resolve=>restartedServer.once("exit",(code,signal)=>resolve({code,signal})));
+ try{
+  let restartedReady=false;for(let i=0;i<60;i++){try{if((await fetch(base+"/health")).ok){restartedReady=true;break}}catch{}await new Promise(resolve=>setTimeout(resolve,100))}
+  assert.equal(restartedReady,true,"media server restarts with the interrupted upload session"+(restartedError?": "+restartedError:""));
+  const resumedAfterRestart=await fetch(base+"/api/uploads/"+restartSession.uploadId,{headers});assert.equal(resumedAfterRestart.status,200);
+  assert.equal((await resumedAfterRestart.json()).offset,8,"restart recovery exposes the committed upload offset");
+  const secondHalf=await fetch(base+"/api/uploads/"+restartSession.uploadId+"/chunk",{method:"PUT",headers:{...headers,"x-upload-offset":"8"},body:Buffer.from("resumed!")});
+  assert.equal(secondHalf.status,200);assert.equal((await secondHalf.json()).offset,16);
+  const restartComplete=await fetch(base+"/api/uploads/"+restartSession.uploadId+"/complete",{method:"POST",headers});assert.equal(restartComplete.status,201);
+  const restartResult=await restartComplete.json();
+  assert.equal(restartResult.sha256,crypto.createHash("sha256").update("restart-resumed!").digest("hex"),"resumed upload checksum covers bytes from before and after restart");
+ }finally{if(restartedServer.exitCode===null&&restartedServer.signalCode===null)restartedServer.kill("SIGTERM");await restartedExit;}
  console.log("Storyspace media tests passed: invite auth, chunk resume, approval and rejection gates, catalog visibility, byte ranges, catalog path safety.");
 }finally{if(server.exitCode===null&&server.signalCode===null)server.kill("SIGTERM");await serverExit;await rm(temp,{recursive:true,force:true});}
