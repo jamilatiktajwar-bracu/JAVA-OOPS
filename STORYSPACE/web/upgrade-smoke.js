@@ -422,7 +422,7 @@ if(!apiSource.includes('controller.abort();reject(new Error("Request timed out. 
 // Player resilience cancels deferred work and pending recovery on pagehide.
 const playerLifecycleResilience=read("player-resilience.js");
 if(!playerLifecycleResilience.includes('window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()})'))throw Error("Player must clear pending timers and recovery listeners on pagehide");
-if(!playerLifecycleResilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}})'))throw Error("Hidden page must cancel stall recovery work");
+if(!playerLifecycleResilience.includes('document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}else if(active()&&stalledAt&&video.readyState<3){scheduleStallRecovery()}})'))throw Error("Hidden page must cancel and visible page must re-arm stall recovery work");
 
 
 // Navigation network fetches have a bounded wait and retain background shell refresh.
