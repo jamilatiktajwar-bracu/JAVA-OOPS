@@ -138,6 +138,7 @@ public class RecommendationEngine {
         int size = Math.min(limit, count);
         Movies[] recommendations = new Movies[size];
         System.arraycopy(result, 0, recommendations, 0, size);
+        rememberRecommendations(recommendations);
         return recommendations;
     }
 

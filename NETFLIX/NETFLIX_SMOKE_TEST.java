@@ -19,6 +19,7 @@ public class NETFLIX_SMOKE_TEST {
         testNetflixUserInputValidation();
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
+        testGenreRecommendationHistory();
         testRecommendationEngineNullUserPaths();
         testColdStartRecommendationLimit();
         testRecommendationHistoryEviction();
@@ -566,6 +567,36 @@ public class NETFLIX_SMOKE_TEST {
             for (String title : titles) {
                 Movies.removeMovie(title);
             }
+        }
+    }
+
+    private static void testGenreRecommendationHistory() {
+        String suffix = Long.toString(System.nanoTime());
+        String genre = "GenreHistory" + suffix;
+        String firstTitle = "Genre History First " + suffix;
+        String secondTitle = "Genre History Second " + suffix;
+        try {
+            require(Movies.addMovie(firstTitle, genre, 90),
+                    "first genre-history movie should be added");
+            require(Movies.addMovie(secondTitle, genre, 90),
+                    "second genre-history movie should be added");
+            Movies firstMovie = Movies.searchByTitle(firstTitle)[0];
+            Movies secondMovie = Movies.searchByTitle(secondTitle)[0];
+            require(firstMovie.setRating(9.5) && secondMovie.setRating(8.5),
+                    "genre-history movies should accept valid ratings");
+
+            RecommendationEngine engine = new RecommendationEngine(
+                    new NETFLIX_USER("genre-history-user-" + suffix));
+            Movies[] firstPick = engine.getGenreRecommendations(genre, 1);
+            require(firstPick.length == 1 && firstPick[0] == firstMovie,
+                    "genre recommendations should rank the highest-rated eligible movie first");
+
+            Movies[] secondPick = engine.getGenreRecommendations(genre, 1);
+            require(secondPick.length == 1 && secondPick[0] == secondMovie,
+                    "genre recommendations should remember prior picks and avoid immediate repeats");
+        } finally {
+            Movies.removeMovie(firstTitle);
+            Movies.removeMovie(secondTitle);
         }
     }
 
