@@ -542,3 +542,5 @@ if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module mu
 
 if(!offlinePlayer.includes('video.querySelector("source")?.src'))throw Error("Offline recovery must resolve the declared video source when initial loading fails");
 if(!offlinePlayer.includes('if(!navigator.onLine)switchToCached()'))throw Error("Offline playback must recover on an initially offline launch");
+
+if(!p.includes("if(switching)return;if(objectUrl)URL.revokeObjectURL(objectUrl)"))throw Error("Offline blob URLs must be released when the player closes or changes source");
