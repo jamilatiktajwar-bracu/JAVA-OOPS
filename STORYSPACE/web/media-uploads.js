@@ -59,10 +59,16 @@
     if(selectedFile&&selectedFile.name===item.filename&&selectedFile.size===item.size&&(!item.lastModified||selectedFile.lastModified===item.lastModified))return selectedFile;
     throw new Error("This browser needs you to reselect the original video before resuming. Your server-side upload progress is preserved.");
   }
-  function waitForOnline(){
+  function waitForOnline(item){
     if(navigator.onLine)return Promise.resolve();
-    setProgress(0,1,"Offline · upload paused; waiting for connection");
-    return new Promise(resolve=>window.addEventListener("online",resolve,{once:true}));
+    setProgress(item.offset,item.size,"Offline · "+fmt(item.offset)+" saved; waiting for connection");
+    return new Promise((resolve,reject)=>{
+      const online=()=>{cleanup();resolve()};
+      const cancelled=()=>{cleanup();reject(Object.assign(new Error("Upload cancelled"),{code:"UPLOAD_CANCELLED"}))};
+      const cleanup=()=>{window.removeEventListener("online",online);window.removeEventListener("storyspace-upload-cancel",cancelled)};
+      window.addEventListener("online",online,{once:true});
+      window.addEventListener("storyspace-upload-cancel",cancelled,{once:true});
+    });
   }
   const retryableUploadError=error=>!navigator.onLine||!error.status||error.status===408||error.status===425||error.status===429||error.status>=500;
   const retryDelay=attempt=>Math.min(15000,1000*Math.pow(2,attempt-1))+Math.floor(Math.random()*350);
@@ -85,7 +91,7 @@
           if(!Number.isSafeInteger(status.offset)||status.offset!==item.offset)throw new Error("Server upload position changed unexpectedly; refresh the queue before retrying.");
         }catch(reconcileError){
           if(reconcileError.status===401||reconcileError.status===404)throw reconcileError;
-          if(!navigator.onLine)await waitForOnline();
+          if(!navigator.onLine)await waitForOnline(item);
         }
         setProgress(item.offset,item.size,"Connection interrupted · retry "+attempt+" of 5");
         await new Promise(resolve=>setTimeout(resolve,retryDelay(attempt)));
@@ -154,7 +160,7 @@
             if(!active||activeItemId!==item.id||!item.uploadId||cancelRequested)return;
             const cfg=readConfig(),root=cleanRoot(cfg.root),token=cfg.uploadToken;
             if(!window.confirm("Cancel this upload and delete its unfinished server-side video data?"))return;
-            cancelRequested=true;cancel.disabled=true;item.status="Cancelling upload";item.updatedAt=Date.now();await storeItem(item);await renderQueue();showToast("Cancelling upload safely…");
+            cancelRequested=true;window.dispatchEvent(new Event("storyspace-upload-cancel"));cancel.disabled=true;item.status="Cancelling upload";item.updatedAt=Date.now();await storeItem(item);await renderQueue();showToast("Cancelling upload safely…");
             try{
               await request(root,"/api/uploads/"+encodeURIComponent(item.uploadId),token,{method:"DELETE",headers:headers(token)});
               await removeItem(item.id);showToast("Upload cancelled and partial server data removed");
