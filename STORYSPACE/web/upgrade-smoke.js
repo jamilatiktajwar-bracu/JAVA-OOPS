@@ -460,7 +460,7 @@ const uploads=read("media-uploads.js");
 if(!uploads.includes('"Media server request timed out after "+Math.round(deadlineMs/1000)+" seconds.'))throw Error("Media server API requests need configurable timeout messaging");
 if(!uploads.includes("const deadline=new Promise((_,reject)=>{timeout=setTimeout(()=>{controller?.abort();reject(new Error("))throw Error("Media API requests should race against a deadline");
 if(!uploads.includes("Promise.race([fetchPromise,deadline])"))throw Error("Media API timeout must work even without AbortController");
-if(!uploads.includes("...options,credentials:\"omit\",headers:requestHeaders"))throw Error("Media requests must preserve caller options and omit credentials");
+if(!uploads.includes("...fetchOptions,credentials:\"omit\",headers:requestHeaders"))throw Error("Media requests must preserve caller options and omit credentials");
 if(!uploads.includes("!options.signal&&typeof AbortController!==\"undefined\"?new AbortController():null"))throw Error("Upload chunk cancellation signals must be preserved");
 
 
