@@ -610,3 +610,7 @@ if(!interactionPolish.includes("@media(prefers-reduced-motion:reduce){.main-nav"
 if(!interactionPolish.includes("@media(prefers-contrast:more)"))throw Error("High-contrast mode must strengthen focus visibility");
 if(!interactionPolish.includes("outline-width:3px"))throw Error("High-contrast keyboard focus needs a stronger outline");
 if(!interactionPolish.includes(".nav-link:focus-visible,.nav-link[aria-current=\"page\"]"))throw Error("High-contrast navigation needs a distinct focus and current-page state");
+
+// Create-and-save from story details keeps the user in context and saves atomically from the UI flow.
+for(const token of ["collection-quick-create-toggle","collection-quick-create","createCollection(nameInput.value","created.items.unshift(identify(movie))","aria-expanded","collection-quick-create-status"])if(!read("collections.js").includes(token))throw Error("Story modal quick-create collection flow missing: "+token);
+if(!read("collections.css").includes(".collection-quick-create"))throw Error("Story modal quick-create styles missing");
