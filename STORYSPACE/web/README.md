@@ -114,3 +114,9 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 ## Touch seeking on live streams
 
 Touch horizontal swipes and double-tap skip now use the active seekable range, so DVR streams stay inside their available rewind window instead of incorrectly clamping against an infinite live duration.
+
+
+## Caption language preferences
+
+- Caption language preferences normalize underscore and hyphen locale tags and match regional variants (for example, `en` and `en-US`) when tracks are refreshed.
+- Explicitly choosing captions Off remains respected; unavailable saved languages safely fall back to Off rather than selecting an unrelated track.
