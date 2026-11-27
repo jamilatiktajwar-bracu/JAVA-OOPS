@@ -4,11 +4,12 @@ if(!video||!stage||!backdrop)return;
 let overlay=stage.querySelector(".player-buffer-state");
 if(!overlay){overlay=document.createElement("div");overlay.className="player-buffer-state";overlay.setAttribute("role","status");overlay.setAttribute("aria-live","polite");overlay.hidden=true;overlay.innerHTML='<span class="player-buffer-spinner" aria-hidden="true"></span><span class="player-buffer-message">Preparing playback…</span><button class="player-buffer-retry" type="button" hidden>Retry playback</button>';stage.append(overlay)}
 const message=overlay.querySelector(".player-buffer-message"),retryAction=overlay.querySelector(".player-buffer-retry");
-let waitingTimer=0,lastPosition=0,stalledAt=0,recoveryTimer=0,stallRecoveryTimer=0,lastAutoRecoveryAt=0,recovering=false,recoveryId=0,recoveryCleanup=()=>{};
+let waitingTimer=0,lastPosition=0,stalledAt=0,recoveryTimer=0,stallRecoveryTimer=0,lastAutoRecoveryAt=0,autoRecoveryAttempts=0,recovering=false,recoveryId=0,recoveryCleanup=()=>{};
 function show(text,canRetry=false){message.textContent=text;retryAction.hidden=!canRetry;overlay.hidden=false;overlay.setAttribute("aria-busy","true");stage.classList.add("is-buffering")}
 function hide(){overlay.hidden=true;overlay.setAttribute("aria-busy","false");stage.classList.remove("is-buffering");clearTimeout(waitingTimer)}
 function active(){return !backdrop.hidden&&!video.paused&&!video.ended}
 function onWaiting(){if(!active())return;clearTimeout(waitingTimer);waitingTimer=setTimeout(()=>{if(active()&&video.readyState<3)show("Buffering · waiting for video data…")},450)}
+function scheduleStallRecovery(){clearTimeout(stallRecoveryTimer);if(!active()||!stalledAt||video.readyState>=3||autoRecoveryAttempts>=3)return;const observedAt=stalledAt,delay=Math.max(8500,Math.min(45000,8500*Math.pow(2,autoRecoveryAttempts)));stallRecoveryTimer=setTimeout(()=>{if(!active()||stalledAt!==observedAt||video.readyState>=3)return;autoRecoveryAttempts++;lastAutoRecoveryAt=Date.now();recover({resume:true,autoplay:true})},delay)}
 function stopRecovery(){clearTimeout(recoveryTimer);recoveryCleanup();recoveryCleanup=()=>{};recovering=false;const retry=document.getElementById("playerRetry");if(retry)retry.disabled=false}
 function recover({resume=true,autoplay=true}={}){if(recovering)return;const retry=document.getElementById("playerRetry");if(!navigator.onLine){show("Still offline · Check your internet connection");return}recovering=true;if(retry)retry.disabled=true;const id=++recoveryId,position=resume?(Number.isFinite(video.currentTime)?video.currentTime:lastPosition):0;show("Reconnecting to video…");clearTimeout(recoveryTimer);let restore;const onError=()=>{if(id!==recoveryId)return;stopRecovery();show("Source unavailable · Check the video URL or try another stream",true)};recoveryCleanup=()=>{video.removeEventListener("loadedmetadata",restore);video.removeEventListener("error",onError)};recoveryTimer=setTimeout(()=>{if(id!==recoveryId)return;stopRecovery();show("Recovery timed out · Check the connection or retry playback",true)},12000);
 restore=()=>{if(id!==recoveryId)return;stopRecovery();try{if(position>0){const ranges=video.seekable;if(ranges&&ranges.length){const start=ranges.start(ranges.length-1),end=ranges.end(ranges.length-1),target=Math.max(start,Math.min(end-.1,position));if(Number.isFinite(start)&&Number.isFinite(end)&&end>start)video.currentTime=target;}else if(Number.isFinite(video.duration)&&video.duration>0)video.currentTime=Math.min(position,Math.max(0,video.duration-.25));}}catch{}stopRecovery();if(autoplay&&!backdrop.hidden)video.play().catch(()=>show("Video is ready · Press Play to continue"));else hide()};
@@ -17,15 +18,9 @@ video.addEventListener("loadedmetadata",restore,{once:true});video.addEventListe
 video.addEventListener("waiting",onWaiting);
 video.addEventListener("stalled",()=>{
  if(!active())return;
- stalledAt=Date.now();show("Connection is slow · waiting for video data…");
- clearTimeout(stallRecoveryTimer);
- const observedAt=stalledAt;
- stallRecoveryTimer=setTimeout(()=>{
-  if(!active()||stalledAt!==observedAt||video.readyState>=3||Date.now()-lastAutoRecoveryAt<25000)return;
-  lastAutoRecoveryAt=Date.now();recover({resume:true,autoplay:true});
- },8500);
+ stalledAt=Date.now();show("Connection is slow · waiting for video data…");scheduleStallRecovery();
 });
-video.addEventListener("playing",()=>{hide();lastPosition=video.currentTime;stalledAt=0;clearTimeout(stallRecoveryTimer);stopRecovery()});
+video.addEventListener("playing",()=>{hide();lastPosition=video.currentTime;stalledAt=0;autoRecoveryAttempts=0;lastAutoRecoveryAt=0;clearTimeout(stallRecoveryTimer);stopRecovery()});
 video.addEventListener("canplay",()=>{if(!active())hide()});
 video.addEventListener("timeupdate",()=>{if(!video.paused&&video.currentTime>lastPosition+.2){lastPosition=video.currentTime;if(!overlay.hidden)hide()}});
 video.addEventListener("pause",()=>{clearTimeout(stallRecoveryTimer);stalledAt=0;hide()});
@@ -37,7 +32,7 @@ window.addEventListener("online",()=>{if(active()){recover({resume:true,autoplay
 const retry=document.getElementById("playerRetry");
 retry?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
 retryAction?.addEventListener("click",()=>recover({resume:true,autoplay:true}));
-document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){clearTimeout(stallRecoveryTimer);if(video.paused)hide()}else if(active()&&stalledAt&&video.readyState<3){scheduleStallRecovery()}});
 window.addEventListener("pagehide",()=>{clearTimeout(waitingTimer);clearTimeout(stallRecoveryTimer);stalledAt=0;if(recovering){recoveryId++;stopRecovery()}hide()});
 window.StoryspacePlayerResilience=Object.freeze({show,hide,isBuffering:()=>!overlay.hidden,recover:()=>recover({resume:true,autoplay:true}),getLastPosition:()=>lastPosition});
 })();
