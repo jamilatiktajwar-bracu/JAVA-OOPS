@@ -72,3 +72,9 @@ The client reads the API base URL in this order: window.STORYSPACE_API_ROOT (set
 
 - Player diagnostics classify buffering as offline, loading media, waiting for data, low buffer (<2 seconds), building buffer (2–8 seconds), or healthy buffer (8 seconds or more). Paused/ended playback is not misclassified as a low buffer.
 - The hint is descriptive only; it does not change bitrate, seek position, or playback automatically.
+
+
+## Keyboard seeking for live/DVR
+
+- Keyboard seek shortcuts (Left/Right, J/L) use the latest seekable DVR window when the source is live and does not expose a finite duration.
+- Seeking is clamped to the available DVR window or VOD duration; unavailable seek windows are ignored safely.
