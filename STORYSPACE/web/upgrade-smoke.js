@@ -534,6 +534,10 @@ if(!profileSyncSource.includes("async function reconcileLibraryOps(serverItems)"
 if(!profileSyncSource.includes("remoteAt>=(Number(op?.updatedAt)||0)"))throw Error("Newer server library changes must win over stale local operations");
 if(!profileSyncSource.includes("queueLibraryOp(m.apiId,present)"))throw Error("Offline watchlist mutations must be queued before network requests");
 if(!profileSyncSource.includes("Saved locally · will sync when you reconnect:"))throw Error("Failed watchlist writes must remain locally visible and retryable");
+if(!profileSyncSource.includes("function clearLibraryOp(titleId,expected)"))throw Error("A completed stale request must not clear a newer watchlist intent");
+if(!profileSyncSource.includes("const queuedOp=queueLibraryOp(m.apiId,present)"))throw Error("Each watchlist request must retain its own operation version");
+if(!profileSyncSource.includes("clearLibraryOp(m.apiId,queuedOp)"))throw Error("Watchlist completion must clear only its matching queued operation");
+if(!profileSyncSource.includes("ops[id]?.updatedAt===op.updatedAt&&ops[id]?.present===op.present"))throw Error("Background reconciliation must preserve newer in-flight watchlist changes");
 
 
 
