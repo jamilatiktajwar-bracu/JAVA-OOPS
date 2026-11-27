@@ -18,7 +18,7 @@ if(!c.includes("player-fullscreen-active")||!c.includes("prefers-reduced-motion:
 const playerResilience=read("player-resilience.js");
 if(!h.includes("player-resilience.js")||!h.includes("player-resilience.css"))throw Error("player resilience assets not wired");
 if(!sw.includes("player-resilience.js")||!sw.includes("player-resilience.css")||!sw.includes(((sw.match(/storyspace-shell-v\d+/)||[])[0]||"")))throw Error("player resilience offline shell not updated");
-for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","25000"])if(!playerResilience.includes(token))throw Error("player recovery behavior missing: "+token);
+for(const token of ["waiting","stalled","loadedmetadata","navigator.onLine","StoryspacePlayerResilience","stallRecoveryTimer","lastAutoRecoveryAt","recover({resume:true,autoplay:true})","8500","45000"])if(!playerResilience.includes(token))throw Error("player recovery behavior missing: "+token);
 if(!resilienceCss.includes("prefers-reduced-motion:reduce"))throw Error("player buffering reduced-motion style missing");
 
 // Demo streaming library guards
@@ -475,4 +475,4 @@ if(!uploads.includes('const healthData=await request(root,"/health","",{cache:"n
 
 // Community library retains the last public catalog for offline display without blocking server refresh.
 const communityUploads=read("media-uploads.js");
-for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array.isArray(cached.items)","saveCommunityCatalogCache(root,items)","items=readCommunityCatalogCache(root)||[]","Offline · showing saved catalog","role=\"status\""])if(!communityUploads.includes(token))throw Error("Offline community catalog cache behavior missing: "+token);
+for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array.isArray(cached.items)","saveCommunityCatalogCache(root,items)","items=readCommunityCatalogCache(root)||[]","Offline · showing saved catalog","communityCatalogStatus"])if(!communityUploads.includes(token))throw Error("Offline community catalog cache behavior missing: "+token);
