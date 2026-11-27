@@ -13,3 +13,6 @@
 @media(max-width:520px){.topbar{align-items:center}.main-nav{order:3;flex-basis:100%;width:100%;margin-inline:0;padding-block:4px}.topbar{flex-wrap:wrap}.brand{max-width:45vw}.top-actions{margin-left:auto}.main-nav .nav-link{padding-inline:10px}}
 :where([id],.section-heading,.movie-row,.player-panel){scroll-margin-top:calc(var(--topbar-height,72px) + 14px)}
 @media(prefers-reduced-motion:reduce){.main-nav{scroll-behavior:auto;scroll-snap-type:none}}
+
+/* High-contrast mode keeps keyboard focus and navigation affordances distinct. */
+@media(prefers-contrast:more){:where(a,button,input,select,textarea,[tabindex]):focus-visible{outline-width:3px;outline-offset:4px}.nav-link{border:1px solid transparent}.nav-link:focus-visible,.nav-link[aria-current="page"]{border-color:currentColor}.icon-button,.profile-button,.command-palette-trigger{border:1px solid currentColor}}
