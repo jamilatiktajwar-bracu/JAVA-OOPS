@@ -127,6 +127,8 @@ try{
  const headRange=await fetch(base+catalog[0].streamUrl,{method:"HEAD",headers:{range:"bytes=0-3"}});assert.equal(headRange.status,206);assert.equal(headRange.headers.get("content-length"),"4");assert.equal(await headRange.text(),"","HEAD never streams a body");
  const etag=headRange.headers.get("etag")||(await fetch(base+catalog[0].streamUrl)).headers.get("etag");
  const notModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":etag}});assert.equal(notModified.status,304,"matching ETag avoids retransmitting unchanged media");
+ const modifiedSince=await fetch(base+catalog[0].streamUrl,{headers:{"if-modified-since":headRange.headers.get("last-modified")}});assert.equal(modifiedSince.status,304,"If-Modified-Since avoids retransmitting unchanged media when no ETag condition is supplied");
+ const etagPrecedence=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":'"different"',"if-modified-since":new Date(Date.now()+60000).toUTCString()}});assert.equal(etagPrecedence.status,200,"If-None-Match takes precedence over If-Modified-Since");
  const listNotModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":'"stale", W/'+etag+'"'}});assert.equal(listNotModified.status,304,"If-None-Match accepts comma-separated weak validators");
  const wildcardNotModified=await fetch(base+catalog[0].streamUrl,{headers:{"if-none-match":"*"}});assert.equal(wildcardNotModified.status,304,"If-None-Match wildcard matches an existing representation");
  const staleWeakRange=await fetch(base+catalog[0].streamUrl,{headers:{range:"bytes=0-1","if-range":"W/"+etag}});assert.equal(staleWeakRange.status,200,"weak If-Range validators cannot authorize partial responses");assert.equal(await staleWeakRange.text(),"0123456789abcdef");
