@@ -529,3 +529,13 @@ if(!profileSyncSource.includes('window.addEventListener("storage",event=>'))thro
 if(!profileSyncSource.includes('event.key!==PROFILE_STORE||!event.newValue'))throw Error("Cross-tab sync must only consume profile-store changes");
 if(!profileSyncSource.includes('remote.updatedAt<=(Number(current?.updatedAt)||0)'))throw Error("Cross-tab profile sync must reject stale profile snapshots");
 if(!profileSyncSource.includes('showToast("Profile and watchlist synced from another tab")'))throw Error("Cross-tab profile sync should announce applied changes");
+
+
+// Explicit offline media saves are bounded, removable, and restore playback after a network loss.
+const offlinePlayer=read("player-offline.js");
+if(!offlinePlayer.includes("const CACHE=\\"storyspace-offline-media-v1\\",MAX_BYTES=250*1024*1024"))throw Error("Offline media cache must use a dedicated cache and bounded size");
+if(!offlinePlayer.includes("cache.put(url,response.clone())"))throw Error("Offline media save must persist the complete response");
+if(!offlinePlayer.includes("window.addEventListener(\\"offline\\",()=>switchToCached()"))throw Error("Player must recover from a network loss using a saved copy");
+if(!offlinePlayer.includes("window.addEventListener(\\"online\\",restoreNetwork)"))throw Error("Player must restore the network stream after connectivity returns");
+if(!h.includes('id="playerOfflineToggle"')||!h.includes('src="player-offline.js"'))throw Error("Player offline controls must be available in the player UI");
+if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module must be included in the service worker shell");
