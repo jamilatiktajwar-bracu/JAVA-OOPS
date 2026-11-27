@@ -536,7 +536,7 @@ const offlinePlayer=read("player-offline.js");
 if(!offlinePlayer.includes('const CACHE="storyspace-offline-media-v1",MAX_BYTES=250*1024*1024'))throw Error("Offline media cache must use a dedicated cache and bounded size");
 if(!offlinePlayer.includes("cache.put(url,response.clone())"))throw Error("Offline media save must persist the complete response");
 if(!offlinePlayer.includes('window.addEventListener("offline",()=>switchToCached()'))throw Error("Player must recover from a network loss using a saved copy");
-if(!offlinePlayer.includes('window.addEventListener("offline",()=>switchToCached()'))throw Error("Player must recover from a network loss using a saved copy");
+if(!offlinePlayer.includes('window.addEventListener("online",restoreNetwork)'))throw Error("Player must restore the network stream after connectivity returns");
 if(!h.includes('id="playerOfflineToggle"')||!h.includes('src="player-offline.js"'))throw Error("Player offline controls must be available in the player UI");
 if(!sw.includes('"./player-offline.js"'))throw Error("Offline playback module must be included in the service worker shell");
 
