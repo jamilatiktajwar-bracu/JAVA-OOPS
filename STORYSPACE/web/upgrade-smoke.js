@@ -480,7 +480,7 @@ for(const token of ["storyspace.communityCatalog.v1:","cached.root===root&&Array
 
 // Continue Watching hub refreshes saved progress from other tabs and preserves keyboard focus during updates.
 const resumeHub=read("resume-hub.js");
-for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null","window.addEventListener(\"focus\",()=>{if(hub.hidden)render()})","document.addEventListener(\"visibilitychange\",()=>{if(!document.hidden&&hub.hidden)render()})","data-resume-action=\"resume\"","data-resume-action=\"clear\"","focus({preventScroll:true})"])if(!resumeHub.includes(token))throw Error("Continue Watching live-sync behavior missing: "+token);
+for(const token of ["event.key===\"storyspace.resumePoints\"||event.key===null","window.addEventListener(\"focus\",()=>{if(hub.hidden)render()})","document.addEventListener(\"visibilitychange\",()=>{if(!document.hidden&&hub.hidden)render()})","resume.dataset.resumeAction=\"resume\"","remove.dataset.resumeAction=\"clear\"","focus({preventScroll:true})"])if(!resumeHub.includes(token))throw Error("Continue Watching live-sync behavior missing: "+token);
 
 
 // Expired upload sessions are cleaned periodically without deleting sessions currently locked by active requests.
