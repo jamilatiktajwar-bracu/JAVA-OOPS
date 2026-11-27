@@ -529,6 +529,12 @@ if(!profileSyncSource.includes('window.addEventListener("storage",event=>'))thro
 if(!profileSyncSource.includes('event.key!==PROFILE_STORE||!event.newValue'))throw Error("Cross-tab sync must only consume profile-store changes");
 if(!profileSyncSource.includes('remote.updatedAt<=(Number(current?.updatedAt)||0)'))throw Error("Cross-tab profile sync must reject stale profile snapshots");
 if(!profileSyncSource.includes('showToast("Profile and watchlist synced from another tab")'))throw Error("Cross-tab profile sync should announce applied changes");
+if(!profileSyncSource.includes("const LIBRARY_OPS_PREFIX=\"storyspace.libraryOps.v1:\""))throw Error("Cross-device library conflict queue must be versioned");
+if(!profileSyncSource.includes("async function reconcileLibraryOps(serverItems)"))throw Error("Cross-device library changes must be reconciled against server snapshots");
+if(!profileSyncSource.includes("remoteAt>=(Number(op?.updatedAt)||0)"))throw Error("Newer server library changes must win over stale local operations");
+if(!profileSyncSource.includes("queueLibraryOp(m.apiId,present)"))throw Error("Offline watchlist mutations must be queued before network requests");
+if(!profileSyncSource.includes("Saved locally · will sync when you reconnect:"))throw Error("Failed watchlist writes must remain locally visible and retryable");
+
 
 
 // Explicit offline media saves are bounded, removable, and restore playback after a network loss.
