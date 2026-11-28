@@ -106,10 +106,7 @@ public class ViewingSession {
         }
         this.watchedMinutes = watchedMinutes;
         this.completed = false;
-        if (pausedAt > 0) {
-            totalPausedMillis += Math.max(0, System.currentTimeMillis() - pausedAt);
-            pausedAt = 0;
-        }
+        accumulatePausedDuration(System.currentTimeMillis());
         playbackActive = true;
         addEvent("PLAYBACK_RESUMED");
         return true;
@@ -323,24 +320,42 @@ public class ViewingSession {
     }
 
     public void startPlayback() {
+        if (playbackActive) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
         if (completed) {
+            // A completed session restart is a fresh playback timing cycle.
             watchedMinutes = 0;
             completed = false;
-        }
-        if (!playbackActive && pausedAt > 0) {
-            totalPausedMillis += Math.max(0, System.currentTimeMillis() - pausedAt);
+            startedAt = now;
+            totalPausedMillis = 0;
+            pausedAt = 0;
+        } else {
+            accumulatePausedDuration(now);
         }
         playbackActive = true;
-        pausedAt = 0;
         addEvent("PLAYBACK_STARTED");
     }
 
     public void stopPlayback() {
-        if (playbackActive) {
-            playbackActive = false;
-            pausedAt = System.currentTimeMillis();
+        if (!playbackActive) {
+            return;
         }
+        playbackActive = false;
+        pausedAt = System.currentTimeMillis();
         addEvent("PLAYBACK_STOPPED");
+    }
+
+    private void accumulatePausedDuration(long now) {
+        if (pausedAt <= 0) {
+            return;
+        }
+        long pausedDuration = Math.max(0L, now - pausedAt);
+        totalPausedMillis = pausedDuration > Long.MAX_VALUE - totalPausedMillis
+                ? Long.MAX_VALUE : totalPausedMillis + pausedDuration;
+        pausedAt = 0;
     }
 
     public boolean setIntroRange(int startSeconds, int endSeconds) {
