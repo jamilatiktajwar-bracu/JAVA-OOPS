@@ -514,8 +514,23 @@ public class NETFLIX_SMOKE_TEST {
         require(user.isInWatchHistory(movie), "completed movie should enter watch history");
         require(user.watchMovie(movie), "watching an already-recorded movie should succeed");
         require(user.getWatchHistoryCount() == 1, "re-watch must not duplicate history");
+
+        Movies directCompletion = new Movies("Direct completion", "Comedy", 80);
+        require(user.updateViewingProgress(directCompletion, 100),
+                "completion without prior partial progress should succeed");
+        require(directCompletion.isWatched() && user.isInWatchHistory(directCompletion),
+                "direct completion should mark watched and add history");
+        require(user.getContinueWatchingCount() == 0,
+                "directly completed movie must not remain in continue-watching");
+        require(user.getWatchHistoryCount() == 2,
+                "direct completion should add exactly one history entry");
+        require(user.updateViewingProgress(movie, 100),
+                "completion of a movie already in history should succeed");
+        require(user.getWatchHistoryCount() == 2 && user.getContinueWatchingCount() == 0,
+                "re-completion should not duplicate history or create continue-watching entry");
+
         require(!user.addFamilyProfile(user), "profile must not add itself as a family profile");
-        require(user.getTotalWatchedMinutes() == 100, "watch time should count unique history entries");
+        require(user.getTotalWatchedMinutes() == 180, "watch time should count unique history entries");
         NETFLIX_USER fullHistory = new NETFLIX_USER("full-history");
         for (int i = 0; i < 100; i++) {
             require(fullHistory.watchMovie(new Movies("History " + i, "Drama", 1)),
@@ -529,6 +544,15 @@ public class NETFLIX_SMOKE_TEST {
         require(fullHistory.getViewingProgress(overflowMovie) == 50,
                 "failed completion must preserve previous progress");
         require(!overflowMovie.isWatched(), "failed completion should not mark movie watched");
+
+        Movies directOverflow = new Movies("Direct overflow completion", "Comedy", 1);
+        require(!fullHistory.updateViewingProgress(directOverflow, 100),
+                "direct completion should fail when history is full");
+        require(!directOverflow.isWatched() && !fullHistory.isInWatchHistory(directOverflow),
+                "failed direct completion must not mutate movie or history");
+        require(fullHistory.getContinueWatchingCount() == 1
+                && fullHistory.getViewingProgress(overflowMovie) == 50,
+                "failed direct completion must preserve existing continue-watching state");
 
     }
 
