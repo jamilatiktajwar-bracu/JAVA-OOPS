@@ -23,7 +23,7 @@ java NETFLIX_SMOKE_TEST
 
 The smoke tests cover validation and boundary cases across playback queues (end/repeat/shuffle and remaining counts),
 watch-party moderation and synchronization, subscription trials/refunds, promo codes, review moderation,
-wallet defaults and invalid expiry dates, bounded movie completion metrics, viewing-session quality, idempotent stop/start, and completed-session timing reset, user input, recommendation-history eviction,
+wallet defaults and invalid expiry dates, bounded movie completion metrics, viewing-session quality, idempotent stop/start, completed-session timing reset, user input, and legacy favorite-list recovery, recommendation-history eviction,
 and downloads.
 
 GitHub Actions also compiles, runs the regression tests, and launches a non-interactive demo smoke check with Java 8 and 17.
