@@ -19,6 +19,7 @@ public class NETFLIX_SMOKE_TEST {
         testPaymentMethodExpirySafety();
         testPromoCodeRedemptionConsistency();
         testNetflixUserInputValidation();
+        testLegacyFavouriteListSafety();
         testNetflixUserHistoryConsistency();
         testRecommendationEngineSafety();
         testGenreRecommendationHistory();
@@ -503,6 +504,37 @@ public class NETFLIX_SMOKE_TEST {
         require(user.Plan == null, "invalid legacy plan should not crash or mutate unexpectedly");
         user.setPlan("Pro");
         require("Pro".equals(user.getPlan()), "validated setter should restore a normalized plan");
+    }
+
+    private static void testLegacyFavouriteListSafety() {
+        NETFLIX_USER user = new NETFLIX_USER("legacy-favourites");
+        Movies first = new Movies("Legacy favourite", "Drama", 90);
+        Movies second = new Movies("Second favourite", "Comedy", 100);
+
+        user.favourite_movies = new Movies[1];
+        user.favourite_movies[0] = first;
+        user.favourite_movies_count = Integer.MAX_VALUE;
+        require(user.getFavouriteMovies().length == 1
+                && user.isFavourite(first)
+                && "Drama".equals(user.getFavouriteGenre()),
+                "legacy favourite count should be clamped to array capacity");
+        require(!user.addFavouriteMovie(second),
+                "adding a favourite should respect a short legacy array's capacity");
+
+        user.favourite_movies = null;
+        user.favourite_movies_count = Integer.MAX_VALUE;
+        require(user.getFavouriteMovies().length == 0
+                && !user.isFavourite(first)
+                && "Not available".equals(user.getFavouriteGenre()),
+                "null legacy favourite arrays should recover without exceptions");
+        require(user.addFavouriteMovie(second)
+                && user.getFavouriteMovies().length == 1,
+                "favourite methods should recover storage after a legacy null array");
+
+        user.favourite_movies_count = -1;
+        require(user.getFavouriteMovies().length == 0
+                && user.favourite_movies_count == 0,
+                "negative legacy favourite counts should normalize to zero");
     }
 
     private static void testNetflixUserHistoryConsistency() {
