@@ -89,24 +89,47 @@ public class NETFLIX_USER {
         this(username, "", PLAN, "");
     }
 
+    /**
+     * Repairs the legacy public favorite-list fields before using them. Direct
+     * field writes remain deprecated, but malformed counts, null arrays, and
+     * null entries must not make the supported methods throw.
+     */
+    private int normalizeFavouriteCount() {
+        if (favourite_movies == null) {
+            favourite_movies = new Movies[100];
+            favourite_movies_count = 0;
+            return 0;
+        }
+        int boundedCount = Math.max(0, Math.min(favourite_movies_count, favourite_movies.length));
+        int compactedCount = 0;
+        for (int i = 0; i < boundedCount; i++) {
+            Movies movie = favourite_movies[i];
+            if (movie != null) {
+                favourite_movies[compactedCount++] = movie;
+            }
+        }
+        for (int i = compactedCount; i < boundedCount; i++) {
+            favourite_movies[i] = null;
+        }
+        favourite_movies_count = compactedCount;
+        return compactedCount;
+    }
+
     public void showFavouriteMovies() {
+        int count = normalizeFavouriteCount();
         System.out.println("Favourite Movies:");
-        for (int i = 0; i < favourite_movies_count; i++) {
+        for (int i = 0; i < count; i++) {
             System.out.println(favourite_movies[i].getTitle());
         }
-        if (favourite_movies_count == 0) {
+        if (count == 0) {
             System.out.println("(none)");
         }
     }
 
     public boolean addFavouriteMovie(Movies movie) {
-        if (movie == null) {
-            return false;
-        }
-        if (isFavourite(movie)) {
-            return false;
-        }
-        if (favourite_movies_count >= getFavouriteLimit()) {
+        int count = normalizeFavouriteCount();
+        if (movie == null || isFavourite(movie)
+                || count >= getFavouriteLimit() || count >= favourite_movies.length) {
             return false;
         }
         favourite_movies[favourite_movies_count++] = movie;
@@ -114,12 +137,13 @@ public class NETFLIX_USER {
     }
 
     public boolean removeFavouriteMovie(Movies movie) {
+        int count = normalizeFavouriteCount();
         if (movie == null) {
             return false;
         }
-        for (int i = 0; i < favourite_movies_count; i++) {
+        for (int i = 0; i < count; i++) {
             if (favourite_movies[i] == movie) {
-                for (int j = i; j < favourite_movies_count - 1; j++) {
+                for (int j = i; j < count - 1; j++) {
                     favourite_movies[j] = favourite_movies[j + 1];
                 }
                 favourite_movies[--favourite_movies_count] = null;
@@ -130,10 +154,11 @@ public class NETFLIX_USER {
     }
 
     public boolean isFavourite(Movies movie) {
+        int count = normalizeFavouriteCount();
         if (movie == null) {
             return false;
         }
-        for (int i = 0; i < favourite_movies_count; i++) {
+        for (int i = 0; i < count; i++) {
             if (favourite_movies[i] == movie) {
                 return true;
             }
@@ -314,8 +339,9 @@ public class NETFLIX_USER {
     }
 
     public Movies[] getFavouriteMovies() {
-        Movies[] favourites = new Movies[favourite_movies_count];
-        System.arraycopy(favourite_movies, 0, favourites, 0, favourite_movies_count);
+        int count = normalizeFavouriteCount();
+        Movies[] favourites = new Movies[count];
+        System.arraycopy(favourite_movies, 0, favourites, 0, count);
         return favourites;
     }
 
@@ -637,21 +663,22 @@ public class NETFLIX_USER {
     }
 
     public String getFavouriteGenre() {
-        if (favourite_movies_count == 0) {
+        int count = normalizeFavouriteCount();
+        if (count == 0) {
             return "Not available";
         }
         String favouriteGenre = favourite_movies[0].getGenre();
         int highestCount = 0;
-        for (int i = 0; i < favourite_movies_count; i++) {
+        for (int i = 0; i < count; i++) {
             String genre = favourite_movies[i].getGenre();
-            int count = 0;
-            for (int j = 0; j < favourite_movies_count; j++) {
+            int genreCount = 0;
+            for (int j = 0; j < count; j++) {
                 if (favourite_movies[j].getGenre().equalsIgnoreCase(genre)) {
-                    count++;
+                    genreCount++;
                 }
             }
-            if (count > highestCount) {
-                highestCount = count;
+            if (genreCount > highestCount) {
+                highestCount = genreCount;
                 favouriteGenre = genre;
             }
         }
