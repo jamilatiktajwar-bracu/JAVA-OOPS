@@ -188,11 +188,20 @@ public class NETFLIX_SMOKE_TEST {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Smoke test interrupted", interrupted);
         }
+        int stopEventCount = stopped.getEventLogCount();
         stopped.stopPlayback();
         require(stopped.getSessionDurationMillis() <= durationAtStop + 5L,
                 "repeated stop should not count paused time as active playback");
+        require(stopped.getEventLogCount() == stopEventCount,
+                "repeated stop should not add duplicate lifecycle events");
+        stopped.startPlayback();
+        int startEventCount = stopped.getEventLogCount();
+        stopped.startPlayback();
+        require(stopped.getEventLogCount() == startEventCount,
+                "starting already-active playback should be idempotent");
 
         ViewingSession completed = new ViewingSession(movie, null);
+        long previousStartTime = completed.getStartedAt();
         require(completed.pauseAt(movie.getDuration()),
                 "session should accept completion at the movie end");
         require(completed.isCompleted(), "session should be completed at the end");
@@ -200,6 +209,13 @@ public class NETFLIX_SMOKE_TEST {
         require(completed.isPlaybackActive() && !completed.isCompleted()
                 && completed.getWatchedMinutes() == 0,
                 "starting a completed session should restart progress at zero");
+        require(completed.getStartedAt() >= previousStartTime
+                && completed.getTotalPausedMillis() == 0,
+                "completed-session restart should reset timing instead of carrying old pauses");
+        int restartedEventCount = completed.getEventLogCount();
+        completed.startPlayback();
+        require(completed.getEventLogCount() == restartedEventCount,
+                "restarting already-active playback should not duplicate start events");
     }
 
     private static void testSystemHealthCounterSafety() {
