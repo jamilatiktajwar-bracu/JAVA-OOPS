@@ -420,24 +420,19 @@ public class NETFLIX_USER {
         }
         for (int i = 0; i < continueWatchingCount; i++) {
             if (continueWatching[i] == movie) {
-                if (progressPercent >= 95 && !isInWatchHistory(movie)
-                        && watchHistoryCount >= watchHistory.length) {
-                    return false;
-                }
-                viewingProgress[i] = progressPercent;
                 if (progressPercent >= 95) {
-                    movie.markWatched();
-                    if (!isInWatchHistory(movie) && watchHistoryCount < watchHistory.length) {
-                        watchHistory[watchHistoryCount++] = movie;
+                    if (!completeMovie(movie)) {
+                        return false;
                     }
                     removeContinueWatchingAt(i);
+                } else {
+                    viewingProgress[i] = progressPercent;
                 }
                 return true;
             }
         }
-        if (progressPercent >= 95 && !isInWatchHistory(movie)
-                && watchHistoryCount >= watchHistory.length) {
-            return false;
+        if (progressPercent >= 95) {
+            return completeMovie(movie);
         }
         if (continueWatchingCount >= continueWatching.length) {
             return false;
@@ -445,6 +440,17 @@ public class NETFLIX_USER {
         continueWatching[continueWatchingCount] = movie;
         viewingProgress[continueWatchingCount] = progressPercent;
         continueWatchingCount++;
+        return true;
+    }
+
+    private boolean completeMovie(Movies movie) {
+        if (!isInWatchHistory(movie) && watchHistoryCount >= watchHistory.length) {
+            return false;
+        }
+        movie.markWatched();
+        if (!isInWatchHistory(movie)) {
+            watchHistory[watchHistoryCount++] = movie;
+        }
         return true;
     }
 
